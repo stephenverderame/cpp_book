@@ -1,0 +1,6 @@
+[book]
+authors = ["Stephen Verderame"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Excursion through C++"
