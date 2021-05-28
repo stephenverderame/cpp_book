@@ -85,11 +85,11 @@ auto getUserGuess() {
 }
 
 ```
-`getUserInput()` is what previously was `getUserGuess()`. Now `getUserGuess()` tries to get a number from the user, and if that fails with `std::invalid_argument` it will print an error message and recurse, trying again. The catch block catches `invalid_argument` by *reference*. More on this later but that's what the `&` means. So instead of the exception being copied, only a reference to the exception is copied. We declare this reference `const` so we can't mutate it; everything that can be const, should be const. Passing by reference also always this catch block to behave *polymorphically* and accept any subtypes of `std::invalid_exception`(which there are none in the standard library, but it's always good to catch exceptions by reference)
+`getUserInput()` is what previously was `getUserGuess()`. Now `getUserGuess()` tries to get a number from the user, and if that fails with `std::invalid_argument` it will print an error message and recurse, trying again. The catch block catches `invalid_argument` by *reference* which is denoted by `&`. So instead of the exception being copied, only a reference to the exception is copied. We declare this reference `const` so we can't mutate it. This is good practice and you should make everything that can be const, const. Passing by reference also allows this catch block to behave *polymorphically* and accept any subtypes of `std::invalid_exception`(which there are none in the standard library, but it's always good to catch exceptions by reference for this reason)
 
 ## Wiring it Up
 
-Let's return to our `main()` function to finish the game. First we'll get a random number and store it in a constant. Then we'll loop until the user's guess equals that number. Since we won't be updating the range of random numbers generating during runtime, it's a good idea to make `constexpr` "variables" which are passed to `getRandNumBetween()`. This means that not only are the value constant, but they're also available at compile time. Therefore, in the compiled code they don't take up space, instead the compiler just inserts the literal values.
+Let's return to our `main()` function to finish the game. First we'll get a random number and store it in a constant. Then we'll loop until the user's guess equals that number. Since we won't be updating the range of random numbers generating during runtime, it's a good idea to make `constexpr` "variables" which are passed to `getRandNumBetween()`. This means that not only are the values constant, but they're also available at compile time. Therefore, in the compiled code they don't take up space, instead the compiler just inserts the literal values into the code whenever they are used.
 
 ```c++
 
@@ -114,7 +114,7 @@ int main() {
 
 ```
 
-Here, we use a do-while loop, which  is like a while loop except it always performs at least one iteration. They can be harder to reason about and are somewhat controversial. Notice we also declare `secretNum` constant since it cannot change. I tend to use `snake_case` for compile time constants, `camelCase` for functions and variables, and `CapitalizedCamelCase` for classes, structs, enums, and unions. `AHH_ITS_A_SNAKE_CASE` is reserved for macros.
+Here, we use a do-while loop, which  is like a while loop except it always performs at least one iteration. They can be harder to reason about and are somewhat controversial. Notice we also declare `secretNum` constant since it cannot change. I tend to use `snake_case` for compile time constants, `camelCase` for functions and variables, and `CapitalizedCamelCase` for classes, structs, enums, and unions. `AHH_ITS_A_SNAKE_CASE` is reserved for macros and should not be used for anything else.
 
 We can use Uncle Bob's *step-down rule* and clean this up a bit by factoring out the prints into other function. Basically, his idea is that a function should have only one level of abstraction. This one has a few: the high level `getUserGuess()` and `getRandNumBetween()` and the low level `cout`s. So here's the final code:
 

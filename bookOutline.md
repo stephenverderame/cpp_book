@@ -109,6 +109,7 @@
     * Optimizations
     * RVO and EBO
         * Copy elision
+    * SBO
 16. Type Deduction
     * Always Auto
     * Auto and decltype
