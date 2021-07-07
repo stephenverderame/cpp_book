@@ -222,6 +222,8 @@ A function can only be inlined if it is defined and declared in the same place. 
 
 Like `constexpr` variables have values that are available at compile time, `constexpr` function have computations that *can be* available at compile time. If you pass non-constexpr arguments to a `constexpr` function, the function will behave normally, but if you pass literals or `constexpr` variables to a `constexpr` function, the result will be computed at compile time and the literal value will be inserted in the code.
 
+`constexpr` functions are implicitly inline as well.
+
 Ex.
 
 ```c++

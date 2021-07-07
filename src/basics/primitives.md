@@ -37,12 +37,14 @@ auto ch = 'H'; // char
 
 ```
 
-Finally we can also input numbers in different bases such as hex, octal or binary.
+Finally we can also input numbers in different bases such as hex, octal or binary and use the single quote `'` as a digit separator to make things more readable.
 
 ```c++
 auto h = 0xA; //h  is the integer 10
 auto oct = 024; //oct is the integer 14
 auto bin = 0b11; // bin is the integer 3
+
+auto pi = 3.14159'26535'89793'23846'26433'83279'50288;
 ```
 
 Hex and binary are pretty important in systems programming so make sure you read up on that if you're unfamiliar.

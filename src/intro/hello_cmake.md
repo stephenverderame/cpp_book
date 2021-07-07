@@ -21,3 +21,5 @@ Notice how nothing here is specific to g++.
 Next, run `cmake -B out` which will generate the build files in a directory called out. To build it, `cd` into the `out` folder and invoke `make`. This will invoke the compiler and compile the executable. Once again, this should produce a file called `hello`, which upon execution should result in
 
 > Hello World
+
+For Windows: Cmake will use the Visual Studio generator and create project files which can be opened in Visual Studio and built like any other project. Therefore, do not invoke `make`.

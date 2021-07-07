@@ -4,7 +4,7 @@ We've already used quite a lot of variables already. So we'll skip the formaliti
 
 ### Const Correctness
 
-As I previously mentioned, anything that can be `const` should be `const`. Make `const` variables the default and mutable variables the exception. Mutability makes things harder to reason about and const correctness is another form of type safety. Like an unsigned vs signed primitive type, a const and non-const type are two fundamentally different types. Therefore if you have a constant already, it can only be used with code that accepts constants [^2].
+As I previously mentioned, anything that can be `const` should be `const`. A `const` "variable" is one whose value cannot change. It's good practice to make `const` variables the default and mutable variables the exception. Mutability makes things harder to reason about and const correctness is another form of type safety. Like an unsigned vs signed primitive type, a const and non-const type are two fundamentally different types. Therefore if you have a constant already, it can only be used with code that accepts constants [^2]. However a non-constant can be automatically converted to a constant version of the type, but not the other way around.
 
 ```c++
 const auto num = 23;
@@ -57,7 +57,9 @@ We also want to be consistent with our variable names. A good rule of thumb is o
 
 ### Scope
 
-The variables we have seen have *automatic lifetimes*. This means that when their *scope* ends, they are popped off the stack. The stack is an area in memory we'll talk about later but for now know that these variables of built-in types we have been working with are pushed on the stack when they are declared and popped off when they go out of scope.
+The variables we have seen have *automatic lifetimes*. This means that when their *scope* ends, they are popped off the stack. The stack is an area in memory we'll talk about later but for now, know that these variables of built-in types we have been working with are pushed on the stack when they are declared and popped off when they go out of scope. 
+
+A scope roughly corresponds to a block, which are delimited by `{}` pairs. The local scope is the scope of a function and variables in this scope are destroyed when the function returns. The class scope is the scope of class members. Values in this scope are initialized when an instance of the object is created and destroyed when that same instance is destroyed. Finally the namespace scope is the scope of a namespace. Variables in this scope are destroyed when the program ends.
 
 ```c++
 {
@@ -72,7 +74,7 @@ The variables we have seen have *automatic lifetimes*. This means that when thei
 
 ### Globals
 
-Global variables are variables that are defined in the global scope (not within a function or curly braces). Unless they are immutable, you should avoid globals. This is because the order of variable initialization between *compilation units* (different source files) is undefined and they make code harder to reason about. This is something we'll talk about more later.
+Global variables are variables that are defined outside any scope (not within a function or curly braces). Unless they are immutable, you should avoid globals. This is because the order of variable initialization between *compilation units* (different source files) is undefined and they make code harder to reason about. This is something we'll talk about more later.
 
 ```c++
 const auto globalVar = 10;

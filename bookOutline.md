@@ -32,7 +32,6 @@
         * Humble Object
     * GMock
     * GDB and GProf
-    * Git
 5. Using STL
     * Strings
     * Arrays
@@ -176,3 +175,6 @@
 31. Project
 32. Further reading
 33. Possible Excercise Answers
+
+Notes:
+* ODR and how inline functions can be defined "multiple" times -> defined in headers
