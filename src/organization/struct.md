@@ -11,7 +11,7 @@ If no constructor is user-defined, you can use braces to initialize the struct p
 struct Address {
     int zipCode, streetNumber;
     std::string city, state, country, street;
-}
+};
 
 Address addr {
     1000, 21,

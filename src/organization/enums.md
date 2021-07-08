@@ -7,7 +7,7 @@ This is the motivation for enums, a type to represent enumerations of possible v
 ```C++
 enum class VehicleType {
     gas, electric, hybrid
-}
+};
 
 double getBaseRefuelingCost(VehicleType typ) {
     switch (typ) {

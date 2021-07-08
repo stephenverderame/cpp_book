@@ -32,7 +32,7 @@ public:
     // This is a constructor initialization list
     // its more efficient then setting the values in the actual
     // constructor
-}
+};
 
 
 Person p1("Harry");
@@ -81,7 +81,7 @@ public:
             written += sent;
         } while (written < msg.size());
     }
-}
+};
 
 {
     const Socket sock; // Socket initialized
