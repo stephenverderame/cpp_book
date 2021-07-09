@@ -32,6 +32,7 @@
         * Humble Object
     * GMock
     * GDB and GProf
+    * Clang-tidy
 5. Using STL
     * Strings
     * Arrays
