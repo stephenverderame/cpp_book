@@ -32,6 +32,8 @@ cout << add(5, 4) << "\n";\
 
 ```
 
+`std` is especially quite a big namespace and doing a `using namespace std` tends to bring in all sorts of issues. For example, `std::bind` will collide with the C function `bind`. You can specify that a name is part of the global scope by prepending `::` but it's generally best to avoid using an entire namespace that's as big as `std` and instead fully qualify names or bring in parts of it.
+
 Now what to put in a namespace? Well, at the very least, if we have a class `X` in namespace `Y`, we should ensure that the entire interface of `X` is also in that namespace. What constitutes part of a class's interface? Well Herb Sutter's *Interface Principle* says that anything that mentions `X` or is supplied with an `X` is logically part of the interface of `X`. Thus, these things should be in the same namespace as `X`. This plays nicely with a C++ mechanic known as *ADL* (Argument Dependent Lookup) aka Koenig Lookup: during name resolution, if a function `f` is supplied with a type `Y::X`, then it can resolve the name `f` by searching in namespace `Y` and looking for `Y::f`. Therefore, any related function of a class should be in the same namespace of that class.
 
 ```C++

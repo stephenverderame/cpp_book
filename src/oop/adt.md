@@ -1,8 +1,8 @@
 # Interfaces
 
-What we saw last chapter was a *concrete* class. Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes.
+What we saw last chapter was a *concrete* class. Concrete types have their representation part of their definition. Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes to implement. Abstract types must be used via pointers or references, while concrete types can be used directly. Concrete types can be placed on the stack and also be members of other classes much more simply than abstract types.
 
-In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has that allows the compiler to perform dynamic dispatch by looking up at runtime the specific function to call. Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enabled dynamic dispatch for that function and allows subclasses to override it.
+In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enabled dynamic dispatch for that function and allows subclasses to override it.
 
 An abstract type contains at least one *pure virtual* functions, which is a function that subclasses **must** override because the superclass does not implement it. The Java equivalent of an `interface` would be a class that contains only pure virtual functions.
 
@@ -46,7 +46,9 @@ pc.serialNumber(10); // good
 pc.serialNumber(); // error, superclass method shadowed
 ```
 
-Inheritance enables us to use polymorphism and let subclasses behave like their superclasses. However, in order to fully support this, we need to ensure that the destructor is virtual. Otherwise, there will be no dynamic dispatch on the destructor which will cause undefined behavior if we destroy a subclass through a reference or pointer to the superclass. Constructors on the other hand, should not be virtual.
+Inheritance enables us to use polymorphism and let subclasses behave like their superclasses. A user would not need to care about the concrete class or its implementation, they can just use the interface defined in the supertype without regard to the specific implementation. However, in order to fully support this, we need to ensure that the destructor is virtual. Otherwise, there will be no dynamic dispatch on the destructor which will cause undefined behavior if we destroy a subclass through a reference or pointer to the superclass. Another alternative is to make the base class destructor protected and non-virtual. This will prevent deletion of a derived type through a pointer or reference to the base class.
+
+Constructors on the other hand, cannot be virtual. This is because construction requires complete type information; the static type is the type being constructed. Furthermore, the class doesn't exist as an object at runtime so you can't call a virtual method on it. This is in-line with the pay for what you use philosophy.
 
 As an addendum, you should not call virtual functions in constructors or destructors. This is because the actual type of the object changes during these two operations and the type is always the type being created/destroyed and never a subclass. It is technically safe so long as the virtual function being called is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
 

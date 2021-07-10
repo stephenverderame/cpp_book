@@ -1,6 +1,6 @@
 # Inheritance
 
-We've seen public inheritance in the last chapter. It has the syntax `: public Base` and models an "is-a" relationship. Before going further, let's look at a classic example of where "is-a" relationships can lead us astray. Is a square a rectangle? Mathematically, yes. But in computer science, that depends...
+We've seen public inheritance in the last chapter. It has the syntax `: public Base` and models an "is-a"/"subtype-of" relationship. Before going further, let's look at a classic example of where the wording "is-a" can lead us astray. Is a square a rectangle? Mathematically, yes. But in computer science, that depends...
 
 Consider:
 ```C++
@@ -90,9 +90,75 @@ int area(const Rectangle & r) {
 ```
 
 
-Now I'd like to distinguish between implementation and interface inheritance. Interface inheritance is when a class inherits from an interface (pure virtual functions) to implement it  and provide decoupling between interface and implementation(s). Implementation inheritance is inheritance in order to share code (square and rect example). We want to be wary of implementation inheritance. Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible.
+Now I'd like to distinguish between implementation and interface inheritance. Interface inheritance is when a class inherits from an interface (pure virtual functions) to implement it  and provide decoupling between interface and implementation(s). Implementation inheritance is inheritance in order to share code (square and rect example). We want to be wary of implementation inheritance. Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible. Here's an example of interface inheritance:
 
-With that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. Private inheritance is same as public inheritance, but all public members of the base class become private members in the derived class. This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used this.
+```C++
+class Port {
+public:
+    /**
+    * Writes the entire buffer to the port
+    * @throw std::runtime_exception if the write failed
+    */
+    virtual void write_all(const std::vector<std::byte> & data) = 0;
+
+    /**
+    * Blocks until it reads the specified amount of bytes
+    * @param size the amount of bytes to wait for
+    * @throw std::runtime_exception on fail
+    */
+    virtual std::vector<std::byte> read_all(size_t size) = 0;
+
+    /**
+    * Reads data currently available on the port
+    * May or may not read all the data available
+    * @return the data read from the port or an empty vector if nothing
+    *   is available
+    */
+    virtual std::vector<std::byte> read_nonblock() = 0;
+
+
+    /**
+    * Gets the amount of bytes <= to the amount of bytes available to be read
+    * Guaranteed to return at least 1 if there is any data available
+    */
+    virtual size_t available() const noexcept = 0;
+
+    virtual ~Port() = default;
+};
+
+class MemoryPort : public Port {
+    // Implement methods for reading/writing to an area in memory
+    // useful for testing
+};
+
+class Socket : public Port {
+    // Implement interface for reading/writing to a socket
+};
+
+class Serial : public Port {
+    // Read/write to a serial port
+};
+
+class FDPort : public Port {
+    // Read/write to a pipe or file
+};
+
+void logError(Port & port, const std::string & str) {
+    // do some logging
+    
+    // log doesn't know or care the implementation of Port
+    // Are we logging to the console? a file? logging to a pipe to another
+    // program which will respond to the errors?
+    // are we a remote service logging to another service via sockets?
+    // are we a slave logging to the master over a serial connection?
+    // don't know and don't care!
+}
+
+```
+
+All of these types are subtypes of `Port`. They can be used polymorphically and prevent users from depending on or knowing about any implementation. This is the hallmark of OOP and is known as *dependency inversion*, which we'll discuss later.
+
+With all that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. Private inheritance is same as public inheritance, but all public members of the base class become private members in the derived class. This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used private inheritance.
 
 Private inheritance is not polymorphic. This intuitively makes sense since every part of the Base class's interface is private. If it were polymorphic, then you could break encapsulation by changing the static type of the Derived class to the Base class and call the Base class member functions.
 
@@ -183,11 +249,38 @@ class Derived2 : public Derived1 {
     void doA() override { /*... */}
     void doB() override {/*...*/}
 
+public:
     void doIt() override {} //error!
 }
  ```
 
  It's best to only have 1 of `final`, `virtual`, or `override`. For the declaration of a virtual function, use `virtual`. Then all derived classes should use `override` or `final` (and not both).
+
+ ## Default Arguments
+
+ Default arguments of methods are determined by the static type of the context object. To avoid problems, do not override the default arguments present in virtual functions of the base class.
+
+ ```C++
+class Logger {
+public:
+    virtual void log(const std::string & msg = "Hello") = 0;
+};
+
+class ErrorLogger : public Logger {
+public:
+    void log(const std::string & msg = "Error!") override {
+        // bad practice, should not override default arguments
+        //...
+    }
+};
+
+ErrorLogger log;
+log.log(); // default argument "Error!"
+
+Logger & l2 = log;
+l2.log(); // default argument "Hello"
+
+ ```
 
  ## Alternatives to Inheritance
 

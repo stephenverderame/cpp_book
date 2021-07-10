@@ -22,4 +22,8 @@ addr.zipCode = 2000;
 // public members by default
 ```
 
+Rules of thumb for choosing a class vs struct:
+* If there is any encapsulation, use a `class`
+* Use `class` if there are invariants that must be enforced. Use `struct` if members can vary independently
+
 [^1]: Using this term as Uncle Bob uses it
