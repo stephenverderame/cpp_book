@@ -63,9 +63,9 @@ const Rational r2(5, 2);
 r = r2; //assign 2
 ```
 
-All methods of a class have a `this` pointer, which refers to the calling context of the method. `operator=` typically returns a reference to the object being updated, and so we return `*this`, which dereferences the `this` pointer. Once again notice how `num` in the second overload is `const &`. It is `const` since there is no need to mutate it and we pass by reference to avoid extra copying (plus this is the idiomatic way of defining `operator=`). You may also notice the strange `->` operator. This is essentially the dot operator for pointers. 
+All methods of a class have a `this` pointer, which refers to the calling context of the method. This calling context is the implicit first argument of member methods. Therefore, `operator=` is a binary operator despite it's overload appearing to only have one argument. Moreover, `operator=` typically returns a reference to the object being updated, and so we return `*this`, which dereferences the `this` pointer. Once again notice how `num` in the second overload is `const &`. It is `const` since there is no need to mutate it and we pass by reference to avoid extra copying (plus this is the idiomatic way of defining `operator=`). You may also notice the strange `->` operator. This is essentially the dot operator for pointers. 
 
-Let's define basic arithmetic operations. There's two ways to define them: as a member method or a free function. I typically like to define binary operators as free functions because it's slightly more clear what the type of the left operand is (otherwise, the left operand is the implicit first argument `this`). Let's look at both ways:
+Let's define basic arithmetic operations. I typically like to define arithmetic operators as free functions because it's slightly more clear what the type of the left operand is (otherwise, the left operand is the implicit first argument `this`). Let's look at both ways:
 
 ```C++
     // ...
@@ -98,7 +98,7 @@ auto r2 = r + 10; // good
 r2 = 10 + r; // error
 ```
 
-It's not! Thats because, as defined, `operator+` expects its first argument to  be a `const Rational &`, but in the third line we pass an integer. Therefore, we'll need to define a free function which has `int` as the left-hand argument.
+It's not! Thats because, as defined, `operator+` expects its first argument to be a Rational object and member functions will not do implicit conversions on the implicit first argument. However, in the third line we pass an integer. Therefore, we'll need to define a free function which has `int` as the left-hand argument.
 
 ```C++
 Rational operator+(int a, const Rational & b) {/*...*/}
@@ -108,7 +108,7 @@ Rational operator+(const Rational & a, int b) {/*...*/}
 // equivalent to the operator+ we just defined as a member
 ```
 
-Or, we can just define one free function which takes `Rational`.
+Or, we can just define one free function which takes `Rational` since `int` can be implicitly converted to `Rational`.
 
 Let's also make `Rational` able to be printed to `cout`. For that we can overload `operator<<`, which as a left hand argument takes a reference to an `std::ostream` which is a super type of the class that `std::cout` is an instance of.
 

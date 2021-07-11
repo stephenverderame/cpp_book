@@ -25,6 +25,7 @@ Implicit conversions (either constructor or conversion operator) are not really 
 Rational r(10, 20);
 if (r == 'h') {
     // convert 'h' to an integer, then to a Rational
+    // or convert r to double and compare with integral value of 'h'
 }
 
 r = true; 
@@ -45,7 +46,7 @@ Rational r(10);
 const auto rd = static_cast<double>(r);
 ```
 
-`static_cast<T>(E)` is mostly safe and only permitted if there is a valid conversion from the type of `E` to `T`. Such a conversion may be implicit or explicit. `static_cast` cannot cast away qualifiers such as `const`. `static_cast` can perform upcasts (casting a Derived class reference to a base class reference) and downcasts (casting a base class reference to a derived class reference) provided the cast is unambiguous (no duplication due to diamond hierarchies and multiple inheritance) and non-virtual (no virtual inheritance). However `static_cast` performs no checks that the Base class's actual type is the Derived class we are casting to.
+`static_cast<T>(E)` is mostly safe and only permitted if there is a valid conversion from the type of `E` to `T`. Such a conversion may be implicit or explicit. `static_cast` cannot cast away qualifiers such as `const`. Moreover `static_cast` can perform upcasts (casting a Derived class reference to a base class reference) and downcasts (casting a base class reference to a derived class reference) provided the cast is unambiguous (no duplication due to diamond hierarchies and multiple inheritance) and non-virtual (no virtual inheritance). However `static_cast` performs no checks that the Base class's actual type is the Derived class during a downcast.
 
 ```C++
 const auto i = static_cast<int>(54.078);
@@ -68,7 +69,7 @@ auto b2 = static_cast<B&>(d);
 // upcast, safe
 ```
 
-For a safer way to downcast, C++ provides `dynamic_cast<T>(E)`. Like static casts `dynamic_cast` can perform upcasts and addding `const`. But where it differs greatly is during downcasts. `dynamic_cast` only works on polymorphic hierarchies (those which have at least one virtual function). If `T` is a pointer or reference to a type derived from the static type of `E`, and the dynamic type of `E` is `T` or a derived type of `T`, the cast succeeds. Otherwise the cast fails and throws `std::bad_cast` if used on references or returns `nullptr` if used on pointers. `dynamic_cast` works with virtual inheritance, unlike `static_cast` but costs an extra type check at runtime. Furthermore, the cast returns `nullptr` if `E` evaluates to `nullptr` and returns a pointer to the actual type of `E`.
+For a safer way to downcast, C++ provides `dynamic_cast<T>(E)`. Like static casts `dynamic_cast` can perform upcasts and adding `const`. But where it differs greatly is during downcasts. `dynamic_cast` only works on polymorphic hierarchies (those which have at least one virtual function). If `T` is a pointer or reference to a type derived from the static type of `E`, and the dynamic type of `E` is `T` or a derived type of `T`, the cast succeeds. Otherwise the cast fails and throws `std::bad_cast` if used on references or returns `nullptr` if used on pointers. `dynamic_cast` works with virtual inheritance, unlike `static_cast` but costs an extra type check at runtime. Furthermore, the cast returns `nullptr` if `E` evaluates to `nullptr` and returns a pointer to the actual type of `E`.
 
 ```C++
 class B { 
@@ -130,4 +131,4 @@ auto bytes = reinterpret_cast<std::byte*>(&dub);
 
 ```
 
-Finally, there is the C-style cast. This guy should be avoided because you will never know what type of cast is actually being performed. The C-style cast has the most power and can pretty much anything to anything else. An example problem: You want to use a conversion function but forgot to implement it. A C-style cast won't complain and will reinterpret the bytes which is **not** what was intended! A `static_cast` would fail to compile.
+Finally, there is the C-style cast. This guy should be avoided because you will never know what type of cast is actually being performed. The C-style cast has the most power and can pretty much convert anything to anything else. An example problem: You want to use a conversion function but forgot to implement it. A C-style cast won't complain and will reinterpret the bytes which is **not** what was intended! A `static_cast` would fail to compile.

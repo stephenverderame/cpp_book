@@ -58,7 +58,7 @@ r.setLength(10);
 r.getWidth();
 
 ```
-In this example, the interface of Rectangle doesn't match Square. If we wrote specs for Rectangle's `setLength` and `setWidth`, the likely specification "sets the Rectangle's length/width" clearly doesn't match the behavior of setting both the length and width! While a square *is a* rectangle by definition, it does not adhere to the interface. Based on this code snipped, we are inheriting from Rectangle for code reuse. A much better alternative would be to make `area()` and `perimeter()` free functions. In this simplistic case, we can make `Square` and `Rectangle` separate `structs` with their internals known.
+In this example, the interface of Rectangle doesn't match Square. If we wrote specs for Rectangle's `setLength` and `setWidth`, the likely specification "sets the Rectangle's length/width" clearly doesn't match the behavior of setting both the length and width! While a square *is a* rectangle by definition, it does not adhere to the interface. Based on this code snippet, we are inheriting from Rectangle for code reuse. A much better alternative would be to make `area()` and `perimeter()` free functions. In this simplistic case, we can make `Square` and `Rectangle` separate `structs` with their internals known.
 
 ```C++
 struct Square { 
@@ -90,7 +90,7 @@ int area(const Rectangle & r) {
 ```
 
 
-Now I'd like to distinguish between implementation and interface inheritance. Interface inheritance is when a class inherits from an interface (pure virtual functions) to implement it  and provide decoupling between interface and implementation(s). Implementation inheritance is inheritance in order to share code (square and rect example). We want to be wary of implementation inheritance. Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible. Here's an example of interface inheritance:
+Now I'd like to distinguish between implementation and interface inheritance. Interface inheritance is when a class inherits from an interface (pure virtual functions) to provide decoupling between interface and implementation(s). Implementation inheritance is inheritance in order to share code (square and rect example). We want to be wary of implementation inheritance. Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible. Here's an example of interface inheritance:
 
 ```C++
 class Port {
@@ -158,7 +158,7 @@ void logError(Port & port, const std::string & str) {
 
 All of these types are subtypes of `Port`. They can be used polymorphically and prevent users from depending on or knowing about any implementation. This is the hallmark of OOP and is known as *dependency inversion*, which we'll discuss later.
 
-With all that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. Private inheritance is same as public inheritance, but all public members of the base class become private members in the derived class. This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used private inheritance.
+With all that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. Private inheritance is the same as public inheritance, but all public members of the base class become private members in the derived class. This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used private inheritance.
 
 Private inheritance is not polymorphic. This intuitively makes sense since every part of the Base class's interface is private. If it were polymorphic, then you could break encapsulation by changing the static type of the Derived class to the Base class and call the Base class member functions.
 
@@ -222,7 +222,7 @@ struct A {
  class D : public B, public C {};
 ```
 
- It's good to know these features exist. But the best method for dealing with these problems is to not create them in the first place. Multiple inheritance should be used mainly for representing subtyping of multiple distinct interfaces.
+ It's good to know these features exist. But the best method for dealing with these problems is to not create them in the first place. Multiple inheritance should be used mainly for representing subtypes of multiple distinct interfaces.
 
  ## Final
 
@@ -258,8 +258,8 @@ public:
 
  ## Default Arguments
 
- Default arguments of methods are determined by the static type of the context object. To avoid problems, do not override the default arguments present in virtual functions of the base class.
-
+ Default arguments of methods are determined by the static type of the context object. To avoid problems, do not override the default arguments of virtual functions.
+ 
  ```C++
 class Logger {
 public:

@@ -1,0 +1,159 @@
+# Unique Pointers
+
+Unique pointers, and really anything else that's "unique" in C++ model exclusive ownership. They offer practically no space or time overhead as compared to raw pointers. Because they model exclusive ownership, they cannot be copied, only moved. Here's a really bad, quick, and dirty example of how something like this might be implemented.
+
+```C++
+template<typename T>
+class BadUniquePtr {
+    T * data;
+
+    void freeData() {
+        if (data) {
+            delete data;
+            data = nullptr;
+        }
+    }
+public:
+    BadUniquePtr(T * owningPtr) : data(owningPtr) {}
+    BadUniquePtr() : data(nullptr) {}
+
+    BadUniquePtr(const BadUniquePtr &) = delete;
+    BadUniquePtr& operator=(const BadUniquePtr &) = delete;
+
+    BadUniquePtr(BadUniquePtr && other) : BadUniquePtr() {
+        swap(data, other.data);
+    }
+
+    BadUniquePtr& operator=(BadUniquePtr && other) {
+       freeData();
+       swap(data, other.data);
+    }
+
+    ~BadUniquePtr() {
+        freeData();
+    }
+}
+```
+
+`std::unique_ptr` is a template, and so when you instantiate it with a type it replaces every template argument (`T` in `BadUniquePtr`) with whatever type you are instantiating it with.
+
+We can manually free the data early by using the `reset()` member function. If we need to, we can get access to the internal pointer with `get()` or `release()`. The latter returns the pointer and releases it from the `unique_ptr`s management. We can also swap the owning data between two `unique_ptr`s with the `swap()` **member function**.
+
+```C++
+auto unique = std::make_unique<double>(6.28);
+double* ptr = unique.get(); // the unique ptr is a class itself
+// to access the unique_ptrs members use the dot operator
+// to access the underlying data's members use ->
+
+//ptr is not an owning pointer
+
+auto u2 = std::make_unique<double>(3.14);
+unique.swap(u2);
+// Smart pointers must be pointers to the same type to swap
+
+double* owningPtr = u2.release();
+// u2 no longer manages the data
+
+unique.reset(); // free data and set to nullptr
+// which is the same as
+unique = nullptr;
+
+auto u3 = std::make_unique<double>(2.67);
+
+unique = u3; // error, cannot copy
+unique = owningPtr; // takes ownership of pointer
+
+
+// ---
+
+auto getPtr() {
+    return std::make_ptr<long long>(19474579);
+    // move (Pre C++17), good
+}
+
+auto u4 = getPtr(); // move ctor, good
+auto u5 = std::move(u4); // move ctor, good
+
+u4 = std::move(u5); // move assignment, good
+```
+
+Smart pointers can store arrays as well. They handle calling the correct delete too. A smart pointer wrapped around an array overloads `operator[]` to provide index access. While this is slightly better than unmanaged arrays, an `std::vector` would be better because the smart pointer still does not store the size of the array.
+
+A pointer of an array is a pointer to the first element in the array since arrays are stored contiguously in memory. A C string is a `char *` (or `const char *`) that is an array of characters with the last one being the null terminator ('\0' which is 0).
+
+```C++
+std::unique_ptr<char[]> string = std::make_unique<char[]>(100);
+// 100 length char array
+string[0] = 'h';
+string[1] = 'i';
+string[2] = '\0';
+*string; // 'h'
+// pointer is to the first element of the array
+
+const char * cStr = string.get();
+
+std::cout << cStr; // "hi"
+```
+
+# Deleters
+
+This is all well and good if we want to use C++'s `delete` or `delete[]`. But what if we have a custom allocator or want to use C style allocation. Well luckily, smart pointers abstract away how they delete the data and delegate that responsibility to a deleter. The default deleter uses `delete` or `delete[]` depending on the type it wraps (`delete` for `T`, `delete[]` for `T[]`). The actual definition of `std::unique_ptr` is
+
+```C++
+template<typename T, typename Deleter = std::default_delete<T>>
+class unique_ptr // ..
+```
+
+In reality there is a second template argument! This type should be a callable object that overloads the function call operator (`operator()`) and is passed a pointer to the underlying data. With a custom deleter, we cannot use `std::make_unique` because this function abstracts away the usage of the default deleter's matching allocation functions. Thus we must use the `unique_ptr` constructor, passing a pointer as the first argument and an instance of the deleter type as the second.
+
+```C++
+struct Foo {
+    int num;
+
+    Foo() : num(0) {}
+}
+
+struct FooDeleter {
+    void operator()(Foo * ptr) {
+        free(ptr);
+    }
+}
+
+Foo * makeFoo() {
+    const auto mem = malloc(sizeof(Foo));
+    return 
+        new (mem) Foo(); // placement new, calls constructor and constructs object
+        // in already allocated memory
+        // once again, more on this later
+
+}
+
+std::unique_ptr<Foo, FooDeleter> fooPtr(makeFoo(), FooDeleter());
+// use fooPtr like normal
+
+fooPtr->num = 100;
+```
+
+Now that seems like a bit of boilerplate just to call free. Well, we'll explain the following soon enough, but here's some other ways of doing the same thing:
+
+```C++
+
+std::unique_ptr<Foo, std::function<void(Foo*)>> fp2(makeFoo(), [](Foo * ptr) {
+    free(ptr);
+});
+
+// Use a lambda as the callable object
+// passes a Foo* and returns void
+
+std::unique_ptr<Foo, void(*)(void*)> fp3(makeFoo(), &free);
+// function pointer is the deleter, pass free directly
+// pointer to a function that takes a void* and returns void
+
+std::unique_ptr<Foo, decltype(&free)> fp4(makeFoo(), &free); 
+// same as fp3, just slightly easier since function pointer syntax is a pain
+
+std::unique_ptr<Foo, std::function<void(void*)>> fp5(makeFoo(), &free);
+// same as fp3 and fp4 but instead use a generalized function as the type
+```
+
+By the way, deleters work the same for `shared_ptr` too

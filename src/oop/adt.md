@@ -2,7 +2,7 @@
 
 What we saw last chapter was a *concrete* class. Concrete types have their representation part of their definition. Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes to implement. Abstract types must be used via pointers or references, while concrete types can be used directly. Concrete types can be placed on the stack and also be members of other classes much more simply than abstract types.
 
-In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enabled dynamic dispatch for that function and allows subclasses to override it.
+In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enables dynamic dispatch for that function and allows subclasses to override it.
 
 An abstract type contains at least one *pure virtual* functions, which is a function that subclasses **must** override because the superclass does not implement it. The Java equivalent of an `interface` would be a class that contains only pure virtual functions.
 
@@ -28,7 +28,7 @@ c.walk(); // 10
 Person p; //error
 ```
 
-When overriding a function, it's good practice to explicitly denote it as such with `override`. This prevents you from accidentally creating a new function or *shadowing* the super class's functions. You cannot overload superclass functions. Creating a function with the same name as a superclass's function in a subclass shadows that function and prevents it from being called.
+When overriding a function, it's good practice to explicitly denote it as such with `override`. This prevents you from accidentally creating a new function and *shadowing* the super class's functions. Since you cannot overload superclass functions, creating a function with the same name as a superclass's function in a subclass shadows that function and prevents it from being called.
 
 ```C++
 class Machine {
@@ -50,7 +50,7 @@ Inheritance enables us to use polymorphism and let subclasses behave like their 
 
 Constructors on the other hand, cannot be virtual. This is because construction requires complete type information; the static type is the type being constructed. Furthermore, the class doesn't exist as an object at runtime so you can't call a virtual method on it. This is in-line with the pay for what you use philosophy.
 
-As an addendum, you should not call virtual functions in constructors or destructors. This is because the actual type of the object changes during these two operations and the type is always the type being created/destroyed and never a subclass. It is technically safe so long as the virtual function being called is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
+As an addendum, you should not call virtual functions in constructors or destructors. This is because the actual type of the object changes during these two operations and the type is always the type being created/destroyed and never a subclass. During construction of a derived class, we first start by constructing the base class and running the base class constructor. In this constructor, the type of the object is the base class type and not yet the derived class type. Then we build off the base and construct the derived class and call the derived class constructor. During this second constructor call, the type changes to be that of the derived type. For destruction, the process is similar but in reverse, destroying the derived object before destroying the base. So calling virtual functions in constructors/destructors is technically safe so long as the virtual function being called is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
 
 ```C++
 class Vehicle {

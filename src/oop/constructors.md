@@ -94,3 +94,30 @@ public:
 ```
 
 Pre C++11, you'd imitate this effect by defining functions you didn't want as private. Don't do that, but if you come across legacy code that uses that pattern you should know what it's doing.
+
+## Move Basics
+
+Now I talk about this move constructor. But what is moving exactly? Well, instead of performing a copy, we move the internals from one object to another, leaving behind an empty shell of an object to be destroyed. When the old object is destroyed, nothing happens because all of the object's internal state has been moved out and into a new object.
+
+The double ampersand is an *rvalue reference*, and basically it is a reference to temporary values. For example, the return value of a function is moved (well, sometimes, more on this later) into a temporary value and that temporary is returned. The temporary gets destroyed at the end of the statement that called the function. We can also manually move non-temporaries with the `std::move` function. However, once a value has been moved, you **must not** use it again since all of its state has been put into a different object.
+
+Now frankly, I've told you a flat out lie. But we'll discuss this in way more detail later.
+
+```C++
+std::string getString() {
+    return "Hello";
+}
+
+std::string greet(std::string && name) {
+    return "Hello " + name;
+}
+
+std::string myStr = getString(); // move constructor
+std::string myStr2 = std::move(myStr); // move constructor again
+const auto myStr3 = myStr2; // copy constructor
+
+std::string myName = "Jacob";
+auto greeting = greet(std::move(myName));
+    // move ctor for name in the greet() function
+    // move ctor for greeting
+```
