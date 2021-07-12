@@ -195,9 +195,7 @@ public:
 
 Now I mention that copy operations can delete data we are still using. How? Well suppose we copied `Texture` by copying `tex`. `tex` is just a handle to memory allocated in VRAM, so we're copying the handle but not the actual data. But now we have two instances of classes that claim to own the data and will delete it when they are destroyed. This isn't good! The second destructor to get called will delete invalid data! If we wanted, we could override the copy operations to perform deep copies, but for simplicity, it's easier to just prevent those operations from occurring.
 
-You may be wondering: "If the program is going to terminate anyway, must we be so careful with releasing resources?". In today's day and age, no, probably not. The OS should be able to cleanup any resources that a program doesn't when it terminates. But that's only if it terminates. What if we decide to catch texture loading errors and then try again with a lower resolution image? Perhaps whatever image we are trying to load is nonessential, so if it fails to load we just ignore it. This might not be something we are currently doing at the time of writing the code, but maybe months or years down the line that might change.
-
-We could also make `Texture` moveable.
+However we could easily make `Texture` moveable.
 
 ```C++
     Texture(Texture && other) {
@@ -217,3 +215,11 @@ We could also make `Texture` moveable.
         other.tex = GL_INVALID;
     }
 ```
+
+You may be wondering: "If the program is going to terminate anyway, must we be so careful with releasing resources?". In today's day and age, no, probably not. The OS should be able to cleanup any resources that a program doesn't when it terminates. But that's only *when* it terminates. What if we decide to catch texture loading errors and then try again with a lower resolution image? Perhaps whatever image we are trying to load is nonessential, so if it fails to load we just ignore it. This might not be something we are currently doing at the time of writing the code, but maybe months or years down the line that might change.
+
+### Possible Exercises
+
+1. Try writing a RAII class that prints to standard out during constructions and destruction. Ensure that proper resource deletion occurs when exceptions are thrown.
+2. Can you make the previous RAII class work with copying?
+

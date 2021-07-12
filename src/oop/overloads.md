@@ -260,16 +260,16 @@ In C++20, we can let the compiler generate all those comparison functions for us
 
 ---
 
-## Possible Exercises
+### Possible Exercises
 
-Create a Vec3d class (or whatever you'd like to call it) which stores 3 doubles and represents a 3D vector in the Cartesian plane. It should support the following operations:
-* `operator+` and `operator-` (for vectors and scalars)
-* `operator*` and `operator/` for scalars
-* `operator*` for vectors which will be the dot product
-* `operator<<` and `operator>>`
-* `operator+=`, `operator-=` for vectors and scalars
-* `operator[]` where index 0 gets the `x` value, index 1 `y`, and 2 `z`.
-    * Out of bounds is undefined behavior and you can do (or not do) whatever you see fit
-* It's data may or may not be encapsulated
-* Separate the interface and implementation into a header and code file
-    * Can you do this without any include directives in the header file?
+1. Create a Vec3d class (or whatever you'd like to call it) which stores 3 doubles and represents a 3D vector in the Cartesian plane. It should support the following operations:
+    * `operator+` and `operator-` (for vectors and scalars)
+    * `operator*` and `operator/` for scalars
+    * `operator*` for vectors which will be the dot product
+    * `operator<<` and `operator>>`
+    * `operator+=`, `operator-=` for vectors and scalars
+    * `operator[]` where index 0 gets the `x` value, index 1 `y`, and 2 `z`.
+        * Out of bounds is undefined behavior and you can do (or not do) whatever you see fit
+    * It's data may or may not be encapsulated
+    * Separate the interface and implementation into a header and code file
+        * Can you do this without any include directives in the header file?

@@ -130,23 +130,23 @@ Swap is often implemented either as a nonmember friend function, a member functi
 
 Now notice the use of `using std::swap` in our swap function. The point of this is to take advantage of ADL. As a reminder, ADL states that if a specific namespace qualification isn't specified for a function, it will first look in the namesapce of the arguments of that function. Thus the purpose of `using std::swap` is to provide a fallback on the standard's default implementation if a type does not define a swap function. Therefore, unlike most cases where it is good practice to qualify standard library functions with `std::`, it's better to leave swap unqualified and manually bring in `std::swap` into the smallest scope possible as shown above.
 
-## Possible Exercise
+### Possible Exercises
 
-A RingBuffer is a fixed size buffer that loops around on itself. If you append an element past the end of the buffer, that element overwrites the first element in the buffer. Can you make a RingBuffer that stores `int` using `new[]` and `delete[]`? The class should
+1. A RingBuffer is a fixed size buffer that loops around on itself. If you append an element past the end of the buffer, that element overwrites the first element in the buffer. Can you make a RingBuffer that stores `int` using `new[]` and `delete[]`? The class should
+    * Have a constructor taking the size of the RingBuffer to make
+    * Be copyable (strong) and moveable (noexcept)
+    * Overload `operator[]` to be read only indexable (strong)
+        * If an out of bounds index is passed, take the modulo of that index and return the element at that location
+            * Throw an error if that location has yet to be set
+        * Note: taking the modulo of a negative number in C++ and many programming languages results in a negative number
+    * Have a `push_back` function that will overwrite previous elements as earlier described (strong)
+    * Have a `pop_back` function which returns the last element and removes it (strong)
+        * Copying primitive types cannot fail
+    * Define `size()` which gets how many valid elements are in the buffer (noexcept)
+    * Have a `noexcept` nonmember swap
+    * You can augment this interface in any other way you'd like
 
-* Have a constructor taking the size of the RingBuffer to make
-* Be copyable (strong) and moveable (noexcept)
-* Overload `operator[]` to be read only indexable (strong)
-    * If an out of bounds index is passed, take the modulo of that index and return the element at that location
-        * Throw an error if that location has yet to be set
-    * Note: taking the modulo of a negative number in C++ and many programming languages results in a negative number
-* Have a `push_back` function that will overwrite previous elements as earlier described (strong)
-* Have a `pop_back` function which returns the last element and removes it (strong)
-    * Copying primitive types cannot fail
-* Define `size()` which gets how many valid elements are in the buffer (noexcept)
-* You can augment this interface in any other way you'd like
-
-```C++
-int * buffer = new int[size];
-delete[] buffer;
-```
+    ```C++
+    int * buffer = new int[size];
+    delete[] buffer;
+    ```

@@ -153,5 +153,7 @@ Similarly, derived objects can take arguments that are supertypes of the defined
     void fix(const Vehicle & v) override {/* .. */}
 ```
 
+### Possible Exercises
 
+1. Create a `Logger` interface and at least two concrete subtypes. One for logging to the console and one for logging to a file. (`std::fstream` may help out). Also create a `LogLevel` enum that allows differentiating the severity of the message between at least 3 severity levels. The `LogLevel` should change the display of the log in their respective medium. Perhaps for the console logger you can change the color with ANSI escape codes and for the file logger use textual features such as capitals or markdown symbols like underscores and asterisks. The interface should have at least 1 function, which could take a string message and log level. Try using the `Logger` polymorphically.
 

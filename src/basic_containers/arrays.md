@@ -55,6 +55,8 @@ twoDArray.empty(); // false
 
 Why are arrays so limiting? Well the compiler does not dynamically allocate arrays like Java. The memory is allocated on the stack like other variables with automatic lifetimes, which is much more efficient then dynamic allocations. Obviously, there are times when dynamic allocation is necessary and for those times we have the `std::vector`.
 
+## C Array
+
 But first I want to take some time to look at the C array. The C array is a more primitive version of the C++ STL array. Like its STL counterpart, the size must be known at compile time. However the STL array is a class, which has member functions such as `size()` while the C array does not. Instead, we can use the `sizeof()` operator to get the size of the array **in bytes**.
 
 ```C++
@@ -66,4 +68,47 @@ sizeof(vertices) / sizeof(float); //27
 vertices[0] = 0.1f;
 
 int classes[3] = {2112, 3110, 4280};
+```
+
+`sizeof()` can get us the size of a variable or type, and the compiler does this by looking at the declaration of the variable and seeing how much space that variable takes up. It should be noted that `sizeof()` includes padding, so the `sizeof()` a struct or class may be greater than the `sizeof()` all the members because the compiler may add padding to align the data making it more efficient to use.
+
+C arrays have another problem: they are implicitly convertible to a pointer to the first element of the array and will *decay* into a pointer when it is passed by value. When an array decays into a pointer, the compiler loses the dimensionality information of the array and instead of returning the size of the array, `sizeof()` will return the size of the pointer.
+
+```C++
+
+int nums[3] = {0, 0, 0};
+
+sizeof(nums); // (4 or 8) * 3
+
+
+void useArray(int nums[] /* same as: int * nums */) {
+    std::cout << sizeof(nums); // sizeof(int *) (typically 4 or 8)
+}
+
+useArray(nums);
+```
+
+Passing an array by value (`int nums[]`) is actually the same as passing a pointer by value `int * nums`. However like function pointers, since you didn't manually allocate this pointer you should not manually free it. We can solve this by using modern arrays, or by passing an array by pointer or by reference.
+
+
+```C++
+
+// pass by const reference to array of size 3
+void useArrayRef(const int (& myArray)[3]) {
+    std::cout << sizeof(myArray) / sizeof(int);
+}
+
+// pass by const ptr to array of size 3
+void useArrayPtr(const int (* myArray)[3]) {
+    std::cout << sizeof(*myArray) / sizeof(int);
+}
+
+int nums[3];
+nums[0] = 1;
+nums[2] =  10;
+
+sizeof(nums) / sizeof(int); // 3
+
+useArrayRef(nums); // 3
+useArrayPtr(&nums); // 3
 ```

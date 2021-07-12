@@ -37,7 +37,7 @@ public:
 
 `std::unique_ptr` is a template, and so when you instantiate it with a type it replaces every template argument (`T` in `BadUniquePtr`) with whatever type you are instantiating it with.
 
-We can manually free the data early by using the `reset()` member function. If we need to, we can get access to the internal pointer with `get()` or `release()`. The latter returns the pointer and releases it from the `unique_ptr`s management. We can also swap the owning data between two `unique_ptr`s with the `swap()` **member function**.
+We can manually free the data early by using the `reset()` member function. Or we can swap the internal pointer with a different one by passing another pointer as an argument to `reset()`. If we need to, we can get access to the internal pointer with `get()` or `release()`. The latter returns the pointer and releases it from the `unique_ptr`s management. We can also swap the owning data between two `unique_ptr`s with the `swap()` **member function**.
 
 ```C++
 auto unique = std::make_unique<double>(6.28);
@@ -62,6 +62,8 @@ auto u3 = std::make_unique<double>(2.67);
 
 unique = u3; // error, cannot copy
 unique = owningPtr; // takes ownership of pointer
+
+unique.reset(new double(-1.12)); // free data and take ownership of new raw ptr
 
 
 // ---
@@ -115,6 +117,7 @@ struct Foo {
 
 struct FooDeleter {
     void operator()(Foo * ptr) {
+        ptr->~Foo();
         free(ptr);
     }
 }
@@ -134,26 +137,54 @@ std::unique_ptr<Foo, FooDeleter> fooPtr(makeFoo(), FooDeleter());
 fooPtr->num = 100;
 ```
 
-Now that seems like a bit of boilerplate just to call free. Well, we'll explain the following soon enough, but here's some other ways of doing the same thing:
+Now that seems like a bit of boilerplate just for two function calls. Well, we'll explain the following soon enough, but here's some other ways of doing the same thing:
 
 ```C++
 
+void freeFoo(Foo * ptr) {
+    ptr->~Foo();
+    free(ptr);
+}
+
 std::unique_ptr<Foo, std::function<void(Foo*)>> fp2(makeFoo(), [](Foo * ptr) {
+    ptr->~Foo();
     free(ptr);
 });
 
 // Use a lambda as the callable object
 // passes a Foo* and returns void
 
-std::unique_ptr<Foo, void(*)(void*)> fp3(makeFoo(), &free);
+std::unique_ptr<Foo, void(*)(Foo*)> fp3(makeFoo(), &freeFoo);
 // function pointer is the deleter, pass free directly
 // pointer to a function that takes a void* and returns void
 
-std::unique_ptr<Foo, decltype(&free)> fp4(makeFoo(), &free); 
+std::unique_ptr<Foo, decltype(&freeFoo)> fp4(makeFoo(), &freeFoo); 
 // same as fp3, just slightly easier since function pointer syntax is a pain
 
-std::unique_ptr<Foo, std::function<void(void*)>> fp5(makeFoo(), &free);
+std::unique_ptr<Foo, std::function<void(Foo*)>> fp5(makeFoo(), &freeFoo);
 // same as fp3 and fp4 but instead use a generalized function as the type
+```
+
+Here's another example of a custom deleter that adds some housekeeping to the standard C++ allocation.
+
+```C++
+// There's a few issues with this, but this is mainly to demonstrate deleters
+/// Invariant: contains pointers to active allocations or nullptr to indicate freed memory
+std::vector<Bar*> allocations;
+
+auto makeBar() { // strong
+    allocations.push_back(nullptr); //may reallocate and move entire vector (more on this later), strong
+    auto ptr = new Bar();
+    const auto idx = allocations.size() - 1; // no throw
+    allocations[idx] = ptr; //copying pointer cannot throw
+    const auto deleter = [idx, &allocations](Bar * del) {
+        delete del;
+        allocations[idx] = nullptr;
+    }; // noexcept (construction of lambda and deleter itself)
+    return std::unique_ptr<Bar, std::function<void(Bar*)>>(ptr, deleter); //noexcept
+}
+
+auto barPtr = makeBar();
 ```
 
 By the way, deleters work the same for `shared_ptr` too
