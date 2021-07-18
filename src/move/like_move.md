@@ -1,9 +1,9 @@
 # More on Move
 
-I mentioned this earlier, but `std::move` doesn't move anything. Instead, it `casts` whatever you pass to it to an `rvalue`. Since an rvalue indicates giving up ownership, I manual `std::move()` says "hey, I'm done with this and you can do whatever you want with it". Therefore, you should **never** use a value after you have manually moved it. 
+I mentioned this earlier, but `std::move` doesn't move anything. Instead, it *casts* whatever you pass it to an `rvalue`. Since an rvalue indicates giving up ownership, a manual `std::move()` says "hey, I'm done with this and you can do whatever you want with it". Therefore, you shouldn't use a value after you have manually moved it. 
 
 As I mentioned, the idea of moving is to swap the internals. For example, with `std::vector` that ends up copying the internal pointer and size from one vector to the other and invalidating both values in the original object. The original vector would then just be an empty shell waiting to be destroyed.
-Here's a rough example in our Socket RAII class.
+Here's another rough example from our Socket RAII class.
 
 ```C++
 class Socket {

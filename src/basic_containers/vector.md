@@ -16,7 +16,7 @@ Removing or inserting elements in the middle or beginning of the vector, on the 
 
 As with `std::string`, you cannot index an element that is off the back of the vector (index `>= size()`) but still in the allocated area of memory (index `< capacity()`) because that memory is not necessarily initialized.
 
-`std::vector<bool>` differs greatly from `std::vector` because it does not adhere to the interface exactly. For space optimization reasons, an `std::vector<bool>` is basically a dynamic bitset, which each element taking up one bit. Functions like `operator[]` and `at()` do not return references to elements anymore, because you cannot take the address of a bit. Instead they return proxy objects for manipulating the bit at the specified index. 
+`std::vector<bool>` differs greatly from `std::vector` because it does not adhere to the interface exactly. For space optimization reasons, an `std::vector<bool>` is basically a dynamic bitset, with each element taking up one bit. Functions like `operator[]` and `at()` do not return references to elements anymore, because you cannot take the address of a bit. Instead they return proxy objects for manipulating the bit at the specified index. 
 
 ```C++
 // Most containers:
@@ -111,7 +111,7 @@ The comparator for `std::priority_queue` is it's third template argument. The pr
 
 ### `std::initializer_list`
 
-This one isn't technically part of the containers either. The purpose is to allow you to pass an arbitrary amount of the same type arguments to a constructor or function. The initializer list can be set, and iterated and that's about it. 
+This one isn't technically part of the containers either. The purpose is to allow you to pass an arbitrary amount of the same type arguments to a constructor or function. The initializer list can be set and iterated, and that's about it. 
 
 ```C++
 auto sum(std::initalizer_list<int> list) {
