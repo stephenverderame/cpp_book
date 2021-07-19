@@ -203,7 +203,7 @@ Think of `std::void_t<... Ts>` as "try to instantiate" the following types. In a
 
 Now what if for some type `T`, it doesn't have the function `onThreadDestroy`? Well, we get a specialization failure, and by the name of SFINAE this does not halt compilation, rather it just goes on to the next possible instantiation which is the struct that inherits from `false_type`. This is why our primary definition needed that second parameter. We need a parameter to put the `std::void_t` to see if we can resolve a correct type. If we can't, because this second parameter is defaulted, the compiler will then choose the less restricting primary definition of the struct. It won't choose this first, because our users will only supply one type parameter and a specialization taking one parameter will be chosen over one in which it takes a second, but the second is defaulted.
 
-Let's create a struct to check if a type implements an iterable concept. We'll check that a type has a `begin()` and `end()` functions and that whatever returned from those functions is incrementable, dereferenceable, and comparable with `==` and `!=`. As we'll soon see, there's a better way to check for this and these requirements don't even cover all our bases.
+Let's create a struct to check if a type implements an iterable concept. We'll check that a type has `begin()` and `end()` member functions and that whatever returned from those functions is incrementable, dereferenceable, and comparable with `==` and `!=`. As we'll soon see, there's a better way to check for this and these requirements don't even cover all our bases.
 
 ```C++
 template<typename T, typename = void>
@@ -311,6 +311,54 @@ static constexpr auto convertToByteArray(const std::initializer_list<T>& numArra
 This will only compile if `T` is aN int or vector/array like type. `is_int_or_vector` is a custom struct defined using SFINAE similar to my earlier example.
 
 If C++ 20 is available to you, use C++ 20 concepts and `requires` clauses.
+
+Let's recap:
+* `decltype` - gets the type of whatever expression is passed to it. Like `sizeof`, the expression passed is not actually evaluated but simply used for the compiler to figure out the type of said expression.
+* `std::declval<T>` - creates a "proto" `T` object that can be used in unevaluated contexts like `decltype`. Allows us to "call" member functions or functions taking a `T` in such unevaluated contexts. `T` need not be default constructable. If you needed `T` to be default constructable as well, you could use `T()`, however this would always return a prvalue.
+* `std::void_t<T, ...>` - if all the types passed as template arguments are valid, substitutes the entire expression with `void`. Otherwise it fails to instantiate causing whatever template specialization it's used in to also fail to instantiate.
+* `std::enable_if_t<Condition, Type>` - if `Condition` is true, substitutes the entire expression for `Type`. Otherwise, it fails to instantiate causing whatever function it's used in to also fail to instantiate.
+
+Let's look at one final example from our `sum` function we motivated this section with. This will build on the `IsIterable` example:
+
+```C++
+/*
+Original Function:
+
+    template<typename T, typename U>
+    U sum(const T& container, U initialValue) {
+        for(auto e : container) {
+            initialValue += e;
+        }
+        return initialValue;
+    }
+*/
+
+template<typename T, typename U, typename = void>
+struct IsSummable : std::false_type {};
+
+template<typename T, typename U>
+struct IsSummable<T, U, std::void_t<
+    decltype(std::declval<T&>() += std::declval<U>()),
+    decltype(std::declval<U&>() += std::declval<T>()),
+    decltype(std::declval<T>() + std::declval<U>()),
+    decltype(std::declval<U>() + std::declval<T>()),
+>> : std::true_type {};
+
+template<typename Container, typename Acc>
+constexpr inline auto is_vector_summable_v = is_iterable_v<Container> &&
+    IsSummable<decltype(*std::declval<iter_t<Container>>()), Acc>::value;
+
+
+template<typename T, typename U>
+auto sum(const T& container, U initialValue) 
+    -> std::enable_if_t<is_vector_summable_v<T, U>, U> 
+{
+    for(auto e : container) {
+        initialValue += e;
+    }
+    return initialValue;
+}
+```
 
 ### Possible Exercises
 
