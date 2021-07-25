@@ -256,6 +256,10 @@ public:
             n = &n->get()->next;
             auto lk2 = n->get()->lock();
             swap(lk1, lk2);
+            // policy doesn't dictate what type is returned from lock
+            // might be an STL lock, might be something user defined
+            // thus we don't want to hardcode std::swap bc the user
+            // might provide their own
         }
 
         return false;
