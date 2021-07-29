@@ -122,7 +122,7 @@ int main(int argc, char ** argv) {
 
 On Linux, you can execute tests with the command `make test`, or execute `ctest` in the build directory of the project.
 
-In GTest, we can create a new test with the `TEST()` macro which takes as its first parameter the name of the suite and as a second parameter the name of the test. Both names must be valid C++ identifiers however they also must not contain underscores. Although we declare no variables `SuiteName` and `testName`, this still works because the macro stringifies whatever you type. Thus, the literal text entered for the suite name and test name becomes the actual name. So these arguments are not strings. Internally, this macro creates a class that uses `SuiteName` and `testName` for its name. Within a test, we can use gtest assertions or expectations to ensure behavior is as we expect. If an assertion fails, the test fails and exits immediately. If an expectation fails, the test fails but continues to run. Both assertions and expectations are named the same except expectations use `EXPECT_` while assertions are named `ASSERT_`.
+In GTest, we can create a new test with the `TEST()` macro which takes as its first parameter the name of the suite and as a second parameter the name of the test. Both names must be valid C++ identifiers however they also must not contain underscores. Although we declare no variables `SuiteName` and `testName`, this still works because the macro stringifies whatever you type. Thus, the literal text entered for the suite name and test name becomes the actual name. So these arguments are not strings. Internally, this macro creates a class that uses `SuiteName` and `testName` for its name. Prepending either the suite or test name with "DISABLED_" will disable the test. Within a test, we can use gtest assertions or expectations to ensure behavior is as we expect. If an assertion fails, the test fails and exits immediately. If an expectation fails, the test fails but continues to run. Both assertions and expectations are named the same except expectations use `EXPECT_` while assertions are named `ASSERT_`.
 
 It's generally good practice to minimize the amount of assertions per test (some developes advocate for one assertion per test). This makes it very easy to find what failed when you see that a test failed.
 
@@ -423,4 +423,19 @@ ASSERT_THAT(ptrToVec, Pointee(SizeIs(Gt(10))));
 // ptrToVec->size() > 10
 ```
 
-We can also create our own matchers.
+You might also find matchers useful as predicates for STL functions. This can be done using the `Matches()` function:
+
+```C++
+std::vector v = {10, 20, 30, 450};
+auto it = std::find(v.begin(), v.end(), Matches(AllOf(Gt(10), Lt(100))));
+```
+
+Likewise, you might find that you want to use a predicate as a matcher. This can be done by wrapping the predicate inside the `Truly()` function.
+
+```C++
+const auto isOdd = [](int a) { return a % 2; };
+// predicate just needs to return something implicitly convertible to bool
+
+ASSERT_THAT(num, Not(Truly(isOdd)));
+// assert num is even
+```

@@ -133,6 +133,7 @@ auto bytes = reinterpret_cast<std::byte*>(&dub);
 
 Finally, there is the C-style cast. This guy should be avoided because you will never know what type of cast is actually being performed. The C-style cast has the most power and can pretty much convert anything to anything else. An example problem: You want to use a conversion function but forgot to implement it. A C-style cast won't complain and will reinterpret the bytes which is **not** what was intended! A `static_cast` would fail to compile.
 
+
 ### Possible Exercises
 
 1. Add explicit conversions to/from `std::vector` for the `Vec3D` class exercise.

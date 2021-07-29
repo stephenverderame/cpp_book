@@ -56,7 +56,6 @@
 - [Testing and Debugging](./testing/intro.md)
     - [GTest](./testing/gtest.md)
     - [GMock](./testing/gmock.md)
-    - [GDB]()
-    - [GProf]()
+    - [GDB and GProf](./testing/gdb.md)
     - [Static Analysis]()
 - [CMake]()

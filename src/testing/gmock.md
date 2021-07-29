@@ -9,7 +9,7 @@ target_link_libraries(Test PRIVATE GTest::gtest_main PRIVATE GTest::gmock)
 
 Then in our test file we can include `<gmock/gmock.h>`.
 
-We can mock methods of a class (we cannot mock free functions) with the `MOCK_METHOD` macro which takes the method return type, name, arguments surrounded by parenthesis, and also optionally and qualifiers surrounded by parenthesis such as `const`, `noexcept`, `override`, or ref qualifiers. Mock methods must always be public.
+We can mock methods of a class (we cannot mock free functions) with the `MOCK_METHOD` macro which takes the method return type, name, arguments surrounded by parenthesis, and also optionally and qualifiers surrounded by parenthesis such as `const`, `noexcept`, and `override`. Ref qualifiers and calling convention can also be specified in this parameter by surrounding the qualifier in `ref()` and `Calltype()`, respectively. Mock methods must always be public.
 
 ```C++
 class MyMock {
@@ -86,13 +86,14 @@ TEST(MockTest, testActions) {
     MyMock mock;
     EXPECT_CALL(mock, mult(_, AnyOf(Eq(10), Gt(100))))
         .WillRepeatedly(Invoke([](auto a, auto b) { return a * b; }));
+        // we don't actually need to wrap the callable object in Invoke()
 
     const std::initializer_list<std::string> names = { "Molly", "Andrew", "Jimmy", "Julia", "Kathy", "Roger" };
     EXPECT_CALL(mock, getName())
         .WillRepeatedly(ReturnRoundRobin<std::string>(names));
 
     int prevAge = 0;
-    EXPECT_CALL(mock, setAge(Gt<int&>(prevAge))) // specify that prevAge is passed by reference
+    EXPECT_CALL(mock, setAge(Gt<int&>(prevAge))) // specify that prevAge is passed by reference, could also pass std::ref(prevAge)
         .WillRepeatedly(SaveArg<0>(&prevAge));
 
 
@@ -106,5 +107,128 @@ TEST(MockTest, testActions) {
 }
 ```
 
-## Cardinalities
+## Cardinalities and Sequences
 
+Without `WillOnce` or `WillRepeatedly`, the test will fail if the called function is called more than once. This is because, by default, the expectation has a cardinality (amount of times the function can be executed) of `1`. We can change this behavior by the `Times()` member function and passing it a cardinality such as:
+
+* `AnyNumber()`
+* `AtLeast(n)`
+* `AtMost(n)`
+* `Between(n, m)`
+* `Exactly(n)` or just a number `n` directly
+
+By default, each usage of `WillOnce` increments the expected call count by `1` (starting from `0`), and the presence of `WillRepeatedly` allows the function to be called any number of times.
+
+```C++
+TEST(MockTest, testCardinalities) {
+    MyMock mock;
+    EXPECT_CALL(mock, mult(_, _))
+        .Times(2);
+
+    EXPECT_CALL(mock, getName())
+        .Times(Between(1, 10));
+
+     mock.getName();
+
+    mock.mult(1, 1);
+    mock.mult(0, 0);
+
+   
+}
+```
+
+If you want to enforce that calls occur in a certain order (say that `mult` must be called before `getName`), we can use an `InSequence` RAII object to enforce that functions are called in the order the `EXPECT_CALLS` are used. All invocations of the gmock macros that occur while an `InSequence` object is alive synchronizes the order of function calls
+
+```C++
+TEST(MockTest, testCardinalities) {
+    MyMock mock;
+    {
+        InSequence seq;
+
+        EXPECT_CALL(mock, mult(_, _))
+            .Times(2);
+
+        EXPECT_CALL(mock, getName())
+            .Times(Between(1, 10));
+    }
+
+    EXPECT_CALL(mock, setAge(_))
+        .Times(AnyNumber());
+
+    mock.setAge(10); 
+    // set age not synchronized in block with InSequence object
+    // can occur in any order
+  
+    mock.mult(1, 1);
+    mock.mult(0, 0);
+    // enforces that calls to mult must occur before calls
+    // to getName
+
+    mock.setAge(20);
+
+    mock.getName();
+ 
+}
+```
+
+For more flexible sequences, gmock provides the `InSequence()` and `After()` functions. This works by constructing a DAG and enforcing the functions are called in topological order. We can use the `InSequence()` function and pass in `InSequence` objects to make that mock part of the specified sequences. Mocks in the same sequence must be called in the order they are defined. 
+
+```C++
+using ::testing::Sequence;
+...
+    Sequence s1, s2;
+
+    EXPECT_CALL(foo, A()) 
+        .InSequence(s1, s2);
+    // foo(A()) is in sequence s1 and s2
+    EXPECT_CALL(bar, B()) 
+        .InSequence(s1);
+    // bar(B()) in sequence s1, must occur after foo(A())
+    EXPECT_CALL(bar, C())
+        .InSequence(s2);
+    // bar(C()) in sequence s2, must occur after foo(A())
+    EXPECT_CALL(foo, D())
+        .InSequence(s2);
+    // foo(D()) in sequence s2, must occur after foo(D())
+```
+
+This creates the following DAG:
+
+```
+       +---> B
+       |
+  A ---|
+       |
+        +---> C ---> D
+```
+
+Above example taken from [gmock reference](https://github.com/google/googletest/blob/master/docs/gmock_cook_book.md)
+
+If you don't want to set any expectations about a function being called, you can use the `ON_CALL` macro instead of `EXPECT_CALL`. It works exactly the same expect `ON_CALL` simply defines the action a function takes without adding test expectations. `ON_CALL` should be preferred whenever you don't want to enforce call expectations (such as the number of times a function is called).
+
+## Misc
+
+We can use `ON_CALL` and `WillByDefault` to specify different actions for when different parameters to a function are used.
+
+```C++
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Gt;
+using ::testing::Return;
+...
+  ON_CALL(foo, Sign(_))
+      .WillByDefault(Return(-1));
+  ON_CALL(foo, Sign(0))
+      .WillByDefault(Return(0));
+  ON_CALL(foo, Sign(Gt(0)))
+      .WillByDefault(Return(1));
+
+  EXPECT_CALL(foo, Sign(_))
+      .Times(AnyNumber());
+
+  foo.Sign(5);   // This should return 1.
+  foo.Sign(-9);  // This should return -1.
+  foo.Sign(0);   // This should return 0.
+```
+
+Google test provides a [gmock cheat sheet](https://github.com/google/googletest/blob/master/docs/gmock_cheat_sheet.md), [gmock cookbook](https://github.com/google/googletest/blob/master/docs/gmock_cook_book.md), and [gmock reference](https://google.github.io/googletest/reference/mocking.html) along with other documentation. There's also the [gtest primer](https://github.com/google/googletest/blob/master/docs/primer.md), [testing reference](https://google.github.io/googletest/reference/testing.html) and [gtest advanced reference](https://github.com/google/googletest/blob/master/docs/advanced.md).
