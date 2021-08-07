@@ -68,10 +68,11 @@ RTTI stands for runtime type information and it's how `dyanmic_cast` is able to 
 
 The `name()` member function should be used for debugging purposes only. This name is implementation defined and it may return a different string for the same type between different compilations or even different executions of the program. `name()` also does not distinguish between reference and non reference types.
 
-A `std::type_info&` is returned by the `typeid()` operator. This operator takes an expression or a type. If passed a type, top level qualifiers (`const` or `volatile`) are ignored but reference-ness is not; so `typeid(int) == typeid(const int) != typeid(int&)`. If passed an expression that is a *glvalue*, the expression is executed and the dynamic (behaves polymorphically) resultant type's `std::type_info` is returned. If the expression is a *prvalue*, it's not executed and the static type's `std::type_info` is returned because prvalues are not polymorphic. Dereferencing a `nullptr` within `typeid()` will throw `std::bad_typeid` if the pointer being dereferences is polymorphic. If it is not (and therefore dereferencing it can only result in one type), no exception is thrown.
+A `std::type_info&` is returned by the `typeid()` operator. This operator takes an expression or a type. Top level qualifiers (`const` or `volatile`) and reference-ness is ignored; so `typeid(int) == typeid(const int) == typeid(int&)`. If passed an expression that is a *glvalue*, the expression is executed and the dynamic (behaves polymorphically) resultant type's `std::type_info` is returned. If the expression is a *prvalue*, it's not executed and the static type's `std::type_info` is returned because prvalues are not polymorphic. Dereferencing a `nullptr` within `typeid()` will throw `std::bad_typeid` if the pointer being dereferences is polymorphic. If it is not (and therefore dereferencing it can only result in one type), no exception is thrown.
 
 ```C++
-const std::type_info& ti = typeid(std::cout << "Hello there\n"); // expression executed and prints
+const std::type_info& ti = typeid(std::cout << "Hello there\n"); 
+// expression executed and prints (bc operator<< returns an ostream reference -> glvalue)
 std::cout << ti.name() << std::endl; 
 // implementation defined but probably something like
 // std::basic_ostream<char, std::char_traits<char>>
