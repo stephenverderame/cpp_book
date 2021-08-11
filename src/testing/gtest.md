@@ -97,7 +97,7 @@ cmake_minimum_required (VERSION 3.8)
 add_executable (Test1 "main.cpp")
 target_link_libraries (Test1 PRIVATE GTest::gtest PRIVATE GTest::gtest_main)
 # Linking with gtest_main allows us to use GTests' main function for us
-add_test(Test1 Test1)
+add_test (NAME Test1 COMMAND Test1)
 # create a test called Test1 which runs the target Test1
 ```
 
