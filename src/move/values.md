@@ -1,6 +1,8 @@
 # Alphabet Soup of Values
 
-What we've seen so far are *rvalues* and *lvalues*. Both are these come from pre C++11 and the names originate from the idea than an lvalue can go on the left side of the equals side and rvalues may only go on the right side. A little better criteria is that an lvalue is something you can take an address of and an rvalue you cannot. Another possible distinction is that rvalues are temporary values while lvalues are named values.
+What we've seen so far are *rvalues* and *lvalues*. Both are these come from pre C++11 and the names originate from the idea than a lvalue can go on the left side of the equals sign and 
+rvalues may only go on the right side. A little better criteria is that a lvalue is something you can take an address of and a rvalue you cannot. 
+Another possible distinction is that rvalues are temporary values while lvalues are named values.
 
 ```C++
 int age = 5;
@@ -8,7 +10,8 @@ Person p = Person("Bob", 20);
 int ageBob = p.getAge();
 long long bigAge = age;
 ```
-Here, `age, p, ageBob, and bigAge` are lvalues. `5`, the result of the `Person` constructor, and the temporary result of `p.getAge()` are all rvalues. Once again, you can think of rvalues as temporary values. We can't take the address of the result of the `Person` constructor, `5`, nor the result of `p.getAge()`. Although we can do this:
+Here, `age, p, ageBob, and bigAge` are lvalues. `5`, the result of the `Person` constructor, and the temporary result of `p.getAge()` are all rvalues. 
+Once again, you can think of rvalues as temporary values. We can't take the address of the result of the `Person` constructor, `5`, nor the result of `p.getAge()`. Although we can do this:
 
 ```C++
 int foo();
@@ -19,7 +22,8 @@ int * resPtr = &(foo()); // error
 // return from function is not an lvalue
 ```
 
-Although we cannot have pointers to rvalues, we can have references to rvalues. Lvalue references are denoted with `&` and rvalue references are denoted with `&&`. Now confusingly, the rvalue reference itself is an lvalue. This lvalue just so happens to store a reference to an rvalue. Using rvalue references, we can avoid an excess construction when using rvalues.
+Although we cannot have pointers to rvalues, we can have references to rvalues. Lvalue references are denoted with `&` and rvalue references are denoted with `&&`. 
+Now confusingly, the rvalue reference itself is a lvalue. This lvalue just so happens to store a reference to a rvalue. Using rvalue references, we can avoid an excess construction when using rvalues.
 
 ```C++
 
@@ -43,9 +47,13 @@ funcL(makePerson()); // construct a new Person from the temporary return, pass t
 funcR(makePerson()); // no construction
 ```
 
-As you may notice, this `&&` syntax is exactly what we use in the move constructor. As an rvalue reference indicates a temporary or value we don't care about, this means that when passed to a move constructor, we're allowing that constructor to steal the rvalues internals and leave behind a "shell" of an object.
+As you may notice, this `&&` syntax is exactly what we use in the move constructor. 
+As a rvalue reference indicates a temporary or value we don't care about, this means that when passed to a move constructor, we're allowing that constructor to steal the rvalues internals and leave behind a "shell" 
+of an object.
 
-In order to move, we need a non-const rvalue reference (otherwise we couldn't modify the old value to invalidate it and we'd effectively perform a copy). Thus, since rvalue references are primarily used for moving, we don't often use `const` rvalue references. This is because, if we tried to move construct from a `const` rvalue reference, the compiler would silently perform a copy since a `const &&` cannot bind to `&&` but it can bind to `const &` (copy constructor!).
+In order to move, we need a non-const rvalue reference (otherwise we couldn't modify the old value to invalidate it, and we'd effectively perform a copy). 
+Thus, since rvalue references are primarily used for moving, we don't often use `const` rvalue references. 
+This is because, if we tried to move construct from a `const` rvalue reference, the compiler would silently perform a copy since a `const &&` cannot bind to `&&` but it can bind to `const &` (copy constructor!).
 
 ```C++
 
@@ -73,9 +81,13 @@ lvaluePerson.getName(); // BAD, lvaluePerson has been moved
 // internals could be empty
 ```
 
-Notice `getPerson()` doesn't return a `Person&&` nor do we explicitly move `newPerson` but the result is still to move `newPerson` and bind that temporary by the rvalue reference. It's generally not a good idea to have a return type as an rvalue reference nor should we explicitly return by `std::move()` because these inhibits some compiler optimizations we'll talk about later.
+Notice `getPerson()` doesn't return a `Person&&` nor do we explicitly move `newPerson`, but the resulting behavior is still to move `newPerson` and bind that temporary to the rvalue reference. 
+It's generally not a good idea to have a return type as a rvalue reference nor should we explicitly return by `std::move()` because this inhibits some compiler optimizations we'll talk about later.
 
-So what's the point of all this? Well, since we are using a reference to an existing object, we don't have to reconstruct the object from the temporary. Furthermore, an rvalue indicates a temporary object. Thus, when we use rvalues we get to assume they the object is being discarded. Thus, we can construct new objects from rvalues very cheaply. Instead of having to copy the state from the existing object to the new instance, we can sort of just steal the state of the temporary and take ownership of it. After all, an rvalue is just a temporary about to be destroyed. 
+So what's the point of all this? Well, since we are using a reference to an existing object, we don't have to reconstruct the object from the temporary. 
+Furthermore, a rvalue indicates a temporary object. Thus, when we use rvalues we get to assume they the object is being discarded, and we can construct new objects from rvalues very cheaply via swapping. 
+Instead of having to copy the state from the existing object to the new instance, we can sort of just steal the state of the temporary and take ownership of it. 
+After all, a rvalue is just a temporary about to be destroyed. 
 
 
 ```C++
@@ -105,9 +117,10 @@ const auto sum2 = sumVec(vec); // calls lvalue overload
 // again vector is constructed once (at its definition)
 ```
 
-Later we'll see how universal references (aka forwarding references) can be used to have one function for both lvalues and rvalues. But for now, a good method (and sometimes preferable to forwarding references) to get the best of both worlds is to create two functions and implement the rvalue reference overload in terms of the lvalue one.
+Later we'll see how universal references (aka forwarding references) can be used to have one function for both lvalues and rvalues. 
+For now, a good method (and sometimes preferable to forwarding references) to get the best of both worlds is to create two functions and implement the rvalue reference overload in terms of the lvalue one.
 
-Now since an rvalue reference argument is an lvalue, if we want to pass it to another function taking an rvalue reference we'd have to use `std::move`.
+Now since a rvalue reference argument is a lvalue, if we want to pass it to another function taking a rvalue reference we'd have to use `std::move`.
 
 ```C++
 auto func1(Car && car) {
@@ -129,7 +142,9 @@ func2(30.3, {"Tesla", "Model S"});
 
 ## More Values!
 
-Now lvalues and rvalues aren't the full story. The taxonomy of expressions into these different types of values is known as an expression's value category. The rvalues I've been talking about so far (and pre C++11 rvalues) are really *prvalues* and the new rvalue category contains both *prvalues* and *xvalues*. The lvalues I've been talking about (pre C++11 lvalues) are still called lvalues but are now a subset of expressions categorized as *glvalues*. (I did name this chapter "alphabet soup" for a reason).
+Now lvalues and rvalues aren't the full story. The taxonomy of expressions into these different types of values is known as an expression's value category. 
+The rvalues I've been talking about so far (and pre C++11 rvalues) are really *prvalues* and the new rvalue category contains both *prvalues* and *xvalues*. 
+The lvalues I've been talking about (pre C++11 lvalues) are still called lvalues but are now a subset of expressions categorized as *glvalues*. (I did name this chapter "alphabet soup" for a reason).
 
 ```
              expression
@@ -141,7 +156,8 @@ Now lvalues and rvalues aren't the full story. The taxonomy of expressions into 
 
 ### prvalues
 
-A *prvalue* is the result of the construction of an object including functions returning non-references, literals (except string literals), enumerators, lambda expressions, pending member function calls, and the `this` pointer. Roughly speaking it is a direct value. Therefore, a prvalue cannot be polymorphic so its static type must be the same as its dynamic type.
+A *prvalue* is the result of the construction of an object including functions returning non-references, literals (except string literals), enumerators, lambda expressions, pending member function calls, and the `this` pointer. 
+Roughly speaking it is a direct value. A prvalue cannot be polymorphic so its static type must be the same as its dynamic type.
 
 ```C++
 Person("Jimmy", "Longbottom"); // prvalue
@@ -189,9 +205,12 @@ p.*memberPtr; // is also a prvalue (same reason as above)
 
 ### xvalues
 
-Named as such because it is an "expiring" value. It denotes an object or bit-field is nearing the end of its lifetime and can be moved. These were originally classified as lvalues pre C++1, so one way to think of them is lvalues (or technically glvalues now) that can be moved. They are created in 3 cases: accessing a non-static member of an rvalue, the result of a function call that returns an rvalue reference, or casting an object to an rvalue.
+Named as such because it is an "expiring" value. 
+It denotes an object or bit-field that is nearing the end of its lifetime and can be moved. 
+These were originally classified as lvalues pre C++11, so one way to think of them are lvalues that can be moved. 
+They are created in 3 cases: accessing a non-static member of a rvalue, the result of a function call that returns a rvalue reference, or casting an object to a rvalue.
 
-rvalues are composed of prvalues and xvalues.
+The rvalue category comprises prvalues and xvalues.
 
 ```C++
 auto getPerson() {
@@ -217,7 +236,9 @@ bar(); // xvalue (result of calling a function returning an rvalue reference)
 
 ### glvalues
 
-Glvalues are "generalized lvalues" and are composed of lvalues and xvalues. They can be polymorphic (actual type is not the static type) and have an incomplete type. When a glvalue appears where an prvalue is expected, the glvalue is converted to a prvalue.
+Glvalues are "generalized lvalues" and are composed of lvalues and xvalues. 
+They can be polymorphic (actual type is not the static type) and have an incomplete type. 
+When a glvalue appears where an prvalue is expected, the glvalue is converted to a prvalue.
 
 Let's look at an example to recap:
 
@@ -248,7 +269,8 @@ g.cpyName(); //prvalue
 
 ### Returning by rvalue reference
 
-Now I said it's *generally* not a good idea to return by rvalue references, yet I also said that the result of a function that returns by rvalue reference is an xvalue. So clearly, returning by rvalue references has its places. And yes, yes it does but its usage is somewhat esoteric. 
+Now I said it's *generally* not a good idea to return by rvalue references, yet I also said that the result of a function that returns by rvalue reference is an xvalue. 
+So clearly, returning by rvalue references has its uses. And yes, yes it does but its usage is somewhat esoteric. 
 
 Take the following code snippet:
 
@@ -275,9 +297,14 @@ MaybeResult doComputation() {
 auto res = doComputation().valueOrThrow();
 ```
 
-Now, how can we avoid copying `result`. Perhaps `ResultType` is an absolute unit of a matrix, it would be great not to copy it. But if we return by reference, then the reference will dangle since `result` is a member of a temporary. What if we could move `result`? Well, that would be lovely but then `valueOrThrow` would be unsafe to call on an lvalue!
+Now, how can we avoid copying `result`. 
+Perhaps `ResultType` is a large matrix, it would be great not to copy it. 
+But if we return by reference, then the reference will dangle since `result` is a member of a temporary. 
+What if we could move `result`? Well, that would be lovely but then `valueOrThrow` would be unsafe to call on a lvalue!
 
-Thankfully, we can use *ref-qualifiers* to constrain the type of value the member function is applied on. Ref-qualifiers work exactly like declaring a function `const`. In truth, both qualifiers aren't properties of the function but rather constraints on the type of the implicit first argument. For example, a free function version of `valueOrThrow` could be:
+Thankfully, we can use *ref-qualifiers* to constrain the type of value the member function is applied on. 
+Ref-qualifiers work exactly like declaring a function `const`. In truth, both qualifiers aren't properties of the function but rather constraints on the type of the implicit first argument `this` pointer. 
+For example, a free function version of `valueOrThrow` could be:
 
 ```C++
 ResultType&& valueOrThrow(MaybeResult && maybe) {
@@ -315,7 +342,7 @@ The analogous member functions using ref-qualifiers would therefore be:
     }
 
     // when called on const lvalues
-    const ResultType& valueOrThrow() const& {
+    const ResultType& valueOrThrow() const & {
         if (success) return result;
         else //...
     }

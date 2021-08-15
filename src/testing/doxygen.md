@@ -1,6 +1,9 @@
 # Doxygen
 
-Doxygen is a popular tool to generate documentation from the comments we write in code. It can generate HTML, XML, LaTeX, and more. Doxygen recognizes a lot of commenting styles but probably the most popular are three slashes `///` and Javadocs style `/** */`. If using Javadocs, we'll probably want to set `JAVADOCS_AUTOBRIEF` to true in the configuration file so the first line (until the first period) is recognized as a brief description. Otherwise, a brief description will require an explicit `@brief` tag.
+Doxygen is a popular tool to generate documentation from the comments we write in code. 
+It can generate HTML, XML, LaTeX, and more. Doxygen recognizes a lot of commenting styles but probably the most popular are three slashes `///` 
+and Javadocs style `/** */`. If using Javadocs, we'll probably want to set `JAVADOCS_AUTOBRIEF` to true in the configuration file so the first line (or until the first period) is 
+recognized as a brief description. Otherwise, a brief description will require an explicit `@brief` tag.
 
 Documentation comments typically go right before the thing they are documenting. We can put them right after however, if the first character of the comment is `<`.
 
@@ -43,13 +46,17 @@ public:
 
 ```
 
-I tend to use `///` for short or single line comments and Javadocs for longer ones. I also tend to omit things that I feel are unnecessary or repetitive such as an `@param` indicator for `data` in `writeAll()`. Based on this logic, `@param bytes` could probably be removed from the spec of `read()` however I personally would rather slightly verbose comments than slightly ambiguous.
+I tend to use `///` for short or single line comments and Javadocs for longer ones. 
+I also tend to omit things that I feel are unnecessary or repetitive such as an `@param` indicator for `data` in `writeAll()`. 
+Based on this logic, `@param bytes` could probably be removed from the spec of `read()` however I personally would rather slightly verbose comments than slightly ambiguous.
 
-Since we're looking at this code, I probably wouldn't have a `lastError` member as we can get this information to the caller in our `IOException`. Plus, the comment for `lastError` is slightly repetitive but this was really more for examples than anything.
+Since we're looking at this code, I probably wouldn't have a `lastError` member as we can get this information to the caller in our `IOException`. 
+Plus, the comment for `lastError` is slightly repetitive but this was really more for examples than anything.
 
-Doxygen supports markdown in their comments. They also have a large range of special commands denoted with either a backslash or at sign and then the command name.
+Doxygen supports markdown in their comments. They also have a large range of special commands denoted with either a `\` or `@` and then the command name.
 
-One such category of these commands are structural commands which allow you to document something separate from its definition. The syntax would be to put the structural command on the first line of the file followed by the name of the thing you are commenting. Structural commands include:
+One such category of these commands are structural commands which allow you to document something separate from its definition. 
+The syntax would be to put the structural command on the first line of the file followed by the name of the thing you are commenting. Structural commands include:
 * `\file` - comment for file
 * `\def` - document a `#define`
 * `\var` - variable
@@ -81,7 +88,9 @@ namespace Utils {
 }
 ```
 
-Doxygen allows you to group functions under the same comment with member grouping. A group is opened with `@{` and closed with `@}`. This allows you to use one comment for similar functions such as overloads. Groups can also be named using `@name` (or `\name`) before the opening bracket. The following example is taken from Doxygen documentation.
+Doxygen allows you to group functions under the same comment with member grouping. 
+A group is opened with `@{` and closed with `@}`. This allows you to use one comment for similar functions such as overloads. 
+Groups can also be named using `@name` (or `\name`) before the opening bracket. The following example is taken from Doxygen documentation.
 
 ```C++
 /** A class. Details */
@@ -113,7 +122,11 @@ void Memgrp_Test::func1InGroup2() {}
  
 ```
 
-Doxygen also supports module grouping which puts group members onto separate pages. To do this, first you must create a group by using `\defgroup` followed by the group label and then a description if desired. Next, we can add definitions to that group by putting `\ingroup <group label>` in the documentation comment of that member. To avoid repeating this command, you can also put `\addtogroup <label>` before the opening member group brace (`@{`) to add everything within that member group to the module group. Finally, you can embed links to another group using the `\ref <label name> ["<link text>"]` command and specifying an optional string to use as the hyperlink in the comment.
+Doxygen also supports module grouping which puts group members onto separate pages. 
+To do this, first you must create a group by using `\defgroup` followed by the group label and then a description if desired. 
+Next, we can add definitions to that group by putting `\ingroup <group label>` in the documentation comment of that member. 
+To avoid repeating this command, you can also put `\addtogroup <label>` before the opening member group brace (`@{`) to add everything within that member group to the module group. 
+Finally, you can embed links to another group using the `\ref <label name> ["<link text>"]` command and specifying an optional string to use as the hyperlink in the comment.
 
 ```C++
 /** @defgroup Group1
@@ -142,9 +155,12 @@ You can use Latex formulas in comments by enclosing them within `\f[` and `\f]`.
 
 ## Linking
 
-Doxygen automatically links to other classes and files when we include them in the comment. All words with a dot that isn't the last character are considered to be file names and if such a file was input to the generator, a link to that file is automatically generated. Doxygen will automatically link to classes if the class names contains a least one non-lower-case character (uppercase, underscores, etc.). If a class contains only lowercase characters, you can still link to it with `\ref`.
+Doxygen automatically links to other classes and files when we include them in the comment. 
+All words with a dot that isn't the last character are considered to be file names, and if such a file was input to the generator, a link to that file is automatically generated. 
+Doxygen will automatically link to classes if the class names contains at least one non-lower-case character (uppercase, underscores, etc.). 
+If a class contains only lowercase characters, you can still link to it with `\ref`.
 
-Functions are automatically linked when it encounters patterns including the following:
+Functions are automatically linked when it encounters patterns such as the following:
 * `<function name>()` or `<function name>(<args>)`
 * `::<function name>`
 * `<class name>::<function name>[([<args>])] [<modifiers>]`
@@ -153,9 +169,10 @@ Functions are automatically linked when it encounters patterns including the fol
         * `MyClass::doFoo(int, int) const`
         * `MyClass::doIt(int)`
 
-Arguments and modifiers are required if there are overloads of the same function. Just like all `@` can be replaces with `\` and vice versa in commands, so too can we replace `::` with `#`.
+Arguments and modifiers are required if there are overloads of the same function. Furthermore, just like all `@` can be replaced with `\` and vice versa in commands, so too can we replace `::` with `#`.
 
-Doxygen also supports the `a` HTML tag for links as well (`<a href="https://en.wikipedia.org/wiki/Main_Page">Click Me</a>`). In comments, we can use `\sa` or `\see` to list any references, although this section isn't necessary. This section creates a separate paragraph in the output whereas just using automatic link generation does not.
+Doxygen also supports the `a` HTML tag for links as well (`<a href="https://en.wikipedia.org/wiki/Main_Page">Click Me</a>`). 
+In comments, we can use `\sa` or `\see` to list any references, although this section isn't necessary. This section creates a separate paragraph in the output whereas just using automatic link generation does not.
 
 ## Other useful commands:
 
@@ -210,8 +227,22 @@ Doxygen also supports the `a` HTML tag for links as well (`<a href="https://en.w
 
 ## Config
 
-With the code documented, we can generate the config file with the command `doxygen -g <config-file-name>`. This command can be done in the root directory of your project. This will generate a template config file which, for the most part is pretty good. A few things I do like to change is to set `SEARCHING` to `YES` and `SERVER_BASED_SEARCH` to `NO`. This will allow client-side searching in the generated output. For HTML, this is a local javascript search engine. I also set `JAVADOCS_AUTOBRIEF` to `YES` so that the first line of the documentation is the brief without having to specify `\breif`. You probably also want to set `RECURSIVE` to `YES` so that it will recursively go though the directory looking for files that match supported file patterns. These patterns can be modified by changing the `FILE_PATTERNS` setting and the `EXCLUDE_PATTERNS` setting. You can also add files to the `EXCLUDE` setting to exclude certain files or directories.
+With the code documented, we can generate the config file with the command `doxygen -g [config-file-name]`. This command can be done in the root directory of your project. 
+This will generate a template config file, which, for the most part, is pretty good. 
+A few things I do like to change is to set `SEARCHING` to `YES` and `SERVER_BASED_SEARCH` to `NO`. 
+This will allow client-side searching in the generated output. For HTML, this is a local javascript search engine. 
+I also set `JAVADOCS_AUTOBRIEF` to `YES` so that the first line of Javadocs documentation is the brief without having to specify `\breif`. 
+You probably also want to set `RECURSIVE` to `YES` so that it will recursively go through the input directory looking for files that match supported file patterns. 
+These patterns can be modified by changing the `FILE_PATTERNS` setting and the `EXCLUDE_PATTERNS` setting. You can also add files to the `EXCLUDE` setting to exclude certain files or directories.
 
-We can control where and how doxygen will generate the output with the `OUTPUT_DIRECTORY`, `HTML_OUTPUT`, `LATEX_OUTPUT`, `RTF_OUTPUT`, `XML_OUTPUT`, `DOCBOOK_OUTPUT`, and `MAN_OUTPUT` tags. By default the output directory is the same directory as the doxyfile (doxygen config file).
+We can control where and how doxygen will generate the output with the `OUTPUT_DIRECTORY`, `HTML_OUTPUT`, `LATEX_OUTPUT`, `RTF_OUTPUT`, `XML_OUTPUT`, `DOCBOOK_OUTPUT`, and `MAN_OUTPUT` tags. 
+By default, the output directory is the same directory as the doxyfile (doxygen config file).
 
-Finally, to generate our documentation, run `doxygen <config file name>`.
+Finally, to generate our documentation, run `doxygen <config file name>`. The config file name can be omitted if it's called `Doxyfile` and you are running the command in the same directory as this file.
+
+## Installation
+
+You can download doxygen pre-compiled [here](https://www.doxygen.nl/download.html). 
+Various linux distros also have doxygen downloadable through their package manager (I know Ubuntu does). 
+You may need to install GraphViz (what Doxygen uses to generate inheritance graphs) separately [here](https://graphviz.org/download/) or through your package manager. 
+For Windows, you should add `dot` to your path system variable via the GraphViz installer.

@@ -1,6 +1,8 @@
 # Unique Pointers
 
-Unique pointers, and really anything else that's "unique" in C++ model exclusive ownership. They offer practically no space or time overhead as compared to raw pointers. Because they model exclusive ownership, they cannot be copied, only moved. Here's a really bad, quick, and dirty example of how something like this might be implemented.
+Unique pointers, and really anything else that's "unique" in C++, model exclusive ownership. 
+They offer practically no space or time overhead as compared to raw pointers. Because they model exclusive ownership, they cannot be copied, only moved. 
+Here's a bad, quick, and dirty example of how something like this might be implemented.
 
 ```C++
 template<typename T>
@@ -37,7 +39,9 @@ public:
 
 `std::unique_ptr` is a template, and so when you instantiate it with a type it replaces every template argument (`T` in `BadUniquePtr`) with whatever type you are instantiating it with.
 
-We can manually free the data early by using the `reset()` member function. Or we can swap the internal pointer with a different one by passing another pointer as an argument to `reset()`. If we need to, we can get access to the internal pointer with `get()` or `release()`. The latter returns the pointer and releases it from the `unique_ptr`s management. We can also swap the owning data between two `unique_ptr`s with the `swap()` **member function**.
+`std::unique_ptr` provides the `reset()` member function to manually free the data or swap the internal pointer with a different one. 
+If we need to, we can get access to the internal pointer with `get()` or `release()`. The latter returns the pointer and releases it from the `unique_ptr`s management. 
+We can also swap the owning data between two `unique_ptr`s with the `swap()` **member function**. `std::unique_ptr` also provide `operator*` and `operator->` so they can be de-referenced just like raw pointers.
 
 ```C++
 auto unique = std::make_unique<double>(6.28);
@@ -79,9 +83,12 @@ auto u5 = std::move(u4); // move ctor, good
 u4 = std::move(u5); // move assignment, good
 ```
 
-Smart pointers can store arrays as well. They handle calling the correct delete too. A smart pointer wrapped around an array overloads `operator[]` to provide index access. While this is slightly better than unmanaged arrays, an `std::vector` would be better because the smart pointer still does not store the size of the array.
+Smart pointers can store arrays as well. 
+They handle calling the correct delete too. A smart pointer wrapped around an array overloads `operator[]` to provide index access. 
+While this is slightly better than unmanaged arrays, an `std::vector` would be better because the smart pointer still does not store the size of the array.
 
-A pointer of an array is a pointer to the first element in the array since arrays are stored contiguously in memory. A C string is a `char *` (or `const char *`) that is an array of characters with the last one being the null terminator ('\0' which is 0).
+A pointer of an array is a pointer to the first element in the array since arrays are stored contiguously in memory. 
+A C string is a `char *` (or `const char *`) that is an array of characters with the last one being the null terminator ('\0' which is 0).
 
 ```C++
 std::unique_ptr<char[]> string = std::make_unique<char[]>(100);
@@ -99,14 +106,19 @@ std::cout << cStr; // "hi"
 
 # Deleters
 
-This is all well and good if we want to use C++'s `delete` or `delete[]`. But what if we have a custom allocator or want to use C style allocation. Well luckily, smart pointers abstract away how they delete the data and delegate that responsibility to a deleter. The default deleter uses `delete` or `delete[]` depending on the type it wraps (`delete` for `T`, `delete[]` for `T[]`). The actual definition of `std::unique_ptr` is
+This is all well and good if we want to use C++'s `delete` or `delete[]`. But what if we have a custom allocator or want to use C style allocation. 
+Well luckily, smart pointers abstract away how they delete the data and delegate that responsibility to a deleter. 
+The default deleter uses `delete` or `delete[]` depending on the type it wraps (`delete` for `T`, `delete[]` for `T[]`). The actual definition of `std::unique_ptr` is
 
 ```C++
 template<typename T, typename Deleter = std::default_delete<T>>
 class unique_ptr // ..
 ```
 
-In reality there is a second template argument! This type should be a callable object that overloads the function call operator (`operator()`) and is passed a pointer to the underlying data. With a custom deleter, we cannot use `std::make_unique` because this function abstracts away the usage of the default deleter's matching allocation functions. Thus we must use the `unique_ptr` constructor, passing a pointer as the first argument and an instance of the deleter type as the second.
+In reality there is a second template argument! This type should be the type of a callable object that overloads `operator()` to accept a pointer to the underlying data. 
+`operator()` would then be responsible for performing the logic to cleanup the passed pointer. 
+With a custom deleter, we cannot use `std::make_unique` because this function abstracts away the usage of the default deleter's matching allocation functions. 
+Thus, we must use the `unique_ptr` constructor, passing a pointer as the first argument and an instance of the deleter type as the second.
 
 ```C++
 struct Foo {
@@ -137,7 +149,7 @@ std::unique_ptr<Foo, FooDeleter> fooPtr(makeFoo(), FooDeleter());
 fooPtr->num = 100;
 ```
 
-Now that seems like a bit of boilerplate just for two function calls. Well, we'll explain the following soon enough, but here's some other ways of doing the same thing:
+Now this seems like a bit of boilerplate just for two function calls. Well, we'll explain the following soon enough, but here's some other ways of doing the same thing:
 
 ```C++
 

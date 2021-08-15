@@ -1,6 +1,9 @@
 # Move Optimizations
 
-Still with me? Some of the last chapter definitely got pretty deep in the weeds. In the spirit of full disclosure, that's because during my Googling to double check what I did know, I found quite a bit I didn't know. I realized that I had no idea when it was useful to return by an rvalue reference aside from re-implementing `std::move` and also that my understanding of xvalues was pretty muddled. It just goes to prove my point that I'm no expert. Anyway...
+Still with me? Some of the last chapter definitely got pretty deep in the weeds. 
+In the spirit of full disclosure, that's because during my Googling to double check what I did know, I found quite a bit I didn't know. 
+I realized that I had no idea when it was useful to return a rvalue reference aside from re-implementing `std::move`, and I also realized that my understanding of xvalues was pretty muddled. 
+It just goes to prove my point that I'm no expert. Anyway...
 
 
 Earlier I said that a simple function such as:
@@ -34,12 +37,17 @@ auto getTest() {
 
 auto t = getTest();
 ```
-On MSVC and GCC the result is simply `"Init"`. Not a single copy or move is performed. This is known as the RVO or Return Value Optimization and it allows (pre C++17) or guarantees (C++17 and later) the elision of the two aforementioned temporaries when a *prvalue* is the expression in the return statement. This can happen **even if elision changes the behavior of the program**. As you can see, the RVO changed the behavior of the program from printing
+On MSVC and GCC the result is simply `"Init"`. Not a single copy or move is performed. 
+This is known as the RVO or Return Value Optimization and it allows (pre C++17) or guarantees (C++17 and later) the elision of the two aforementioned temporaries when a *prvalue* is the expression in the return statement. 
+This can happen **even if elision changes the behavior of the program**. As you can see, the RVO changed the behavior of the program from printing:
+
 > Init
 > Move
 > Move
 
-to just "Init". So even if the constructor had some code performing a side effect, that move can be elided. Now for RVO to be mandatory, the prvalue being returned must have the exact same type as the return type of the function. Also recall that prvalues are not polymorphic. So doing something like this:
+to just "Init". So even if the constructor had some code performing a side effect, that move can be elided. 
+Now for RVO to be mandatory, the prvalue being returned must have the exact same type as the return type of the function. 
+Recall that prvalues are not polymorphic, so doing something like this:
 
 ```C++
 Test getTest() {
@@ -61,9 +69,14 @@ Test getTest() {
 }
 ```
 
-According to our rules this doesn't qualify for RVO since `t` is an lvalue. But, if you run this code, chances are you'll notice once again only "Init" is printed. This is known as the Named Return Value Optimization or NRVO. NRVO is **not mandatory** however its a common optimization performed by compilers. Basically, its RVO but for values that have a name. Other non-mandatory copy elision can occur in a throw statement and in a catch clause when the thrown exception has the exact same type as the exception in the catch clause. When this elision occurs, the exception is essentially caught by reference, however this elision won't introduce polymorphism.
+According to our rules this doesn't qualify for RVO since `t` is an lvalue. But, if you run this code, chances are you'll notice once again only "Init" is printed. 
+This is known as the Named Return Value Optimization or NRVO. NRVO is **not mandatory** however it's a common optimization performed by compilers. 
+Basically, it's RVO but for values that have a name. 
+Copy elision can also occur in a throw statement and in a catch clause when the thrown exception has the exact same type as the exception in the catch clause. 
+When this elision occurs, the exception is essentially caught by reference, however this elision won't introduce polymorphism.
 
-Let's play compiler; how could we elide these temporaries? Well, we needs to construct the return object directly in the caller's stack. So, maybe the caller could pass us a pointer to an area of memory that the return value can fit in, and we can just construct the object in that area of memory. 
+Let's play compiler; how could we elide these temporaries? Well, we need to construct the return object directly in the caller's stack. 
+So, maybe the caller could pass us a pointer to an area of memory that the return value can fit in, and we can just construct the object in that area of memory. 
 
 ```C++
 Test getTest() {

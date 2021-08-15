@@ -1,8 +1,11 @@
 # The Rest
 
-I think we covered enough ground to make the rest of the containers pretty self explanatory. I'll point out a few things in each and if you want more details I suggest checking out their respective chapters in A Tour of C++ or their documentation on cppreference or cplusplus.com.
+I think we covered enough ground to make the rest of the containers pretty self-explanatory. I'll point out a few things in each and if you want more details I suggest checking out their respective chapters 
+in A Tour of C++ or their documentation on cppreference or cplusplus.com.
 
-One thing I will point out is that `std::string`'s `find()` member is the oddball, returning an index or `std::string::npos`. The other containers' `find()` method returns an iterator to the element or the sentinel which is returned by `end()`. Some containers don't have a `find()` member function. For those you can use `std::find()` passing in an iterator the beginning and end of the range in the container you want to search. We'll talk more about STL algorithms like `std::find()` later.
+One thing I will point out is that `std::string`'s `find()` member is the oddball, returning an index or `std::string::npos`. 
+The other containers' `find()` method returns an iterator to the element or the sentinel. Some containers don't have a `find()` member function. 
+For those containers you can use `std::find()` passing in an iterator to the beginning and end of the range in the container you want to search. We'll talk more about STL algorithms like `std::find()` later.
 
 ### `std::vector`
 
@@ -10,13 +13,19 @@ Stores elements contiguously in memory. The class typically just contains a poin
 
 Accessing an invalid index using `operator[]` is undefined behavior but doing the same using the member function `at()` with throw an `std::out_of_range` exception.
 
-As we discussed in the last chapter, appending elements to the back of a vector is cheap since capacity grows at a rate of `2x` giving us an amortized cost of `O(1)`. Likewise popping elements off the back or removing a range of contiguous elements that includes the last element is also cheap because the vector can just decrease the value of its `size` member. It likely won't even free the memory yet because common use cases tell us that it is very likely the user will add more element to the vector.
+As we discussed in the last chapter, appending elements to the back of a vector is cheap since capacity grows at a rate of `2x` giving us an amortized cost of `O(1)`. 
+Likewise, popping elements off the back or removing a range of contiguous elements that includes the last element is also cheap because the vector can just decrease the value of its `size` member. 
+It likely won't even free the memory yet because common use cases tell us that it is very likely the user will add more element to the vector.
 
-Removing or inserting elements in the middle or beginning of the vector, on the other hand, is quite expensive. The vector will have the move all the elements coming after the insertion/removal point forward or backwards, respectively, the same amount of spaces as elements removed or inserted.
+Removing or inserting elements in the middle or beginning of the vector, on the other hand, is quite expensive. 
+The vector will have the move all the elements coming after the insertion/removal point forward or backwards, respectively, the same amount of spaces as elements removed or inserted.
 
-As with `std::string`, you cannot index an element that is off the back of the vector (index `>= size()`) but still in the allocated area of memory (index `< capacity()`) because that memory is not necessarily initialized.
+As with `std::string`, you cannot index an element that is off the back of the vector (index `>= size()`) but still in the allocated area of memory (index `< capacity()`) 
+because that memory is not necessarily initialized.
 
-`std::vector<bool>` differs greatly from `std::vector` because it does not adhere to the interface exactly. For space optimization reasons, an `std::vector<bool>` is basically a dynamic bitset, with each element taking up one bit. Functions like `operator[]` and `at()` do not return references to elements anymore, because you cannot take the address of a bit. Instead they return proxy objects for manipulating the bit at the specified index. 
+`std::vector<bool>` differs greatly from `std::vector` because it does not adhere to the interface exactly. For space optimization reasons, an `std::vector<bool>` is basically a dynamic bitset, 
+with each element taking up one bit. Functions like `operator[]` and `at()` do not return references to elements anymore, because you cannot take the address of a bit. 
+Instead, they return proxy objects for manipulating the bit at the specified index. 
 
 ```C++
 // Most containers:
@@ -77,7 +86,8 @@ If the key passed to `operator[]` (which can be a non-integer) does not exist in
 
 Also implemented with balanced binary search trees. Stores unique elements.
 
-The default implementation of `std::map` and `std::set` use `std::less<T>` to compare the elements. Therefore keys must be comparable by `operator<` or specialize `std::less<T>`. You can also specify a different comparison functor type that overloads `operator()` as the second template parameter. We'll discuss this more later.
+The default implementation of `std::map` and `std::set` use `std::less<T>` to compare the elements. Therefore, keys must be comparable by `operator<` or specialize `std::less<T>`. 
+You can also specify a different comparison functor type that overloads `operator()` as the second template parameter. We'll discuss this more later.
 
 For both `std::map` and `std::set`, finding an element uses `operator==` to compare for equality.
 
@@ -87,9 +97,11 @@ Same as their respective non-multi variants except they can hold duplicate keys.
 
 ### `std::unorded_set` and `std::unordered_map`
 
-Same as their respective ordered variants except implemented with a hash map / hash set. Due to the hash function, an iterator will traverse the map/set in an arbitrary order while their ordered variants will traverse the keys in order from least to greatest.
+Same as their respective ordered variants except implemented with a hash map / hash set. Due to the hash function, an iterator will traverse the map/set in an arbitrary order while their 
+ordered variants will traverse the keys in order from least to greatest.
 
-The keys of each must specialize `std::hash<T>` to provide a hash function if they are a user defined type or you must change the third template argument to a type of a functor to perform the hashing. Keys are compared via `operator==` which can be changed by changing the 4th template argument to a custom comparator type which overloads `operator()` to perform the comparison.
+The keys of each must specialize `std::hash<T>` or you must change the third template argument to a  functor type to perform the hashing. 
+Keys are compared via `operator==` which can be changed by changing the 4th template argument to a custom comparator type which overloads `operator()` to perform the comparison.
 
 ### `std::forward_list`
 
@@ -101,13 +113,14 @@ Typically a doubly linked list. Again performs constant time insertion / deletio
 
 ### `std::deque`
 
-"Double ended queue". Performs fast insertions and deletions at both ends of lists. Typically implemented as a sequence of small chunks of contiguous allocated elements. Constant time random access but linear insertion or removal of elements in middle of deque. Due to extra bookkeeping, slower indexed access than `std::vector` and a larger size of the class.
+"Double ended queue". Performs fast insertions and deletions at both ends of lists. Typically implemented as a sequence of small chunks of contiguous allocated elements. 
+Constant time random access but linear insertion or removal of elements in middle of deque. Due to extra bookkeeping, slower indexed access than `std::vector` and a larger size of the class.
 
 ### `std::stack`, `std::queue`, and `std::priority_queue`
 
 These are not containers themselves but *adapters*. They provide an interface of their respective data structure using the container specified as the second template argument. `std::stack` and `std::queue` use `std::deque` as their default container while `std::priority_queue` uses `std::vector`.
 
-The comparator for `std::priority_queue` is it's third template argument. The priority queue cannot change the priority of existing elements. Internally, the priority queue uses functions like `std::make_heap`, `std::push_heap`, `std::pop_heap`, and `std::sort_heap` which manage a heap given a starting and ending random access iterator.
+The comparator for `std::priority_queue` is its third template argument. The priority queue cannot change the priority of existing elements. Internally, the priority queue uses functions like `std::make_heap`, `std::push_heap`, `std::pop_heap`, and `std::sort_heap` which manage a heap given a starting and ending random access iterator.
 
 ### `std::initializer_list`
 

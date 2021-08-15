@@ -3,9 +3,12 @@
 
 Header files are a way to separate an interface from an implementation and declarations from definitions. We'll discuss how the compiler works in more detail later. 
 
-We have already seen header files with the `#include` preprocessor directive. Header files contain the *declarations* of classes, structs, enums, and functions and in some cases a few definitions as well. Remember how the compiler needs to know the definition of a function before it's used unless that function is *forward declared*? Well this same principle applies to other things like classes and structs and header files are a way to put all the declarations in one place and use these declarations in all files that need them by including the header file.
+We have already seen header files with the `#include` preprocessor directive. Header files contain the *declarations* of classes, structs, enums, and functions and in some cases a few definitions as well. 
+Remember how the compiler needs to know the definition of a function before it's used unless it's *forward declared*? Well this same principle applies to other things like classes and structs 
+and header files are a way to put all the declarations in one place and use these declarations in all files that need them by including the header file.
 
-This separation is also a great way to provide separate client and implementor views of a module. A client need only look at the declarations and relevant comments in a header file, while an implementor would work with the source code in the source file.
+This separation is also a great way to provide separate client and implementor views of a module. 
+A client need only look at the declarations and relevant comments in a header file, while an implementor would work with the source code in the source file.
 
 Furthermore, `#include` directives are a good way to identify the dependencies of a module.
 
@@ -31,11 +34,16 @@ int powMod(int base, int exp, int mod);
 #endif
 ```
 
-`#ifndef` is a preprocessor director standing for "if not defined". So if the macro `MY_MATH_H` is not defined, then we define it and declare `powi()` and `powMod()`. This is known as an *include guard*. The reason we need this is because we might include a header file multiple times. For example: perhaps another header `your_math.h` requires one of these definitions. Now a client might make the mistake of including both `your_math.h` and `my_math.h`. The client shouldn't have to know that `my_math.h` is already included in `your_math.h`, but without the include guards they would. This is because the preprocessor basically replaces an include directive with the contents of the file that's being included. Thus, without include guards, declarations can be repeated in the same file which will cause a compilation error. We cannot have multiple declarations with the same name and parameters in the same file; include guards prevent this. The first time a header is seen a macro (in this case `MY_MATH_H`) is defined. The next time that header is included the macro is already defined, so the `#ifndef` directive will prevent re-declaring the functions.
+`#ifndef` is a preprocessor director standing for "if not defined". 
+So if the macro `MY_MATH_H` is not defined, then we define it and declare `powi()` and `powMod()`. This is known as an *include guard*. 
+The reason we need this is to prevent including a header file multiple times. 
+For example: perhaps another header `your_math.h` requires one of these definitions. Now a client might make the mistake of including both `your_math.h` and `my_math.h`. The client shouldn't have to know that `my_math.h` is already included in `your_math.h`, but without include guards they would. This is because the preprocessor basically replaces include directives with the contents of the file that's being included. Thus, without include guards, declarations can be repeated in the same file which will cause a compilation error. We cannot have multiple declarations with the same name and parameters in the same file; include guards prevent this. The first time the compiler reads a header, a macro (in this case `MY_MATH_H`) is defined. The next time it's read, the `#ifndef` (if not defined) directive will prevent re-declaring the functions.
 
-`#pragma once` is a non-standard way to do the exact same thing. All the major compilers (g++, MSVC, clang) support `#pragma once`, but it's perfectly legal for a compiler not to. For portability, use include guards. However `#pragma once` may be more efficient, and a compiler that doesn't support it won't complain about it so for maximal benefit put `#pragma once` on the first line of a header, and then include guards.
+`#pragma once` is a non-standard way to do the exact same thing. All the major compilers (g++, MSVC, clang) support `#pragma once`, but it's perfectly legal for a compiler not to. 
+For portability, use include guards. However `#pragma once` may be more efficient, and a compiler that doesn't support it won't complain about it; 
+for maximal benefit put `#pragma once` on the first line of a header, and then include guards. (Now do I use include guards? Hardly; I haven't ran into a compiler where `#pragma once` wasn't supported)
 
-Now we need to define it:
+Now we need to define the functions:
 
 my_math.cpp
 ```c++
@@ -62,7 +70,7 @@ int main() {
 }
 ```
 
-There are a few cases where definitions can (and must) be in the header file. An example would be a function declared `inline`. However, normal function definitions *must* be in a separate file. This is to prevent duplicate definitions of a function from getting into the binary. If this happens the *linker* will be unable to know which definition to use. How might this happen? Well consider two independent files `file1.cpp` and `file2.cpp`. Neither depend on each other and both use `powi()` so they need to include `my_math.h`. If the definition for `powi()` was in the header, then we would have just introduced duplicate functions with the same name and parameters (so they can't be overloads). This is way definitions are in source files and declarations are in header files. Both `file1.cpp` and `file2.cpp` need forward declarations for `powi()`. Instead of having multiple declarations (which in this case is allowed since they don't depend on each other) we put them in a header file to promote code reuse.
+There are a few cases where definitions can (and must) be in the header file. An example would be a function declared `inline`. However, normal function definitions *must* be in a separate file. This is to prevent duplicate definitions of a function from getting into the binary. If this happens, the *linker* will be unable to know which definition to use. How might this happen? Well consider two independent files `file1.cpp` and `file2.cpp`. Neither depend on each other and both use `powi()` so they need to include `my_math.h`. If the definition for `powi()` was in the header, then we would have just introduced duplicate functions with the same name and parameters (so they can't be overloads). This is why definitions are in source files and declarations are in header files. Both `file1.cpp` and `file2.cpp` need forward declarations for `powi()`. Instead of having multiple declarations in each source file, we put them in a header file to promote code reuse.
 
 Avoid cyclic dependencies like the plague.
 
@@ -77,12 +85,12 @@ Avoid cyclic dependencies like the plague.
 ```
 
 We'll soon use Doxygen to turn comments into HTML documentation. But for now, I want to point out a few small things.
-* We should avoid duplication in comments. This includes stating the obvious and literally repeating yourself
+* We should avoid duplication in comments. This includes stating the obvious and literally repeating yourself.
 * Comments should be short and sweet
 * When you write a comment, think about how you might be able to convey the information in the language itself (for example, a better variable name). If you cannot, then comment.
 * Use comments to explain a decision, and communicate information to other programmers like exception guarantees, side effects, etc.
 
-For documentation, you can use Javadocs style
+For writing documentation, you can use Javadocs style
 
 ```c++
 /**

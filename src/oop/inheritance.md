@@ -1,6 +1,7 @@
 # Inheritance
 
-We've seen public inheritance in the last chapter. It has the syntax `: public Base` and models an "is-a"/"subtype-of" relationship. Before going further, let's look at a classic example of where the wording "is-a" can lead us astray. Is a square a rectangle? Mathematically, yes. But in computer science, that depends...
+We've seen public inheritance in the last chapter. It has the syntax `: public Base` and models an "is-a"/"subtype-of" relationship. 
+Before going further, let's look at a classic example of where the wording "is-a" can lead us astray. Is a square a rectangle? Mathematically, yes. But in computer science, that depends...
 
 Consider:
 ```C++
@@ -58,7 +59,10 @@ r.setLength(10);
 r.getWidth();
 
 ```
-In this example, the interface of Rectangle doesn't match Square. If we wrote specs for Rectangle's `setLength` and `setWidth`, the likely specification "sets the Rectangle's length/width" clearly doesn't match the behavior of setting both the length and width! While a square *is a* rectangle by definition, it does not adhere to the interface. Based on this code snippet, we are inheriting from Rectangle for code reuse. A much better alternative would be to make `area()` and `perimeter()` free functions. In this simplistic case, we can make `Square` and `Rectangle` separate `structs` with their internals known.
+In this example, the interface of Rectangle doesn't match Square. If we wrote specs for Rectangle's `setLength` and `setWidth`, the likely specification "sets the Rectangle's length/width" 
+clearly doesn't match the behavior of setting both the length and width! While a square *is a* rectangle by definition, it does not adhere to the interface. 
+Based on this code snippet, we are inheriting from Rectangle for code reuse. A much better alternative would be to make `area()` and `perimeter()` free functions. 
+In this simplistic case, we can make `Square` and `Rectangle` separate `structs` with their internals known.
 
 ```C++
 struct Square { 
@@ -90,7 +94,13 @@ int area(const Rectangle & r) {
 ```
 
 
-Now I'd like to distinguish between implementation and interface inheritance. Interface inheritance is when a class inherits from an interface (pure virtual functions) to provide decoupling between interface and implementation(s). Implementation inheritance is inheritance in order to share code (square and rect example). We want to be wary of implementation inheritance. Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible. Here's an example of interface inheritance:
+Now I'd like to distinguish between implementation and interface inheritance. 
+Interface inheritance is when a class inherits from an interface (pure virtual functions) to provide decoupling between the interface and implementation(s). 
+Implementation inheritance is inheritance in order to share code (square and rect example). 
+We want to be wary of implementation inheritance. 
+Inheritance is a very strong coupling relationship, and therefore implementation inheritance should be avoided when possible. 
+Instead of implementation inheritance, we can factor out shared functionality into functions like in the above example, or use object composition. 
+Here's an example of interface inheritance:
 
 ```C++
 class Port {
@@ -156,11 +166,22 @@ void logError(Port & port, const std::string & str) {
 
 ```
 
-All of these types are subtypes of `Port`. They can be used polymorphically and prevent users from depending on or knowing about any implementation. This is the hallmark of OOP and is known as *dependency inversion*, which we'll discuss later.
+All of these types are subtypes of `Port`. 
+They can be used polymorphically and prevent users from depending on or knowing about any implementation. 
+This is the hallmark of OOP and is known as *dependency inversion*, which we'll discuss later.
 
-With all that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. Private inheritance is the same as public inheritance, but all public members of the base class become private members in the derived class. This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used private inheritance.
+With all that being said, let's look at a tool specifically designed for implementation inheritance: private inheritance. 
+Private inheritance is the same as public inheritance, but all public members of the base class become private members in the derived class. 
+This models an "implemented-in-terms-of" or a "has-a" relationship which is the same relationship modelled by object composition. 
+Therefore, you should prefer composition to private inheritance. Truthfully, I can't remember a time when I've used private inheritance.
 
-Private inheritance is not polymorphic. This intuitively makes sense since every part of the Base class's interface is private. If it were polymorphic, then you could break encapsulation by changing the static type of the Derived class to the Base class and call the Base class member functions.
+One super nit picky usage of private inheritance is to take advantage of EBO or the empty base optimization. In C++, a variable must at least take up 1 byte, regardless if its type actually needs this space. 
+So if we instantiate a class with no data members for object composition, that instance will take up at least a byte. Private inheritance is a way to circumvent this and get access to the 
+member functions of a class without paying for unnecessary space. Would I recommend using private inheritance for EBO? No, probably not, but I thought I'd mention it.
+
+Private inheritance is not polymorphic. 
+This intuitively makes sense since every part of the Base class's interface is private. 
+If it were polymorphic, then you could break encapsulation by changing the static type of the Derived class to the Base class and call the Base class member functions.
 
 Syntactically, the only difference is `: private Base` instead of `: public Base`.
 
@@ -200,7 +221,9 @@ struct A {
  class C : public A {};
  class D : public B, public C {};
 ```
- This diamond shaped hierarchy is best avoided, but if it does happen it might not be clear how it will behave. Remember, derived classes and their members are simply tacked on to the base class. Therefore, here we inherit from `A` twice and get two copies of the variable `aVar`. To use it, we must explicitly qualify which parent's `aVar` to use.
+ This diamond shaped hierarchy is best avoided, but if it does happen it might not be clear how it will behave. 
+ Remember, derived classes and their members are simply tacked on to the base class. 
+ Therefore, here we inherit from `A` twice and get two copies of the variable `aVar`. To use it, we must explicitly qualify which parent's `aVar` to use.
 ```C++
  D d;
  d.B::aVar = 0;
@@ -214,7 +237,10 @@ struct A {
  }
 ```
  
- The way to avoid this is *virtual inheritance*. Virtual inheritance enforces that a base is only inherited once. Implementations vary but this generally could be implemented by derived classes holding pointers to their parent classes. Virtual inheritance is beefier and more expensive.
+ The way to avoid this is *virtual inheritance*. 
+ Virtual inheritance enforces that a base is only inherited once. 
+ Implementations vary but this generally could be implemented by derived classes holding pointers to their parent classes. 
+ Virtual inheritance is beefier and more expensive.
 ```C++
  class A {};
  class B : public virtual A {};
@@ -222,11 +248,13 @@ struct A {
  class D : public B, public C {};
 ```
 
- It's good to know these features exist. But the best method for dealing with these problems is to not create them in the first place. Multiple inheritance should be used mainly for representing subtypes of multiple distinct interfaces.
+ It's good to know these features exist, but the best method for dealing with these problems is to not create them in the first place. 
+ Multiple inheritance should be used mainly for representing subtypes of multiple distinct interfaces.
 
  ## Final
 
- You can use the `final` keyword to declare a function to be the final overrider. Subclasses of the class where the method was declared `final` will no longer be able to override it. `final` should be used sparingly.
+ You can use the `final` keyword to declare a function to be the final overrider. Subclasses of the class where the method was declared `final` will no longer be able to override it. 
+ `final` should be used sparingly.
 
  ```C++
 class Base {
@@ -254,11 +282,13 @@ public:
 }
  ```
 
- It's best to only have 1 of `final`, `virtual`, or `override`. For the declaration of a virtual function, use `virtual`. Then all derived classes should use `override` or `final` (and not both).
+ It's best to only have 1 of `final`, `virtual`, or `override`. qualifiers for a given function declaration. 
+ For the declaration of a virtual function, use `virtual`. Then all derived classes should use `override` or `final` (and not both).
 
  ## Default Arguments
 
- Default arguments of methods are determined by the static type of the context object. To avoid problems, do not override the default arguments of virtual functions.
+ Default arguments of methods are determined by the static type of the context object. 
+ To avoid problems, do not override the default arguments of virtual functions.
  
  ```C++
 class Logger {

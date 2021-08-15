@@ -1,6 +1,11 @@
 # Gmock
 
-GMock provides the ability to mock implementations. For example let's say that you are testing some logic which performs some operation on data received fromm a database. To keep tests fast, and the logic verifiable, it's probably useful to have a mock database which you can control. What we can do is create a database *gateway*: an interface that abstracts away the concrete database implementation. The we can have our concrete production class and a second concrete mock class acts like a real database. Gmock makes developing such a class much easier by providing macros to generate method implementations and assert passed parameters and calling conditions (ex. how many times the function is called, when it's called, etc.).
+GMock provides the ability to mock implementations. For example let's say that you are testing some logic which performs some operation on data received fromm a database. 
+To keep tests fast, and the logic verifiable, it's probably useful to have a mock database which you can control. 
+What we can do is create a database *gateway*: an interface that abstracts away the concrete database implementation. 
+Then we can have a concrete production class, and a second concrete mock class acts like a real database. 
+Gmock makes developing such a class much easier by providing macros to generate method implementations and assert passed parameters and calling conditions 
+(ex. how many times the function is called, when it's called, etc.).
 
 The googletest github repo contains both gtest and gmock. So the only thing we need to do to use gmock is add gmock to the `target_link_libraries` call for our test in CMake.
 ```
@@ -9,7 +14,9 @@ target_link_libraries(Test PRIVATE GTest::gtest_main PRIVATE GTest::gmock)
 
 Then in our test file we can include `<gmock/gmock.h>`.
 
-We can mock methods of a class (we cannot mock free functions) with the `MOCK_METHOD` macro which takes the method return type, name, arguments surrounded by parenthesis, and also optionally and qualifiers surrounded by parenthesis such as `const`, `noexcept`, and `override`. Ref qualifiers and calling convention can also be specified in this parameter by surrounding the qualifier in `ref()` and `Calltype()`, respectively. Mock methods must always be public.
+We can mock methods of a class (we cannot mock free functions) with the `MOCK_METHOD` macro which takes the method return type, name, arguments surrounded by parentheses, 
+and optionally and qualifiers surrounded by parentheses such as `const`, `noexcept`, and `override`. 
+Ref qualifiers and calling convention can also be specified in this parameter by surrounding the qualifier in `ref()` and `Calltype()`, respectively. Mock methods must always be public.
 
 ```C++
 class MyMock {
@@ -17,7 +24,7 @@ public:
     MOCK_METHOD(std::string, getName, (), (const));
     // std::string getName() const;
 
-    MOCK_METHOD(int, mult, (int, int), (const));
+    MOCK_METHOD(int, mult, (int, int), (const, noexcept));
     // int mult(int, int) const;
 
     MOCK_METHOD(void, setAge, (int));
@@ -25,7 +32,9 @@ public:
 };
 ```
 
-In a test, we can use the `EXPECT_CALL` macro to assert that a method gets called, use *matchers* to assert conditions about the passed arguments, and use *actions* and *cardinalities* to control the behavior of the mocked method. The first argument to `EXPECT_CALL` is an instance of a mock class, the second argument is the name of the method that should be called and matchers surrounded by parenthesis. The nth matcher in the parenthesis applies to the nth argument of the method call.
+In a test, we can use the `EXPECT_CALL` macro to assert that a method gets called, use *matchers* to assert conditions about the passed arguments, and use *actions* and *cardinalities* to 
+control the behavior of the mocked method. The first argument to `EXPECT_CALL` is an instance of a mock class, the second argument is the name of the method that should be called and matchers surrounded by parentheses. 
+The nth matcher in the parentheses applies to the nth argument of the method call.
 
 We discussed matchers in the last chapter, but one matcher we haven't discussed is `testing::_` which is a matcher that matches anything.
 
@@ -43,7 +52,8 @@ TEST(MockTest, sqrtCalled) {
 
 ## Actions
 
-This is great to check that a function is called, but let's make the mock method do something. We can specify an action to `WillOnce` or `WillRepeatedly` by chaining these function calls after the `EXPECT_CALL` macro.
+This is great to check that a function is called, but let's make the mock method do something. 
+We can specify an action to `WillOnce` or `WillRepeatedly` by chaining these function calls after the `EXPECT_CALL` macro.
 
 ```C++
 EXPECT_CALL(mock, mult(_, AnyOf(Eq(10), Gt(100))))
@@ -72,7 +82,7 @@ EXPECT_CALL(mock, mult(_, AnyOf(Eq(10), Gt(100))))
 
 We can also compose actions as well:
 
-* `DoAll(actions...)` - self explanatory
+* `DoAll(actions...)` - self-explanatory
 * `IgnoreResult(action)` - ignore the result of an action
 * `WithArg<N>(action)` - executions `action` with the nth argument passed
     * `WithArgs<N0, N1, N...>(action)`
@@ -109,7 +119,9 @@ TEST(MockTest, testActions) {
 
 ## Cardinalities and Sequences
 
-Without `WillOnce` or `WillRepeatedly`, the test will fail if the called function is called more than once. This is because, by default, the expectation has a cardinality (amount of times the function can be executed) of `1`. We can change this behavior by the `Times()` member function and passing it a cardinality such as:
+Without `WillOnce` or `WillRepeatedly`, the test will fail if the called function is called more than once. 
+This is because, by default, the expectation has a cardinality (amount of times the function can be executed) of `1`. 
+We can change this behavior by the `Times()` member function and passing it a cardinality such as:
 
 * `AnyNumber()`
 * `AtLeast(n)`
@@ -137,7 +149,9 @@ TEST(MockTest, testCardinalities) {
 }
 ```
 
-If you want to enforce that calls occur in a certain order (say that `mult` must be called before `getName`), we can use an `InSequence` RAII object to enforce that functions are called in the order the `EXPECT_CALLS` are used. All invocations of the gmock macros that occur while an `InSequence` object is alive synchronizes the order of function calls
+If you want to enforce that calls occur in a certain order (say that `mult` must be called before `getName`), 
+we can use an `InSequence` RAII object to enforce that functions are called in the order the `EXPECT_CALLS` are called. 
+All invocations of the gmock macros that occur while an `InSequence` object is alive synchronizes the order of these expectations.
 
 ```C++
 TEST(MockTest, testCardinalities) {
@@ -171,7 +185,9 @@ TEST(MockTest, testCardinalities) {
 }
 ```
 
-For more flexible sequences, gmock provides the `InSequence()` and `After()` functions. This works by constructing a DAG and enforcing the functions are called in topological order. We can use the `InSequence()` function and pass in `InSequence` objects to make that mock part of the specified sequences. Mocks in the same sequence must be called in the order they are defined. 
+For more flexible sequences, gmock provides the `InSequence()` and `After()` functions. 
+This works by constructing a DAG and enforcing the functions are called in topological order. 
+We can use the `InSequence()` function and pass in `InSequence` objects to make that mock part of the specified sequences. Mocks in the same sequence must be called in the order they are defined. 
 
 ```C++
 using ::testing::Sequence;
@@ -204,7 +220,9 @@ This creates the following DAG:
 
 Above example taken from [gmock reference](https://github.com/google/googletest/blob/master/docs/gmock_cook_book.md)
 
-If you don't want to set any expectations about a function being called, you can use the `ON_CALL` macro instead of `EXPECT_CALL`. It works exactly the same expect `ON_CALL` simply defines the action a function takes without adding test expectations. `ON_CALL` should be preferred whenever you don't want to enforce call expectations (such as the number of times a function is called).
+If you don't want to set any expectations about a function being called, you can use the `ON_CALL` macro instead of `EXPECT_CALL`. 
+It works exactly the same expect `ON_CALL` simply defines the action a function takes without adding test expectations. 
+`ON_CALL` should be preferred whenever you don't want to enforce call expectations (such as the number of times a function is called).
 
 ## Misc
 
@@ -235,6 +253,16 @@ Google test provides a [gmock cheat sheet](https://github.com/google/googletest/
 
 ## Easy on the Mocking
 
-The key goal of mocking is to keep tests independent and fast. When unit testing, you don't need to mock every single other class or module that the UUT (unit under test) depends on. In fact most dependencies probably don't require mocks. An example of a good mock is mocking a filesystem. Changes to the filesystem made by one test might affect the behavior of another test. The order that tests are run in must not matter (the order is indeterminate in gtest, but this is a good engineering practice). Likewise, the filesystem is much slower than memory, so using a mock could sufficiently improve run time for tests. Another good example is that during development of module A, you might find (or already know) that some behavior module A depends on could be factored out into a separate, public, module B. Mocking can allow you to test module A without an implementation of module B's interface.
+The key goal of mocking is to keep tests independent and fast. 
+When unit testing, you don't need to mock every single other class or module that the UUT (unit under test) depends on. 
+In fact, most dependencies probably don't require mocks. An example of a good mock is mocking a filesystem. 
+Changes to the filesystem made by one test might affect the behavior of another test. 
+The order that tests are run in must not matter (the order is indeterminate in gtest, but this is a good engineering practice). 
+Likewise, the filesystem is much slower than memory, so using a mock could sufficiently improve run time for tests. 
+Another good example is that during development of module A, you might find (or already know) that some behavior module A depends on could be factored out into a separate, public, module B. 
+Mocking can allow you to test module A without an implementation of module B's interface.
 
-As I mention before, `ON_CALL` should be preferred to `EXPECT_CALL`. This is because `EXPECT_CALL` adds constraints to how the function is called, which may be an implementation detail. Does the spec on the interface for `addProductToCart()` say that `doFoo()` is called 3 times after `makeFoo()` is called? If not, `ON_CALL` is probably a better choice than `EXPECT_CALL`. The death of testing is when the test suite makes it difficult to refactor or alter the production code in any way. Overly mocking can cause this.
+As I mention before, `ON_CALL` should be preferred to `EXPECT_CALL`. 
+This is because `EXPECT_CALL` adds constraints to how the function is called, which may be an implementation detail. 
+Does the spec on the interface for `addProductToCart()` say that `doFoo()` is called 3 times after `makeFoo()` is called? If not, `ON_CALL` is probably a better choice than `EXPECT_CALL`. 
+The death of testing is when the test suite makes it difficult to refactor or alter the production code in any way. Overly mocking can cause this.

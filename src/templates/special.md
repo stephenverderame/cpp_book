@@ -1,8 +1,9 @@
 # Template Specialization
 
-Earlier I talked about how the behavior of `std::vector` changed when it stored `bool` and how the behavior of smart pointers changed when they point to arrays. This is possible due to template specialization, which basically provides a separate definition of a class or function used when a template parameter is a specific type.
+Earlier I talked about how the behavior of `std::vector` changed when it stores `bool` and how the behavior of smart pointers change when they point to arrays. 
+This is possible due to template specialization, which basically provides a separate definition of a class or function used when a template parameter is a specific type.
 
-Let's start with *total template specialization* which is when you want unique behavior for for a specific combination of template arguments.
+Let's start with *total template specialization* which is when you want unique behavior for a specific combination of template arguments.
 
 ```C++
 template<typename T, typename U>
@@ -21,9 +22,12 @@ Foo<std::string, Person>; // first
 Foo<int, long>; // second
 ```
 
-A specialization does not automatically share the interface of the main definition (like for example public inheritance) and the interface for a template specialization may be completely different. However, in most cases where you use this, you'll probably find it most useful if the specialization and template class mostly share an interface.
+A specialization does not automatically share the interface of the main definition (like for example public inheritance) and the interface for a template specialization may be completely different. 
+However, in most cases where you use this, you'll probably find it most useful if the specialization and template class mostly share an interface.
 
-Here's a more useful example. Let's say you had two classes `Address` and `Person` and to have a hash map keyed on `Address` and values of `Person`. You could manually add a `hash()` member function and key the map on that hash type, but then you'd have to manually ensure that `hash()` doesn't create collisions. Plus, you'd be doing extra computation as `std::unordered_map` would then hash that key again. Instead we can specialize `std::hash` which is a `struct` that uses `operator()` to compute the hash.
+Here's a more useful example. Let's say you had two classes, `Address` and `Person`, and to have a hash map with `Address` keys and `Person` values. 
+You could manually add a `hash()` member function and key the map on that hash type, but then you'd have to manually ensure that `hash()` doesn't create collisions. 
+Plus, you'd be doing extra computation as `std::unordered_map` would then hash that key again. Instead, we can specialize `std::hash` which is a `struct` that uses `operator()` to compute the hash.
 
 ```C++
 struct Address {
@@ -65,7 +69,8 @@ namespace std {
 std::unordered_map<Address, Person>; // good!
 ```
 
-Functions may be specialized as well. However generally, it's best to avoid specialization and prefer overloading the function unless you really need to specialize it. One scenario where you would need specialization is to have functions that differ in only their return type. This is because you cannot create overloads based on return type alone.
+Functions may be specialized as well. However, generally, it's best to avoid specialization and prefer overloading the function unless you really need to specialize it. 
+One scenario where you would need specialization is to have functions that differ in only their return type. This is because you cannot create overloads based on return type alone.
 
 ```C++
 template<typename T, typename U>
@@ -79,7 +84,8 @@ void foo<int, int>(const int& t, const int& u) {
 }
 ```
 
-During name resolution, the compiler will first pick the best overload, then pick the best specialization. This can lead to confusing results because a better match created by specializing a worse matching overload won't be picked over a decent matching overload.
+During name resolution, the compiler will first pick the best overload, then pick the best specialization. 
+This can lead to confusing results because a better match created by specializing a worse matching overload won't be picked over a decent matching overload.
 
 ```C++
 template<typename T>
@@ -96,7 +102,7 @@ foo(new int()); // calls foo(T*) not foo<T> specialization
 // chooses best overload, then looks for specialization (which there are none)
 ```
 
-However, changing the definition order so that the specialization specializes the second foo makes it work as expected.
+However, changing the definition order so that the specialization specializes the second `foo` makes it work as expected.
 
 ```C++
 template<typename T>
@@ -114,7 +120,8 @@ foo(new int()); // calls specialization
 // then sees the int* specialization
 ```
 
-Classes don't overload. However what we can do with classes (and not functions) is *partial template specialization*. Using this, we can create a specialization that is used when some, but not all template arguments match, or create specializations on other template types.
+Classes don't overload. However, what we can do with classes (and not functions) is *partial template specialization*. 
+Using this, we can create a specialization that is used when some, but not all template arguments match, or create specializations on other template types.
 
 ```C++
 template<typename T, typename U>
@@ -138,12 +145,17 @@ Foo<std::unique_ptr<std::string>, long>; //#3
 Foo<std::unique_ptr<int>, std::string>; // error, ambiguous specialization. Could be 2 or 3
 ```
 
-You can inherit from templates and specialization as well.
+You can inherit from templates and specialization as well. When inheriting from a template, you must use the `this` pointer to refer to the base class's members.
 
 ```C++
 template<typename T>
 class Foo : private std::vector<T> {
     // ...
+
+    Foo() {
+        emplace_back(); // error
+        this->emplace_back(); // good
+    }
 };
 ```
 

@@ -1,17 +1,17 @@
 # Primitive Types
 
-| Type | Min Size |
+| Type | **Typical** Size |
 | ---- | ---- |
-| bool | n/a |
+| bool | 8 bits |
 | char | 8 bits |
 | short | 16 bits |
-| int | 16 bits |
+| int | 32 bits |
 | long | 32 bits|
 | long long | 64 bits |
 
-In practice, `int` is generally 32 bits, most implementations make it the size of the general purpose registers on your machine, but the standard only stipulates that `sizeof(char) == 1` and `sizeof(char) <= sizeof(int) <= sizeof(long) <= sizeof(long long)`.
+The standard only stipulates that `sizeof(char) == 1` and `sizeof(char) <= sizeof(short) <= sizeof(int) <= sizeof(long) <= sizeof(long long)`.
 
-Except for bool, these types can be signed or unsigned
+Except for bool, these types can be signed or unsigned. The standard does not specify the size of `bool`.
 
 ```c++
 
@@ -20,7 +20,7 @@ unsigned char c2; // [0 to 2^8]
 
 ```
 
-We also have floating point types: `float`, `double` and `long double`. The standard only requires that `double` provides as least as much precision as `float` and that `long double` provides as least as much as `double`. On x86 systems, `float` is typically 32 bits, `double` is typically 64, and `long double` is commonly 80 or 128.
+We also have floating-point types: `float`, `double` and `long double`. The standard only requires that `double` provides at least as much precision as `float` and that `long double` provides at least as much as `double`. On x86 systems, `float` is typically 32 bits, `double` is typically 64, and `long double` is commonly 80 or 128.
 
 C++ also has literal type specifiers to convert a literal value to a certain type. A literal is something that's already a value and cannot be assigned such as `42` or `0.0`.
 
@@ -37,7 +37,7 @@ auto ch = 'H'; // char
 
 ```
 
-Finally we can also input numbers in different bases such as hex, octal or binary and use the single quote `'` as a digit separator to make things more readable.
+Finally, we can also input numbers in different bases such as hex, octal or binary and use the single quote `'` as a digit separator to make things more readable.
 
 ```c++
 auto h = 0xA; //h  is the integer 10

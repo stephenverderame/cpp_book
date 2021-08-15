@@ -1,6 +1,6 @@
 # Operator Overloading
 
-Let's first create a class `Rational` to see an example of this:
+Let's first create a class `Rational` to see an example of overloading:
 
 ```C++
 class Rational {
@@ -17,7 +17,12 @@ public:
 
 ```
 
-This class has two private integers and 3 constructors. The first is a constructor that passes in the values for `num` and `den`. The second is a conversion constructor from `int`. You could also have given `denominator` a default argument like so: `Rational(int numerator, int denominator = 1)`. Both cases allows for implicit conversion to `Rational` from `int` (and types that implicitly convert to `int`) since we don't use the `explicit` keyword. The third is a special kind of constructor known as a `copy` constructor. We'll talk more about this later, but basically it allows us to create a new `Rational` by copying (and not modifying) an existing one.
+This class has two private integers and 3 constructors. 
+The first is a constructor that passes in the values for `num` and `den`. 
+The second is a conversion constructor from `int`. 
+You could also have given `denominator` a default argument like so: `Rational(int numerator, int denominator = 1)`. 
+Both cases allow for implicit conversion to `Rational` from `int` (and types that implicitly convert to `int`) since we don't use the `explicit` keyword. 
+The third is a special kind of constructor known as a `copy` constructor. We'll talk more about this later, but basically it allows us to create a new `Rational` by copying (and not modifying) an existing one.
 
 ```C++
 Rational r = 5; // invoke constructor 2
@@ -32,9 +37,12 @@ Constructors can use `()` or `{}`. This is to avoid *the most vexing parse* whic
 
 We have already seen how to overload functions, but we can also overload operators as well.
 
-Binary operator overloads take two arguments (the left and right operand), and unary operators take one. If the two arguments are different types, then you'd have to define two overloads in order for the operator to be commutative. One overload has type `x` as the left operand (first arguments) and type `y` as the right (second arguments) and the other is the opposite with `y` for the left operand (first arg) and `x` as the right.
+Binary operator overloads take two arguments (the left and right operand), and unary operators take one. 
+If the two arguments are different types, then you'd have to define two overloads in order for the operator to be commutative. 
+One overload has type `x` as the left operand (first arguments) and type `y` as the right (second arguments) and the other is the opposite with `y` for the left operand (first arg) and `x` as the right.
 
-But first, it's important to realize that methods (member functions) of a class have an implicit first argument that is the context object for that function. So if you define a binary operator overload as a member function, the left argument will be an instance of the class.
+But first, it's important to realize that methods (member functions) of a class have an implicit first argument that is the context object for that function. 
+So if you define a binary operator overload as a member function, the left argument will be an instance of the class.
 
 Let's define the assignment operator to allow updating our object.
 
@@ -63,9 +71,15 @@ const Rational r2(5, 2);
 r = r2; //assign 2
 ```
 
-All methods of a class have a `this` pointer, which refers to the calling context of the method. This calling context is the implicit first argument of member methods. Therefore, `operator=` is a binary operator despite it's overload appearing to only have one argument. Moreover, `operator=` typically returns a reference to the object being updated, and so we return `*this`, which dereferences the `this` pointer. Once again notice how `num` in the second overload is `const &`. It is `const` since there is no need to mutate it and we pass by reference to avoid extra copying (plus this is the idiomatic way of defining `operator=`). You may also notice the strange `->` operator. This is essentially the dot operator for pointers. 
+All methods of a class have a `this` pointer, which refers to the calling context of the method. 
+This calling context is the implicit first argument of member methods. Therefore, `operator=` is a binary operator despite its overload appearing to only have one argument. 
+Moreover, `operator=` typically returns a reference to the updated object; so we return `*this`, which dereferences the `this` pointer. 
+Once again notice how `num` in the second overload is `const &`. It is `const` since there is no need to mutate it, and we pass by reference to avoid extra copying (plus this is the idiomatic way of defining `operator=`). 
+You may also notice the strange `->` operator. This is the pointer scope resolution operator, basically the dot operator for pointers. 
 
-Let's define basic arithmetic operations. I typically like to define arithmetic operators as free functions because it's slightly more clear what the type of the left operand is (otherwise, the left operand is the implicit first argument `this`). Let's look at both ways:
+Let's define basic arithmetic operations. 
+I typically like to define arithmetic operators as free functions because it's slightly more clear what the type of the left operand is (otherwise, the left operand is the implicit first argument `this`). 
+Let's look at both ways:
 
 ```C++
     // ...
@@ -87,7 +101,11 @@ Rational operator*(const Rational & a, const Rational & b) {
 
 Since we are creating a new `Rational` we declare the member function to be `const`, this way it takes `const this` as its implicit first argument.
 
-Now you might be curious: "Aren't `num` and `den` private members? How can we access them outside the class `Rational`?" The answer is we can't. Well, not without declaring the function a `friend`. `friend` classes and functions are classes and functions that are not declared in the class scope, but are essentially part of the class they are friends with. They have access to all private, protected, and public members. They should be used sparingly, as it is the strongest coupling relation available. In this case, it's a good choice since we want `operator*` to behave like a member of the class itself.
+Now you might be curious: "Aren't `num` and `den` private members? How can we access them outside the class `Rational`?" 
+The answer is we can't. Well, not without declaring the function a `friend`. 
+`friend` classes and functions are classes and functions do not have to be defined in the class scope, but are essentially part of the class they are friends with. 
+They have access to all private, protected, and public members. 
+They should be used sparingly, as it is the strongest coupling relation available. In this case, it's a good choice since we want `operator*` to behave like a member of the class itself.
 
 Now as currently written, you would expect addition to be commutative, however:
 
@@ -98,7 +116,8 @@ auto r2 = r + 10; // good
 r2 = 10 + r; // error
 ```
 
-It's not! Thats because, as defined, `operator+` expects its first argument to be a Rational object and member functions will not do implicit conversions on the implicit first argument. However, in the third line we pass an integer. Therefore, we'll need to define a free function which has `int` as the left-hand argument.
+It's not! That's because, as defined, `operator+` expects its first argument to be a Rational object and member functions will not do implicit conversions on the implicit first argument. 
+However, in the third line we pass an integer. Therefore, we'll need to define a free function which has `int` as the left-hand argument.
 
 ```C++
 Rational operator+(int a, const Rational & b) {/*...*/}
@@ -110,7 +129,7 @@ Rational operator+(const Rational & a, int b) {/*...*/}
 
 Or, we can just define one free function which takes `Rational` since `int` can be implicitly converted to `Rational`.
 
-Let's also make `Rational` able to be printed to `cout`. For that we can overload `operator<<`, which as a left hand argument takes a reference to an `std::ostream` which is a super type of the class that `std::cout` is an instance of.
+Let's also make `Rational` able to be printed to `cout`. For that we can overload `operator<<`, which takes a reference to an `std::ostream`, a super type of the class that `std::cout` is an instance of.
 
 ```C++
 std::ostream& operator<<(std::ostream & stream, const Rational & r) {
@@ -119,7 +138,11 @@ std::ostream& operator<<(std::ostream & stream, const Rational & r) {
 }
 ```
 
-Two final overloads I want to give special attention to are the increment/decrement operators. Both of these have a postfix and prefix version which do different things. The prefix version directly increments the object while the postfix version makes a copy, increments the object, and returns the copy made. Therefore, unless you need the old value its good practice to use the prefix increment/decrement by default. Furthermore, to make compiler optimizations easier, it's good practice to implement the postfix operators in terms of their prefix counterparts (it's good code reuse as well).
+Two final overloads I want to give special attention to are the increment/decrement operators. 
+Both of these have a postfix and prefix version which do different things. 
+The prefix version directly increments the object while the postfix version makes a copy, increments the object, and returns the copy made. 
+Therefore, unless you need the old value, it's good practice to use the prefix increment/decrement by default. 
+Furthermore, to make compiler optimizations easier, it's smart to implement the postfix operators in terms of their prefix counterparts (it's good code reuse as well).
 
 ```C++
     //...

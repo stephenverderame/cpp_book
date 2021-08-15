@@ -1,10 +1,16 @@
 # Interfaces
 
-What we saw last chapter was a *concrete* class. Concrete types have their representation part of their definition. Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes to implement. Abstract types must be used via pointers or references, while concrete types can be used directly. Concrete types can be placed on the stack and also be members of other classes much more simply than abstract types.
+What we saw last chapter was a *concrete* class. Concrete types have their representation part of their definition. 
+Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes to implement. 
+Abstract types must be used via pointers or references, while concrete types can be used directly. Concrete types can be placed on the stack, and be members of other classes much more simply than abstract types.
 
-In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enables dynamic dispatch for that function and allows subclasses to override it.
+In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. 
+The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the 
+compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. 
+Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enables dynamic dispatch for that function and allows subclasses to override it.
 
-An abstract type contains at least one *pure virtual* functions, which is a function that subclasses **must** override because the superclass does not implement it. The Java equivalent of an `interface` would be a class that contains only pure virtual functions.
+An abstract type contains at least one *pure virtual* functions, which is a function that subclasses **must** override because the superclass does not implement it. 
+The C++, the equivalent of a Java `interface` would be a class containing only pure virtual functions.
 
 ```C++
 class Person {
@@ -28,7 +34,9 @@ c.walk(); // 10
 Person p; //error
 ```
 
-When overriding a function, it's good practice to explicitly denote it as such with `override`. This prevents you from accidentally creating a new function and *shadowing* the super class's functions. Since you cannot overload superclass functions, creating a function with the same name as a superclass's function in a subclass shadows that function and prevents it from being called.
+When overriding a function, it's good practice to explicitly denote it as such with `override`. 
+This prevents you from accidentally creating a new function and *shadowing* the super class's functions. 
+Since you cannot overload superclass functions, creating a function with the same name as a superclass's function in a subclass shadows that function and prevents it from being called.
 
 ```C++
 class Machine {
@@ -46,11 +54,23 @@ pc.serialNumber(10); // good
 pc.serialNumber(); // error, superclass method shadowed
 ```
 
-Inheritance enables us to use polymorphism and let subclasses behave like their superclasses. A user would not need to care about the concrete class or its implementation, they can just use the interface defined in the supertype without regard to the specific implementation. However, in order to fully support this, we need to ensure that the destructor is virtual. Otherwise, there will be no dynamic dispatch on the destructor which will cause undefined behavior if we destroy a subclass through a reference or pointer to the superclass. Another alternative is to make the base class destructor protected and non-virtual. This will prevent deletion of a derived type through a pointer or reference to the base class.
+Inheritance enables us to use polymorphism and let subclasses behave like their superclasses. 
+A user would not need to care about the concrete class or its implementation, they can just use the interface defined in the supertype without regard to the specific implementation. 
+However, in order to fully support this, we need to ensure that the destructor is virtual. 
+Otherwise, there will be no dynamic dispatch on the destructor which will cause undefined behavior if we destroy a subclass through a reference or pointer to the superclass. 
+Another alternative is to make the base class destructor protected and non-virtual. This will prevent deletion of a derived type through a pointer or reference to the base class.
 
-Constructors on the other hand, cannot be virtual. This is because construction requires complete type information; the static type is the type being constructed. Furthermore, the class doesn't exist as an object at runtime so you can't call a virtual method on it. This is in-line with the pay for what you use philosophy.
+Constructors on the other hand, cannot be virtual. This is because construction requires complete type information; the static type is the type being constructed. 
+Furthermore, the class doesn't exist as an object at runtime yet, so you can't call a virtual method on it.
 
-As an addendum, you should not call virtual functions in constructors or destructors. This is because the actual type of the object changes during these two operations and the type is always the type being created/destroyed and never a subclass. During construction of a derived class, we first start by constructing the base class and running the base class constructor. In this constructor, the type of the object is the base class type and not yet the derived class type. Then we build off the base and construct the derived class and call the derived class constructor. During this second constructor call, the type changes to be that of the derived type. For destruction, the process is similar but in reverse, destroying the derived object before destroying the base. So calling virtual functions in constructors/destructors is technically safe so long as the virtual function being called is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
+As an addendum, you should not call virtual functions in constructors or destructors. 
+This is because the actual type of the object changes during these two operations and the actual type is always the type being created/destroyed and never a subclass. 
+During construction of a derived class, we first start by constructing the base class and running the base class constructor. 
+In this constructor, the actual type of the object is the base class type and not yet the derived class type. 
+Then we build off the base and construct the derived class and call the derived class constructor. 
+During this second constructor call, the actual type changes to be that of the derived type. 
+For destruction, the process is similar but in reverse, destroying the derived object before destroying the base. 
+So calling virtual functions in constructors/destructors is technically safe so long as the virtual function is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
 
 ```C++
 class Vehicle {
@@ -104,9 +124,12 @@ moveIt(c);
 
 ```
 
-`Vehicle` has a constructor, but it is an abstract type so it still can't be constructed. Instead subclass constructors must delegate one of the superclass constructors like shown. When delegating a call from one constructor to another, we cannot use the initializer list to instantiate extra variables.
+`Vehicle` has a constructor, but it is an abstract type so it still can't be constructed directly. 
+Instead, subclass constructors must delegate one of the superclass constructors like shown. 
+When delegating a call from one constructor to another, we cannot use the initializer list to instantiate extra variables.
 
-Also notice how `moveIt` takes a `Vehicle` by reference. This is paramount to avoid *object slicing*. In memory, a concrete derived class is formed by taking its state and tacking it on to the data of the superclass. 
+Also, notice how `moveIt` takes a `Vehicle` by reference. 
+This is paramount to avoid *object slicing*. In memory, a concrete derived class is formed by taking its state and tacking it on to the data of the superclass. 
 
 |&Car|
 |---|
@@ -115,7 +138,10 @@ Also notice how `moveIt` takes a `Vehicle` by reference. This is paramount to av
 |Car Data|
 |`int horsePower`|
 
-Thus, passing the superclass by value will only copy the data that the subclass shares with the superclass. Hence the name object slicing, because the data specific to the subclass is sliced off. One such piece of data is the subclass's vtable. Therefore, object slicing prevents dynamic dispatch from operating as expected. In this case, if `Vehicle` was not a reference, the compiler would complain since that would require it to construct a new instance of `Vehicle`, and `Vehicle` is abstract and cannot be constructed.
+Thus, passing the superclass by value will only copy the data that the subclass shares with the superclass. 
+Hence the name object slicing, because the data specific to the subclass is sliced off. 
+One such piece of data is the subclass's vtable. Therefore, object slicing prevents dynamic dispatch from operating as expected. 
+In this case, if `Vehicle` was passed by value, the compiler would complain since that would require it to construct a new instance of `Vehicle`, and `Vehicle` is abstract and cannot be constructed.
 
 However, even with references we can run into a bit of a conundrum:
 
@@ -126,22 +152,25 @@ v = c2; //operator=
 v.move(); // ?
 ```
 
-As we saw in the last chapter, `operator=` is not normally virtual. We can make it virtual and overload it ourselves, but by default its not. Therefore, the above example causes object slicing as well! This is because `operator=` gets called on the static (declared) type which is `Vehicle` and not the dynamic (actual) type which is `Car`. So here, `operator=` will copy only the members it knows about (the ones part of the static type) and leave the rest unchanged. Thus, the output of `v.move()` is "car 2 went 30 mph".
+As we saw in the last chapter, `operator=` is not normally virtual. We can make it virtual and overload it ourselves, but by default it's not. 
+Therefore, the above example causes object slicing as well! This is because `operator=` gets called on the static (declared) type which is `Vehicle` and not the dynamic (actual) type which is `Car`. 
+So here, `operator=` will copy only the members it knows about (the ones part of the static type) and leave the rest unchanged. Thus, the output of `v.move()` is "car 2 went 30 mph".
 
 ## Covariance and Contravariance
 
 Suppose we had a function `clone` in our previous hierarchy. In the interface, we might define it as follows:
 
 ```C++
-    virtual Vehicle& clone() = 0;
+    virtual Vehicle* clone() = 0;
 ```
 
 But in `Car`, we know that if we clone a `Car` we'll get another `Car` back, so it would sure be nice to override it like such:
 
 ```C++
-    Car& clone() override {/* ... */ }
+    Car* clone() override {/* ... */ }
 ```
-Well we actually can! This is known as *covariant* return types and it permits derived classes to return an object that is derived from the return type of the virtual function. This is not an overload and in fact, two functions that differ in **only** their return types are not considered overloads.
+Well we actually can! This is known as *covariant* return types and it permits derived classes to return an object that is derived from the return type of the virtual function. 
+This is not an overload, and in fact, two functions that differ in **only** their return types are not overloads.
 
 Similarly, derived objects can take arguments that are supertypes of the defined arguments of the virtual function. This is known as contravariance. 
 

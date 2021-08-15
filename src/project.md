@@ -54,7 +54,6 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
     * Implement an exception class or exception hierarchy 
 * Implement the HTTP request and response frames
     * User should be able to choose HTTP version (parameter to `compose` method or pass to constructors?)
-    * Feel free to add your own tests for this
 * Implement the HTTP client
     * Should take ownership of a `Port` -> reads and writes requests on this port
     * Be able to send request Http Frames and receive response frames
@@ -78,6 +77,7 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
     * See `ChunkedTest` and `QueryTest`
 * Implement the command line argument marshallers
     * Recognize command line arguments
+* ~~Feel free to~~ add your own tests and expand upon the existing ones
 * Tie it all together:
     * Create a website with a C++ backend:
         * More than 1 page
@@ -111,4 +111,6 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
 
 ## Other Notes
 
-You can use preprocessor conditions around the definition of `WIN32` to conditionally enable code depending on if using Windows or Unix. `WIN32` is a macro defined by the compiler when compiling on Windows. In the CMake, I also define `WINDOWS` when the platform is Windows and Unix when it is not.
+You can use preprocessor conditions around the definition of `WIN32` to conditionally enable code depending on if using Windows or Unix. `WIN32` is a macro defined by the compiler when compiling on Windows (even Win64). In the CMake, I also define `WINDOWS` when the platform is Windows and `UNIX` when it is not.
+
+Feel free to change the implementation or design of anything. Although there is a comment saying not to, you may change the Port interface so long as you make sure to have tests.

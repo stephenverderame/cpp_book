@@ -1,15 +1,17 @@
 # Tuple
 
-Like `std::array`, `std::tuple` is a fixed size container, but the difference is it can hold different types. A tuple can be created by enumerating the values in its constructor or using one of the following:
+Like `std::array`, `std::tuple` is a fixed size container, but the difference is it can hold different types. A tuple can be created by enumerating the values it will store in its constructor or using one of the following:
 
 * `std::tie()`
     * Creates a tuple of lvalue references
 * `std::make_tuple()`
-    * General usage way to make a tuple. Same idea as `std::bind`, arguments are copy or move constructed
+    * General usage way to make a tuple. Same idea as `std::bind`, arguments are copy or move constructed.
 * `std::forward_as_tuple()`
-    * Creates a tuple of references, lvalue references if the argument is an lvalue, rvalue references if its an rvalue.
+    * Creates a tuple of references, lvalue references if the argument is a lvalue, rvalue references if it's a rvalue.
 
-Accessing a tuple uses `std::get`, which takes either a type or index as the template argument. Therefore, you can only use `std::get` if you know the type or index you want to get at compile time. We can use the template `std::tuple_size_v<T>` to get the size of a tuple and we can use `std::tuple_element_t<I, Tuple>` to get the type of index `I` of tuple `Tuple`.
+Accessing a tuple uses `std::get`, which takes either a type or index as the template argument. 
+Therefore, you can only use `std::get` if you know the type or index you want to get at compile time. 
+We can use the template `std::tuple_size_v<T>` to get the size of a tuple, and we can use `std::tuple_element_t<I, Tuple>` to get the type of index `I` of tuple `Tuple`.
 
 ```C++
 std::tuple<int, char, double> myTuple{5, 'c', 83.0};
@@ -48,9 +50,12 @@ constexpr auto dynamicGet(const Tuple& tuple, size_t index)
 const auto t = std::make_tuple(10, 20);
 const auto r = dynamicGet(t, 1);
 ```
-Using this function requires the compiler to instantiate a new `dynamicGet` for the specific tuple type for all indices of the tuple. How this works is that we first call `dynamicGet<Tuple, 0>`. If the runtime index `index` is equal to the compile time index of the function (`N`), then we call `std::get<N>`. Otherwise we call the next function.
+Using this function requires the compiler to instantiate a new `dynamicGet` for the specific tuple type for all indices of the tuple. 
+How this works is that we first call `dynamicGet<Tuple, 0>`. If the runtime index `index` is equal to the compile time index of the function (`N`), then we call `std::get<N>`. 
+Otherwise, we call the next `dynamicGet` function.
 
-Tuples are copyable and moveable if all of their contents are copyable and moveable, respectively. Tuples cannot be modified. The only way to do this would be to swap two tuples of the same type. Furthermore, we can make larger tuples by concatenating existing tuples together with `std::tuple_cat`.
+Tuples are copyable and moveable if all of their contents are copyable and moveable, respectively. 
+Tuples cannot be modified. The only way to do this would be to swap two tuples of the same type. Furthermore, we can make larger tuples by concatenating existing tuples together with `std::tuple_cat`.
 ```C++
 std::tuple<int, double, char> t = std::make_tuple(5, 5.0, 'c');
 std::tuple<int, double, char> t2;
@@ -62,11 +67,15 @@ std::swap(t, t2);
 std::tuple<int, double, char, float, bool> t3 = std::tuple_cat(t2, {500.f, false});
 std::get<3>; // 500.f
 ```
-The main usage of tuples is for passing or returning multiple things from a function. Returning a tuple should be preferred to output parameters. However accessing the data via `std::get` is quite annoying. So we can use a *structured binding* to unpack a tuple. A structured binding unpacks a `std::tuple`, `std::array`, or `struct`. Each member of a tuple is assigned to the corresponding name specified within the `[]` of the structured binding. The general syntax is as follows:
+The main usage of tuples is for passing or returning multiple things from a function. Returning a tuple should be preferred to output parameters. 
+However, accessing the data via `std::get` is quite annoying. So we can use a *structured binding* to unpack a tuple. 
+A structured binding unpacks a `std::tuple`, `std::array`, `std::pair`, or `struct`. Each member of a tuple is assigned to the corresponding name specified within the `[]` of the structured binding. 
+The general syntax is as follows:
 ```C++
 auto [name_1, name_2, ..., name_n] = std::tuple<type_1, type_2, ..., type_n>();
 ```
-The nth value in the tuple is assigned to the nth name in the structured binding. A structured binding must have the same number of names as values in the object being unpacked. If `auto` (or any form of `auto`) is used, the type of each name is deduced from the unpacking. If you manually specify the type, then all names must have the same type.
+The nth value in the tuple is assigned to the nth name in the structured binding. A structured binding must have the same number of names as values in the object being unpacked. 
+If `auto` (or any form of `auto`) is used, the type of each name is deduced from the unpacking. If you manually specify the type, then all names must have the same type.
 
 ```C++
 struct Bar {
@@ -109,7 +118,7 @@ auto&& [p3, num] = getForward(p);
 // num has type int&&
 ```
 
-Another usage of tuples is to use them to pass arguments to functions via `std::apply`. As its first parameter, it takes a callable object and as a second parameter it takes a tuple which will be unpacked as the arguments for that callable object.
+Another usage of tuples is to use them to pass arguments to functions via `std::apply`. `std::apply` takes a callable object and a tuple which will be unpacked as the arguments for that callable object.
 
 ```C++
 auto f = [](int a, int b){
@@ -122,9 +131,16 @@ auto res = std::apply(f, tup);
 
 # Optional
 
-An optional is a type that may contain a value. It's especially useful for returning something from a function that can fail. If an optional contains a value, that value is part of the optional's memory layout. That is to say the value it contains is not dynamically allocated. If the optional does not contain a value, that value has yet to be constructed and there is no memory reserved for. Therefore, an optional provides practically no overhead to code that uses them regardless if they are empty or not.
+An optional is a type that may contain a value. It's especially useful for returning something from a function that can fail. 
+If an optional contains a value, that value is part of the optional's memory layout. That is to say the value it contains is not dynamically allocated. 
+If the optional does not contain a value, that value has yet to be constructed and there is no memory reserved for it. 
+Therefore, an optional provides practically no overhead to code that uses them regardless if they are empty or not.
 
-An optional's `has_value()` member can be used to query if the optional contains a value, the optional is also convertible to `bool`. It has a default constructor that creates an empty optional and a conversion construct from the type it holds to create a contained optional. We can use `operator*`, `operator->`, or the `value()` members to get access to the contained value of the optional. If the optional does not contain a value when one of these members are called, it throws `std::bad_optional_access`. Remember that dereferences a `nullptr` is undefined behavior. So an optional provides a defined result when it is empty.
+An optional's `has_value()` member can be used to query if the optional contains a value, the optional is also convertible to `bool`. 
+It has a default constructor that creates an empty optional, and an implicit conversion constructor to convert wrap an object of the contained type into a filled optional. 
+We can use `operator*`, `operator->`, or the `value()` members to get access to the contained value of the optional. 
+If the optional does not contain a value when one of these members are called, it throws `std::bad_optional_access`. 
+Remember that dereferencing a `nullptr` is undefined behavior, however optionals provides a defined result when getting the data of an empty one.
 
 ```C++
 auto opt = std::make_optional(100);
@@ -160,7 +176,8 @@ if (auto result = readFile("data.bin"); result) {
 }
 ```
 
-We can construct an element directly in the containing optional with the `emplace()` member function. Furthermore, we can use `value_or()` to get a default value if one doesn't exist, and use `std::nullopt` to indicate an empty optional.
+We can construct an element directly in the containing optional with the `emplace()` member function. 
+Furthermore, we can use `value_or()` to get a default value if one doesn't exist, and use `std::nullopt` to indicate an empty optional.
 
 ```C++
 std::optional<int> p = std::nullopt; // empty
@@ -173,24 +190,31 @@ if (p != std::nullopt) {
 }
 ```
 
-Optionals are a great tool for error handling, especially when the error might be somewhat expected every now and again such as a user typing in an incorrect path and the system not being able to open the specified file.
+Optionals are a great tool for error handling, especially when the error might be somewhat expected every now and again. 
+For example, a user might enter an incorrect path and the system not being able to open the specified file.
 
 # Variant
 
-The Variant is a type safe union. It can hold one of the multiple types specified as template arguments. A possible usage of a variant is to return either an error message, or a result from a function. Like an optional, the variant's data is held directly within the variant so no dynamic allocation. Furthermore, it does not hold extra data besides the value that is currently stored within it. We can use `std::get` to try and get the specified type or index of the variant. If the variant does indeed hold that type, the value is returned. Otherwise the exception `std::bad_variant_access` is thrown. Once again this requires us to know the type or index of the type we want at compile time. We can use the `std::holds_alternative<T>` function to check if the variant holds a value of type `T`.
+The Variant is a type safe union. It can hold one of the multiple types specified as template arguments. 
+A possible usage of a variant is to return either an error message, or a result from a function. Like an optional, the variant's data is held directly within the variant so no dynamic allocation. 
+Furthermore, it does not hold extra data besides the value that is currently stored within it. We can use `std::get` to get the specified type or index of the variant. 
+If the variant does indeed hold that type, the value is returned. 
+Otherwise, the exception `std::bad_variant_access` is thrown. Once again this requires us to know the type or index of the type we want at compile time. 
+We can use the `std::holds_alternative<T>` function to check if the variant holds a value of type `T`.
 
 ```C++
 
 std::variant<int, char, std::string> var = 'H';
 
 if (std::holds_alternative<std::string>(var)) {
-
+    // .. do something with the string
 } else if (std::holds_alternative<char>(var)) {
     std::cout << std::get<char>(var) << std::endl; // prints 'H'
 }
 ```
 
-There is also the `std::get_if<T>` function takes a pointer to a variant and returns a pointer to `T` if the variant contains `T` otherwise `nullptr`.
+There is also the `std::get_if<T>` function which takes a pointer to a variant and returns a pointer to `T` if the variant contains `T`. 
+Otherwise, the function returns `nullptr`.
 
 ```C++
 std::variant<Data, std::string> readData(std::string_view s) {
@@ -236,9 +260,12 @@ if(std::holds_alternative<std::string>(bytes)){
     }
 } 
 ```
-As shown in the example, variants also have the `emplace()` member function for constructing a value directly in the variant.
+As shown in the example, variants also define the `emplace()` member function for constructing a value directly in the variant.
 
-We can use `std::visit` to perform a function templated on the type the variant holds. Using *constexpr if* we can perform a different action based on what the variant holds. Constexpr if is an if statement that is evaluated at compile time. Thus, when using constexpr if, the compiler can determine which branch is taken and inline that choice directly in the code. This makes it look like in the compiled code that there wasn't a conditional to begin with.
+We can use `std::visit` to perform a function templated on the type the variant holds. 
+Using *constexpr if* we can perform a different action based on what the variant holds. 
+Constexpr if is an if statement that is evaluated at compile time. Thus, when using constexpr if, the compiler can determine which branch is taken and inline that choice directly in the code. 
+This makes it look like there wasn't a conditional to begin with if you were to look at the compiled code.
 ```C++
 std::variant<char, int, double> getGpa();
 
@@ -256,9 +283,13 @@ std::visit([](auto&& gpa) {
     }
 }, variant);
 ```
-What `std::visit` does is call the supplied function passing in the value held by the variant. Notice the use of `auto&&`, which is essentially a universal reference because visit will pass in different types. So this lambda is essentially a template of sorts. A normal template function however wouldn't work, because you'd need to know which instantiation to call, and the fact that we don't have this information is one of the reasons we're using `std::visit` in the first place. `std::visit` essentially applies the *visitor* pattern. Here we use one function with constexpr-if to simulate having multiple overloads. We also need the `std::decay_t`, which will remove the reference if the function is passed an lvalue. We don't need it for this example but it also decays arrays into pointers. 
+What `std::visit` does is call the supplied function passing in the value held by the variant. 
+Notice the use of `auto&&`, which is essentially a universal reference because visit will pass in different types. So this lambda is essentially a template of sorts. 
+A normal template function however wouldn't work, because you'd need to know which instantiation to call, and the fact that we don't have this information is one of the reasons we're using `std::visit` in the first place. 
+`std::visit` essentially applies the *visitor* pattern. Here we use one function with constexpr-if to simulate having multiple overloads. 
+We also need the `std::decay_t`, which will remove the reference if the function is passed an lvalue. `std::decay_t` also decays arrays into pointers, which is functionality not used in this example.
 
-A variant cannot be empty. But if wanted it to be able to hold anything, we can allow it to hold `std::monostate` which is basically an empty struct designed to indicate an empty variant. 
+A variant cannot be empty, but if wanted it to be able to hold nothing, we can allow it to hold `std::monostate` which is basically an empty struct designed to indicate an empty variant. 
 
 ```C++
 std::variant<std::vector<int>, std::string, std::monostate> var = std::monostate{};
@@ -270,7 +301,8 @@ if (std::holds_alternative<std::monostate>(var)) {
 
 ## Union
 
-I mentioned that `variant` is a type safe union. So you may be wondering what a union is. Well basically, it's the C way of holding a value of one or multiple types all within the same area of memory. All members of a union are stored in the same memory location, therefore a union only takes up the amount of space needed for its largest member.
+I mentioned that `variant` is a type safe union. So you may be wondering what a union is. Well basically, it's the C way of holding a value of one or multiple types all within the same area of memory. 
+All members of a union are stored in the same memory location, so a union only takes up the amount of space needed for its largest member.
 
 ```C++
 
@@ -288,11 +320,15 @@ sizeof(MyUnion) == sizeof(std::string); // largest member
 un.flag = 0;
 ```
 
-A common usage for `union` is to set the memory as one type, and read it off as another to essentially perform a `reinterpret_cast`. This is called *type punning* and is **undefined behavior**. However, this is perfectly legal in C. Thus in C++, you should only read from a member of the same type as the actual stored value. Given this, I cannot think of a situation where a union would be preferable to `std::variant`.
+A common usage for `union` is to set the memory as one type, and read it off as another to essentially perform a `reinterpret_cast`. 
+This is called *type punning* and is **undefined behavior** in C++ (but not C). Thus, in C++, you should only read from a member that has the same type as the actual stored value. 
+Given this, I cannot think of a situation where a union would be preferable to `std::variant`.
 
 # Any
 
-`std::any` is another utility type similar to `variant`, `optional`, and `tuple`, but `any` holds only 1 value of *any* type, as the name may suggest. We can check if an `std::any` has a value via the `has_value()` member function. We can also get the `std::type__info&` of the stored type via the `type()` member function. Mutating the `any` can be done with the assignment operator, `swap()`, or `emplace()` just like a variant.
+`std::any` is another utility type similar to `variant`, `optional`, and `tuple`, but `any` holds only 1 value of *any* type, as the name may suggest. 
+We can check if a `std::any` has a value via the `has_value()` member function. 
+We can also get the `std::type__info&` of the stored type via the `type()` member function. Mutating the `any` can be done with the assignment operator, `swap()`, or `emplace()` just like a variant.
 
 ```C++
 std::any any = 1;
@@ -306,7 +342,8 @@ if(any.has_value()){
     any.emplace<std::string>("something new");
 }
 ```
-Getting a value stored from an any can be done with `std::any_cast`. We can also construct an any with s`td::make_any`. `any_cast` allows type safe retrieval of the value in the any. It will throw an exception if the RTTI of the type parameter and the stored value do not match.
+Getting a value stored from an any can be done with `std::any_cast`. We can also construct an any with `std::make_any`. 
+`any_cast` allows type safe retrieval of the value in the any. It will throw an exception if the RTTI of the type parameter and the stored value do not match.
 
 ```C++
 auto anything = std::make_any(20);

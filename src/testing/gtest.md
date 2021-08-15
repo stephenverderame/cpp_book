@@ -172,9 +172,15 @@ TEST(SuiteName, testName3) {
 
 ## Test Fixtures
 
-A lot of times tests will need to share data or logic. In that case we can use a test fixture. A test fixture is a class derived from `testing::Test`. Any protected members will be available in all tests that use the fixture. It can provide a default constructor/destructor or override the members `SetUp()` and `TearDown()` to provide initialization and cleanup logic for any shared data. The constructor and `SetUp()` are called before each test and the destructor and `TearDown()` is called after each one. When I say "shared data", I don't mean that the actual instances of each member are shared, but rather each test has its own instance of the same members.
+A lot of times tests will need to share data or logic. In that case we can use a test fixture. 
+A test fixture is a class derived from `testing::Test`. Any protected members will be available in all tests that use the fixture. 
+It can provide a default constructor/destructor or override the members `SetUp()` and `TearDown()` to provide initialization and cleanup logic for any shared data. 
+The constructor and `SetUp()` are called before each test and the destructor and `TearDown()` is called after each one. 
+When I say "shared data", I don't mean that the actual instances of each member are shared, but rather each test has its own instance of the same members.
 
-Internally, the `TEST` macro creates a class that is a subtype of `Test`. We can create a test fixture and use the macro `TEST_F` to create a test that subtypes this custom fixture. The first argument to `TEST_F` is the test fixture name and the second argument is the name of the test.
+Internally, the `TEST` macro creates a class that is a subtype of `Test`. 
+We can create a test fixture and use the macro `TEST_F` to create a test that subtypes this custom fixture. 
+The first argument to `TEST_F` is the test fixture name, and the second argument is the name of the test.
 
 ```C++
 class RingbufferFixture : public testing::Test {
@@ -233,7 +239,11 @@ TEST_F(RingbufferFixture, loopingTest) {
 
 ## Parameterized Tests
 
-Right now, if we wanted to do randomized or repeated testing on different inputs, we'd need to use loops in a single test. That's not too bad, but it can get hard to debug what input caused the test to fail. More annoyingly, it would require us to write a loop in all test cases we'd want to repeat on different inputs. Luckily, we can use parameterized tests. First, we create a test fixture which inherits from `::testing::TestWithParam<T>` where `T` is the type of the input. If we need multiple inputs we can make `T` a tuple. Then we define our tests similar to the test fixture but with the `TEST_P` macro.
+Right now, if we wanted to do randomized or repeated testing on different inputs, we'd need to use loops in a single test. 
+That's not too bad, but it can get hard to debug what input caused the test to fail. 
+More annoyingly, it would require us to write a loop in all test cases we'd want to repeat on different inputs. 
+Luckily, we can use parameterized tests. First, we create a test fixture which inherits from `::testing::TestWithParam<T>` where `T` is the type of the input. 
+If we need multiple inputs we can make `T` a tuple. Then we define our tests similar to the test fixture but with the `TEST_P` macro.
 
 ```C++
 class ParameterizedRBFixture : public ::testing::TestWithParam<int> {
@@ -330,13 +340,16 @@ INSTANTIATE_TEST_CASE_P(RingBufferTests, ParameterizedRBFixture,
 
 
 ```
-Now instead of each single test looping over a list of values, we can make the entire test fixture take an argument and pass a series of parameters to the test fixture. I'd also like to mention that instead of specifying values, `testing::Range(start, end, [optional increment])` can be used instead of `testing::Values()` or `testing::ValuesIn()` to get a sequence of values starting at `start`, ending at `end`, and incrementing by 1 or `increment` each step.
+Now instead of each single test looping over a list of values, we can make the entire test fixture take an argument and pass a series of parameters to the test fixture. 
+I'd also like to mention that instead of specifying values, `testing::Range(start, end, [optional increment])` can be used instead of `testing::Values()` or `testing::ValuesIn()` to get a sequence of values 
+starting at `start`, ending at `end`, and incrementing by 1 or `increment` each step.
 
-If all you want to do is simply repeat tests, you can use the `--gtest_repeat` parameter to simply call the tests over again.
+If all you want to do is simply repeat tests, you can use the `--gtest_repeat` command-line parameter to simply call the tests over again.
 
 ## Typed Tests
 
-Typed tests are quite similar, expect they allow you to make a test fixture a template and specify the template arguments to repeat all tests with. A difference with typed tests however, is that we must define the test suite as typed as well using the macro `TYPED_TEST_SUITE` along with indicating a test should be types as well with the `TYPED_TEST` macro.
+Typed tests are quite similar, except they allow you to make a test fixture a template and specify the template arguments to repeat all tests with. 
+A difference with typed tests however, is that we must define the test suite as typed using the macro `TYPED_TEST_SUITE` along with indicating that a test should be typed with the `TYPED_TEST` macro.
 
 ```C++
 template<typename T>
@@ -357,13 +370,20 @@ TYPED_TEST(RBFix, emptyTest) {
 
 ```
 
-We also can have typed parameterized tests by making the fixture a template and inheriting from `testing::TestWithParams<>`. Each test case would then use the `TYPED_TEST_P` macro. These types of tests would need to be registered and instantiated with macros.
+Accessing protected members of a test fixture in a typed test case requires the usage of the `this` pointer. This is because each test case becomes a unique class that inherits the test fixture. 
+Since this test fixture is a template, and C++ requires an explicit `this` pointer to refer to members of a base template class, we must use an explicit `this` pointer in the test cases.
+
+We also can have typed parameterized tests by making the fixture a template and inheriting from `testing::TestWithParams<>`. 
+Each test case would then use the `TYPED_TEST_P` macro. These types of tests would need to be registered and instantiated with macros.
 
 ## Matchers
 
-GTest provides the generalized assertion `ASSERT_THAT` and `EXPECT_THAT`. The first argument is an object, and the second object is a matcher. Matchers are objects which ensure that a certain condition is met. There are matchers for containers, strings, numbers, etc. Matchers are part of GMock, and can be included with `<gmock/gmock.h>`. To link gmock, add `PRIVATE GTest::gmock` to the `target_link_libraries` call in CMake.
+GTest provides the generalized assertion `ASSERT_THAT` and `EXPECT_THAT`. The first argument is an object, and the second object is a matcher. 
+Matchers are objects which ensure that a certain condition is met. There are matchers for containers, strings, numbers, etc. 
+Matchers are part of GMock, and must be included with `<gmock/gmock.h>`. To link gmock, add `PRIVATE GTest::gmock` to the `target_link_libraries` call in CMake.
 
-Matchers can also be composed into larger ones using `testing::AllOf()`, `testing::AnyOf()`, `testing::Not()` and `testing::Conditional(cond, m1, m2)`. The conditional uses `m1` if the condition is true, otherwise `m2`. Here are some examples, although I suggest taking a look at the documentation [here](https://google.github.io/googletest/reference/matchers.html)
+Matchers can also be composed into larger ones using `testing::AllOf()`, `testing::AnyOf()`, `testing::Not()` and `testing::Conditional(cond, m1, m2)`. 
+The conditional uses `m1` if the condition is true, otherwise `m2`. Here are some examples, although I suggest taking a look at the documentation [here](https://google.github.io/googletest/reference/matchers.html).
 
 ```C++
 using namespace testing;

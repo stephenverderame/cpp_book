@@ -2,7 +2,8 @@
 
 Function pointers allow us to pass functions as values. We'll discuss this a lot more later but I did want to introduce the topic here.
 
-Functions are static data. So **do not** free them. All function pointers essentially represent non owning references. Function pointers behave like normal pointers, but you can also apply `operator()` to call them like a normal function.
+Functions are static data. So **do not** free them. 
+All function pointers essentially represent non owning references. Function pointers behave like normal pointers, but you can also apply `operator()` to call them like a normal function.
 
 The syntax for a function pointer is as follows: `<return type>(*[optional name])(<comma separated list of argument types>)`.
 
@@ -43,7 +44,8 @@ auto aPlusB = elementWiseOp(addPtr2, vecA, vecB);
 
 Function pointers aren't as powerful as the modern `std::function`, which can use ANY callable object. I showed a bunch of things I haven't discussed yet, so we'll talk about that later.
 
-Finally, function pointers to methods are a little different. We need to encode the the class that owns the method in the type of the pointer and also pass an instance of that class to the function pointer via dot syntax when calling it.
+Finally, function pointers to methods are a little different. 
+We need to encode the method's owning class in the type of the pointer and pass an instance of that class to the function pointer via dot syntax when calling it.
 
 ```C++
 class Foo {
@@ -82,7 +84,8 @@ Again, prefer `std::function` to dealing with function pointers directly.
 
 # Raw Pointers
 
-Prefer smart pointers, `std::vector`s, `std::array`s, and other modern C++ features.
+Prefer smart pointers, `std::vector`s, `std::array`s, and other modern C++ features. 
+With raw pointers, you must ensure to match the corresponding de-allocation function with the allocation function used to allocate the memory.
 
 
 ```C++

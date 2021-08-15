@@ -1,6 +1,7 @@
 # Type Deduction
 
-If you have been following the advice of Herb Sutter to almost always use auto, then you will have had much experience with type deduction. For the most part, type deduction just works as you'd expect. But there are cases where things might snag you.
+If you have been following the advice of Herb Sutter to almost always use auto, then you will have had much experience with type deduction. 
+For the most part, type deduction just works as you'd expect, but there are cases where things might snag you.
 
 ```C++
 template<typename T>
@@ -10,7 +11,8 @@ fun(expr);
 
 ```
 
-In the following explanation, I will refer to `expr` as the expression passed to the function. `T` as the deduced type of the function, and `ParamType` as the adorned type used as the argument for the function. For example:
+In the following explanation, I will refer to `expr` as the expression passed to the function. `T` as the deduced type of the function, and `ParamType` 
+as the adorned type used as the argument for the function. For example:
 
 ```C++
 template<typename T>
@@ -23,14 +25,17 @@ fun(10);
 
 Type Deduction Rules:
 * Modifiers specified in `ParamType` are lost by the type deduction of `T`
-    * So if `ParamType` is `T&`, any lvalue references passed in to the function will have a deduced type which doesn't include the reference. So passing in `const int&`, `T` will be `const int`. In this example, rvalue references would not be able to be bound.
+    * So if `ParamType` is `T&`, any lvalue references passed in to the function will have a deduced type which doesn't include the reference. So passing in `const int&`, `T` will be `const int`. 
+    In this example, rvalue references would not be able to be bound.
 	* If `ParamType` is `const T&`, then passing in a `const int`, `T` will be deduced to be `int`, not `const int`
 * If `expr` is a reference, the reference part is ignored
-* If `ParamType` is a universal reference and `expr` is an lvalue then `T` is deduced to be an lvalue references. **This is the only time type deduction deduces a reference**
+* If `ParamType` is a universal reference and `expr` is a lvalue then `T` is deduced to be an lvalue references. **This is the only time type deduction deduces a reference**
 * If `ParamType` is just `T` (pass-by-value) constness, referenceness, and volatility is ignored.
 * If `ParamType` is a reference, and `expr` is an array, then `T` deduces the array's type. It doesn't decay into a pointer like normal. This applies to function pointers as well
 
-`auto` type deduction mostly follows the same rules as above. You can think of `auto` as the `T` in template type deduction. One caveat is while template type deduction cannot deduce braces, `auto` type deduction can and it will deduce to `std::initializer_list`. A function that returns `auto` follows template type deduction rules, not `auto` type deduction rules.
+`auto` type deduction mostly follows the same rules as above. You can think of `auto` as the `T` in template type deduction. 
+One caveat is while template type deduction cannot deduce braces, `auto` type deduction can, and it will deduce as `std::initializer_list`. 
+A function that returns `auto` follows template type deduction rules, not `auto` type deduction rules.
 
 The best way to understand this is with examples:
 
@@ -85,7 +90,8 @@ auto& v2 = v;
 // so v2 is an std::vector<int>&
 ```
 
-The `decltype` rules are very simple. It produces the exact type of the expression passed. We can use `decltype` rules in place of `auto` or template rules for variables and return values with the syntax `decltype(auto)`.
+The `decltype` rules are very simple. 
+It produces the exact type of the expression passed. We can use `decltype` rules in place of `auto` or template rules for variables and return values with the syntax `decltype(auto)`.
 
 ```C++
 auto operator[](int index) {
@@ -152,11 +158,13 @@ auto make_unique_cpy(T&& t) {
 }
 ```
 
-If an lvalue is passed to `make_unique_simple`, then `T` will be deduced to an lvalue reference. Since we can't create a pointer to a reference, we must use `std::remove_reference_t` to ensure that the type being passed to `unique_ptr` and `new` is not a reference.
+If a lvalue is passed to `make_unique_simple`, then `T` will be deduced to a lvalue reference. 
+Since we can't create a pointer to a reference, we must use `std::remove_reference_t` to ensure that the type being passed to `unique_ptr` and `new` is not a reference.
 
-During type deduction, there may be cases where a reference to a reference is produced. Since such double references are illegal, the compiler follows the rules of *reference collapsing* to produce a single reference. This can occur when using `decltype` or type aliases, or during template or auto type deduction for example. When a reference to a reference is produced:
-* If either references is a lvalue references, the result is an lvalue reference
-* Otherwise the expression collapses to a rvalue reference.
+During type deduction, there may be cases where a reference to a reference is produced. Since such double references are illegal, the compiler follows the rules of *reference collapsing* to produce a single reference. 
+This can occur when using `decltype`, type aliases, or during type deduction, for example. When a reference to a reference is produced:
+* If either references is a lvalue references, the result is a lvalue reference
+* Otherwise, the expression collapses to a rvalue reference.
 
 ```C++
 template<typename T>

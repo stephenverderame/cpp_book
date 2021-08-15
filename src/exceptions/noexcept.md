@@ -1,6 +1,9 @@
 ## Noexcept
 
-We saw how `std::exception::what()` is defined as `noexcept`. This means that it cannot throw an exception or if it did, a fatal error has ocurred. Any exception that propogates out of a `noexcept` function calls `std::terminate` and ends the program. So you should declare functions that do not throw, or only throw in really bad situations (like memory allocation failures), as `noexcept`. Furthermore, a `noexcept` function permits the compiler to optimize away error handling infrastructure for that function. So it's good practice to declare everything that you can as `noexcept`.
+We saw how `std::exception::what()` is defined as `noexcept`. This means that it cannot throw an exception, or a thrown exception indicates a fatal error. 
+Any exception that propagates out of a `noexcept` function calls `std::terminate` and ends the program. 
+So you should declare functions that do not throw, or only throw to indicate program-terminating failures (like memory allocation failures), as `noexcept`. 
+Furthermore, a `noexcept` function permits the compiler to optimize away error handling infrastructure for that function. So it's a good idea to declare everything that you can as `noexcept`.
 
 ```C++
 int add(int a, int b) noexcept {
@@ -8,7 +11,7 @@ int add(int a, int b) noexcept {
 }
 ```
 
-But we can also make functions *conditionally noexcept*. This means that the function will be `noexcept` if and only if some compile time expression is true.
+We can also make functions *conditionally noexcept*. This means that the function will be `noexcept` if and only if some compile time expression is true.
 
 ```C++
 void x() noexcept; //noexcept
@@ -33,7 +36,9 @@ bool d() noexcept(noexcept(k())); //d is not noexcept
 
 constexpr auto testNoexcept = noexcept(t()); //true
 ```
-Notice how when we test if a function is noexcept, we need to have two `noexcept`s. This is because the inner `noexcept` is a conditional test, which returns `true` or `false` if the function passed is `noexcept` or not. The outer noexcept takes a `constexpr` boolean expression, and makes a function `noexcept` if the condition is `true`. Thus, when we pass the expression `sizeof(T) < 4`, we only need one since this is a `constexpr` expression. 
+Notice how when we test if a function is noexcept, we need to have two `noexcept`s. This is because the inner `noexcept` is a conditional test, which returns `true` or `false` if the function passed is `noexcept` or not. 
+The outer noexcept takes a `constexpr` boolean expression, and makes a function `noexcept` if the condition is `true`. 
+Thus, when we pass the expression `sizeof(T) < 4`, we only need one since this is a `constexpr` expression. 
 
 We'll talk about templates and `constexpr` more later, but basically all of these conditions are determined at compile time. This incurs no runtime cost.
 
@@ -43,17 +48,21 @@ There are 3:
 
 * Nothrow Guarantee
 
-    This is denoted by `noexcept` on the function declaration. This is the strongest exception guarantee but it doesn't necessarily mean the function does not throw. What it means is that if the function does throw, some disastrous and non-recoverable error just occurred. Use this more often than you might think, since "dead programs tell no lies"
+    This is denoted by `noexcept` on the function declaration. This is the strongest exception guarantee, and it doesn't necessarily mean the function does not throw. 
+    What it means is that if the function does throw, some disastrous and non-recoverable error just occurred. Use this more often than you might think, since "dead programs tell no lies"
 
 * Strong Guarantee
 
-    This guarantees that an operation is atomic with respect to exceptions. The operation either completes, or an exception is thrown and nothing happened. A failed operation with this guarantee means the state of the program will be exactly what it was before the operation.
+    This guarantees that an operation is atomic with respect to exceptions. The operation either completes, or an exception is thrown and nothing happened. 
+    If an operation with this guarantee fails, the state of the program will be exactly what it was before the operation.
 
 * Basic Guarantee
 
-    This guarantees that if an operation does fail, no invariants are broken and the program will return to some valid state. This is the weakest of the three.
+    This guarantees that if an operation does fail, no invariants are broken and the program will return to some valid state. 
+    This is the weakest of the three, and the minimum guarantee required for a correct program.
 
-C++'s STL always offers the strong guarantee (or noexcept when denoted as such) with the exception of range insertions (offers the basic guarantee) and insert and erase on deque and vector (which are strong only if their elements' copy and assignment offer that guarantee). Moreover the streams library only offers the basic guarantee.
+C++'s STL always offers the strong guarantee (or noexcept when denoted as such) except for range insertions (offers the basic guarantee), 
+insert and erase on deque and vector (which are strong only if their elements' copy and assignment offer that guarantee), and the streams library (which only offers the basic guarantee).
 
 It's good to document when a function has the strong or basic guarantee. No need to document nothrow in most cases since `noexcept` is self-documenting.
 

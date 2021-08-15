@@ -1,6 +1,6 @@
 # Control Flow
 
-Here's some examples of control flow in C++
+Here are some examples of control flow in C++
 
 #### If 
 
@@ -49,7 +49,10 @@ for(; i < 100; ++i){
 }
 ```
 
-There is an actual difference between pre and post-increment (`++`). Applying `++` before a variable increments the variable and returns the new value, `++` after the variable returns the old value and increments the variable. Thus, pre-increment can have better performance since it does not need to create a copy of the old value. For integers, the difference is negligible but for iterators or another type that implements `operator++()`, this may be more important.
+There is an actual difference between pre and post-increment (`++`). Applying `++` before a variable increments the variable and returns the new value. 
+Applying `++` after the variable returns the old value and increments the variable. 
+Thus, pre-increment can have better performance since it does not need to create a copy of the old value. 
+For integers, the difference is negligible but for iterators or a user-defined type that implements `operator++()`, this may be important.
 
 #### While Loop
 
@@ -108,7 +111,10 @@ switch(num) {
 }
 ```
 
-Switches are pretty much just glorified `goto`s, and we'll talk about how they work under the hood later. For now this is what you need to know. The variable being switched upon must be an integral type such as a `char`, `int`, `short`, etc. Therefore, unlike other languages, strings don't work in switches. The code will jump to the case labelled with the value that is equal to the variable being switched upon. From there it will continue executing line after line until it reaches a `break`. This allows us to fallthrough from one case to another. Intended fallthrough should be avoided, but if necessary it should be labelled with the `[[fallthrough]]` attribute like shown above.
+Switches are pretty much just glorified `goto`s, and we'll talk about how they work under the hood later. 
+The variable being switched upon must be an integral type such as a `char`, `int`, `short`, etc. Therefore, unlike other languages, strings don't work in switches. 
+The code will jump to the case labelled with the value that is equal to the variable being switched upon. From there it will continue executing line after line until it reaches a `break`. 
+This allows us to fallthrough from one case to another. Intended fallthrough should be avoided, but if necessary it should be labelled with the `[[fallthrough]]` attribute like shown above.
 
 #### Infinite Loop
 
@@ -123,7 +129,7 @@ while(true) {
 }
 ```
 
-If you leave out the guard of the `for` loop like shown above, a constant that evaluates to false is put in its place.
+If you leave out the guard of the `for` loop like shown above, a constant which evaluates to `true` is put in its place.
 
 #### Break and Continue
 
@@ -141,7 +147,10 @@ for(/*...*/) {
 dblBreak:
 ```
 
-`goto` is not something you generally want to use (or even have to). Funny story: the first time I needed an unconditional jump, I actually didn't know C++ had a `goto`, so instead I used inline assembly only to realize how pointless this seemed to be writing something so simple in assembly. And that's the day I discovered C++ did indeed have a `goto`. The only good usage I can think of off the top of my head is to break out of nested loops like so. We first create a label by typing a name followed by a colon, then we put that name after `goto` to jump to it.
+`goto` is not something you generally want to use (or even have to). 
+Here's a funny story: the first time I needed an unconditional jump, I actually didn't know C++ had a `goto`, so instead I used inline assembly only to think how
+pointless it was to write something so simple in assembly. And that's the day I discovered C++ did indeed have a `goto`. 
+The only good usage I can think of off the top of my head is to break out of nested loops like so. We first create a label by typing a name followed by a colon, then we put that name after `goto` to jump to it.
 
 
 #### Further Reading

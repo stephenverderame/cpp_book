@@ -1,8 +1,15 @@
 # Algorithms
 
-STL algorithms are in the `<algorithms>` header. These are generic algorithms which operate on pairs of iterators. Often times they will take a callable object to perform some computation. Whenever you write a for loop, the first though should be "is there an algorithm which does this for me?". Generally, we want to use algorithms as much as possible because they avoid us making simple indexing or iterator mistakes and are already well tested. As we'll see later, some algorithms may also take an execution policy as their first argument. The execution policy changes their concurrency behavior. Thus, using STL algorithms one parameter is all it takes to convert sequential code to concurrent code. I'll briefly discuss a few common ones, but more information can be found on the documentation of the algorithms library.
+STL algorithms are in the `<algorithms>` header. These are generic algorithms which operate on pairs of iterators. 
+Often times they will take a callable object to perform some computation. 
+Whenever you write a for loop, the first though should be "is there an algorithm which does this for me?". 
+Generally, we want to use algorithms as much as possible because they help us avoid making simple indexing or iterator mistakes and are well tested. 
+As we'll see later, some algorithms may also take an execution policy as their first argument. The execution policy changes their concurrency behavior. 
+Thus, using STL algorithms, one parameter is all it takes to convert sequential code to concurrent code. 
+I'll briefly discuss a few common ones, but more information can be found on the documentation of the algorithms library.
 
-A predicate is a function that takes in an element and returns true if that element matches the criteria. A comparator is a function that takes in two arguments and returns true if the first argument should be ordered before the second.
+A predicate is a function that takes in an element and returns true if that element matches the criteria. 
+A comparator is a function that takes in two arguments and returns true if the first argument should be ordered before the second.
 
 * `std::for_each(It begin, It end, Func f)` - analogous to `iterate`
     * Calls `f`, passing in the dereferenced iterator for all elements between `begin` and `end`

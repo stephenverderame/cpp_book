@@ -1,13 +1,17 @@
 # Iterators
 
-There are actually multiple different iterator concepts. All iterators must be copy constructable and copy assignable, destructible, provide a prefix `operator++` for incrementing and an `operator*` for dereferencing. Futhermore, all iterator lvalues must be able to be swapped and all iterators must provide type aliases through `std::iterator_traits`. This is a struct that is specialized for iterators to provide the following member type aliases:
+There are actually multiple different iterator concepts. All iterators must be copy constructable and copy assignable, destructible, provide a prefix `operator++` for incrementing and an `operator*` for dereferencing. 
+Furthermore, all iterator lvalues must be able to be swapped and all iterators must provide type aliases through `std::iterator_traits`. 
+This is a struct that is specialized for iterators to provide the following member type aliases:
 * `difference_type` - result of subtracting iterators
 * `value_type` - resultant type of dereferencing the iterator and passing by value. So qualifiers such as `const` would not be included here.
 * `pointer` - pointer to `value_type` with qualifiers
 * `reference` - reference to `value_type` with qualifiers
 * `iterator_category` - tag indicating the type of iterator
 
-The type aliases can be declared by specializing `std::iterator_traits<T>` directly or by declaring them as public member type aliases in the class of the iterator itself. `std::iterator_traits<T>` is another usage of SFINAE. If `T` has the aforementioned type aliases, then `std::iterator_traits<T>` will be a struct that contains the exact same type aliases. Otherwise, `std::iterator_traits<T>` will not define any type aliases. Therefore, we could make an `IsIterable` trait before like so:
+The type aliases can be declared by specializing `std::iterator_traits<T>` directly or by declaring them as public member type aliases in the class of the iterator itself. 
+`std::iterator_traits<T>` is another usage of SFINAE. If `T` has the aforementioned type aliases, then `std::iterator_traits<T>` will be a struct that contains the exact same type aliases. 
+Otherwise, `std::iterator_traits<T>` will not define any type aliases. Therefore, we could make an `IsIterable` trait before like so:
 
 ```C++
 template<typename T, typename = void>
@@ -46,12 +50,13 @@ struct iterator_traits<T, std::void_t<
     * Able to be dereferenced and incremented
 * Input Iterator
     * Can be compared for equality with `==` and `!=`.
-    * Can be dereferenced to an rvalue
+    * Can be dereferenced to a rvalue
 * Output Iterator
-    * Can be dereferenced to an lvalue
+    * Can be dereferenced to a lvalue
 * Forward Iterator
     * Input or Output Iterator that can be default constructed and is *multi-pass*
-    * Multi-pass: dereferencing and incrementing the iterator doesn't affect the ability for the iterator to dereference. Basically, using the iterator does not consume anything. The iterator can increment to the sentinel and start over and do it again without a change in behavior.
+    * Multi-pass: dereferencing and incrementing the iterator doesn't affect the ability for the iterator to dereference. 
+    Basically, using the iterator does not consume anything. The iterator can increment to the sentinel and start over and do it again without a change in behavior.
 * Bidirectional Iterator
     * Forward Iterator that can be decremented
 * Random Access Iterator
@@ -82,9 +87,15 @@ Iterator
 
 Each iterator has a corresponding iterator tag type that would be assigned to the `iterator_category` type alias. The tags are `std::input_iterator_tag`, `std::output_iterator_tag`, etc.
 
-The STL provides some general methods for operating with iterators that are specialized to use more efficient operations if available. `std::advance(it, diff)` takes an iterator reference as its first parameter and a different type as its second parameter. It will advance the iterator `diff` spaces using `operator+` if it's available otherwise will repeatedly increment the iterator. `std::distance()` will return the distance between two iterators. Similarily, `std::distance` will be constant time for iterators that support `operator-(iter, iter)`. The STL also provides `std::next` and `std::prev` which are similar to `std::advance` for incrementing and decrementing the iterator.
+The STL provides some general methods for operating with iterators that are specialized to use more efficient operations if available. 
+`std::advance(it, diff)` takes an iterator reference as its first parameter and a different type as its second parameter. 
+It will advance the iterator `diff` spaces using `operator+` if it's available otherwise will repeatedly increment the iterator. `std::distance()` will return the distance between two iterators. 
+Similarly, `std::distance` will be constant time for iterators that support `operator-(iter, iter)`. 
+The STL also provides `std::next` and `std::prev` which are similar to `std::advance` for incrementing and decrementing the iterator.
 
-When designing generic code, it's best to be **as generic as possible**. For example, if you're using iterators in a for loop, it's better to use `operator!=` rather than `operator<` for comparing the iterator to the sentinel because only Random Access and Contiguous iterators support `operator<`. This doesn't just apply to iterators. Any time you use a type parameter you ideally want to use the most broadly applicable interface possible to reduce the requirements for that type.
+When designing generic code, it's best to be **as generic as possible**. 
+For example, if you're using iterators in a for loop, it's better to use `operator!=` rather than `operator<` for comparing the iterator to the sentinel because only Random Access and Contiguous iterators 
+support `operator<`. This doesn't just apply to iterators. Any time you use a type parameter you ideally want to use the most broadly applicable interface possible to reduce the requirements for that type.
 
 Consider:
 ```C++
@@ -114,7 +125,10 @@ void reverse(T& container) {
 
 ```
 
-Yes, the more generic version is more code and can be ever so slightly less efficient. But unless you have a good reason not to, it's generally more preferred to be as generic as possible. Another good example would be using `size() == 0` to check for emptiness of a container. Some containers don't have a concept of `size` but still have a concept of emptiness which can be tested with the `empty()` member function.
+Yes, the more generic version is more code and can be ever so slightly less efficient. 
+But unless you have a good reason not to, it's generally more preferred to be as generic as possible (within reason). 
+Another good example would be using `size() == 0` to check for emptiness of a container. 
+Some containers don't have a concept of `size` but still have a concept of emptiness which can be tested with the `empty()` member function.
 
 Let's look at an example of creating our own iterator
 ```C++
@@ -187,14 +201,18 @@ public:
 };
 ```
 
-As you see here, iterators are often implemented using pointers. So they must not live beyond the lifetime of the container they reference. `iterator` is a subclass of `Rope<T>`. So the fully qualified name for the iterator is `Rope<T>::iterator`. We cold also have forward declared the iterator inside the class and defined it outside the class. Later we'll see an implementation of `chain` which allows stringing together an arbitrary amount of different types of iterators.
+As you see here, iterators are often implemented using pointers. So they must not live beyond the lifetime of the container they reference. 
+`iterator` is a subclass of `Rope<T>`. So the fully qualified name for the iterator is `Rope<T>::iterator`. 
+We cold also have forward declared the iterator inside the class and defined it outside the class. 
+Later we'll see an implementation of `chain` which allows stringing together an arbitrary amount of different types of iterators.
 
 In C++ 20, the typename `iterator_category` in `std::iterator_traits` is replaced with `iterator_concept` and the `std::iterator_tag` is replaced with iterator concepts. 
 
 ## Iterator Adapters
 
 Iterator adapters wrap existing iterators in another iterator to provide certain functionality. These are mostly self-explanatory, and I won't go through every single one here.
-* `reverse_iterator` - wraps an existing bidirectional iterator into an iterator such that `++` of the reverse iterator calls `--` of the underlying iterator. Returned by `rbegin()` and `rend()` of standard containers
+* `reverse_iterator` - wraps an existing bidirectional iterator into an iterator such that `++` of the reverse iterator calls `--` of the underlying iterator. 
+Returned by `rbegin()` and `rend()` of standard containers.
     *  Can be created with `std::make_reverse_iterator()`
 * `move_iterator` - dereferences to an rvalue to allow moving the value referenced by the iterator
     * Factory function `std::make_move_iterator()`

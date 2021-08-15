@@ -2,11 +2,26 @@
 
 While unique pointers model exclusive ownership, shared pointers model shared ownership. 
 
-The shared pointer uses reference counting to keep track of the amount of other pointers referencing a piece of data. During the constructor, the reference count is incremented and during destruction the count is decremented. When that reference count goes to 0, the data is cleaned up. Because of this reference counting ability, shared pointers do have an added space and time overhead. Unlike a unique pointer, a shared pointer doesn't hold a pointer directly to the data but instead has a pointer to shared state containing the underlying data and meta data such as the reference count. Furthermore, the shared pointer's reference counting logic is atomic and thread safe. This does not mean it synchronizes accesses to the data, but it does guarantee that only one thread will every attempt to free the data. The atomicity of the reference counting operation also incurs some extra overhead since atomic instructions are typically more expensive then non-atomic ones. 
+The shared pointer uses reference counting to keep track of the amount of other pointers referencing a piece of data. 
+During the constructor, the reference count is incremented and during destruction the count is decremented. 
+When that reference count goes to 0, the data is cleaned up. 
+Because of this reference counting ability, shared pointers do have an added space and time overhead. 
+Unlike a unique pointer, a shared pointer doesn't hold a pointer directly to the data but instead has a pointer to a control block containing the underlying pointer and meta-data such as the reference count. 
+Furthermore, the shared pointer's reference counting logic is atomic and thread safe. 
+This does not mean it synchronizes accesses to the data, but it does guarantee that only one thread will ever attempt to free the data. 
+So you should not mutate the pointer or its underlying data from multiple threads without synchronization, but there's no need to synchronize the creation or deletion of shared pointers 
+since the reference counting is atomic. 
+The atomicity of the reference counting operation also incurs some extra overhead since atomic instructions are typically more expensive than non-atomic ones. 
 
-Unlike unique pointers. Shared pointers are copyable. During a copy the pointer to the shared state is copied and the reference count in this shared state is incremented. The old data's reference count is also decremented.
+Unlike unique pointers. Shared pointers are copyable. 
+During a copy the pointer to the control block is copied and the reference count in this control block is incremented. 
+The old data's reference count is also decremented.
 
-Shared pointers have an interface that's extremely similar to unique pointers but with some differences. You can use the `use_count()` member function to get the current data's reference count. Since a shared pointer models shared ownership, there is no `release()` member function since this could free data out from under other shared pointer instances. Finally, we can move a `unique_ptr` into a `shared_ptr` via its constructor to start shared management of exclusively owned data. This makes `unique_ptr` great for factory functions since it's easily convertible to any type of pointer you may want to use.
+Shared pointers have an interface that's extremely similar to unique pointers but with some differences. 
+You can use the `use_count()` member function to get the current data's reference count. 
+Since a shared pointer models shared ownership, there is no `release()` member function since this could free data out from under other shared pointer instances. 
+Finally, we can move a `unique_ptr` into a `shared_ptr` via its constructor to start shared management of exclusively owned data. 
+This makes `unique_ptr` great for factory functions since it's easily convertible to any type of pointer you may want to use.
 
 ```C++
 auto ptr = std::make_shared<int>(20);
@@ -51,13 +66,22 @@ public:
 }
 ```
 
-When creating recursive data types, we must use pointers otherwise the data type would have infinite size. But there's a problem with the implementation above. When we try to delete a node, we'll find that there's another reference to it via the next node's `prev` pointer. Therefore, the reference count will drop from 2 to 1, and the memory will not be freed. When we go to delete the next node. We'll find theres an existing reference in the previous node's `next` pointer since the previous node was not freed yet. Once again the reference count will not drop to 0.
+When creating recursive data types, we must use pointers otherwise the data type would have infinite size. 
+But there's a problem with the implementation above. When we try to delete a node, we'll find that there's another reference to it via the next node's `prev` pointer. 
+Therefore, the reference count will drop from 2 to 1, and the memory will not be freed. When we go to delete the next node, 
+we'll find there's an existing reference in the previous node's `next` pointer since the previous node was not freed yet. Once again the reference count will not drop to 0.
 
-This means that we cannot use `shared_ptr` in cyclic situations like the one above! This would create a memory leak. If we'd like to retain copy semantics, we can't use a `unique_ptr` so that leaves us with a `weak_ptr`.
+This means that we cannot use `shared_ptr` in cyclic situations like the one above! 
+This would create a memory leak. If we'd like to retain copy semantics, we can't use a `unique_ptr` so that leaves us with a `weak_ptr`.
 
-A `weak_ptr` holds a non-owning reference to data managed by a `shared_ptr`. The difference is that during copy of a `shared_ptr`, the reference count is incremented while operations of `weak_ptr` do not touch the reference count at all. This means that `weak_ptr` may dangle! The last `shared_ptr` may go out of scope, destroying the underlying data while a `weak_ptr` is still active!
+A `weak_ptr` holds a non-owning reference to data managed by a `shared_ptr`. 
+The difference is that during copy of a `shared_ptr`, the reference count is incremented while operations of `weak_ptr` do not touch the reference count at all. 
+This means that `weak_ptr` may dangle! The last `shared_ptr` may go out of scope, destroying the underlying data while a `weak_ptr` is still active!
 
-This isn't a problem however because a `weak_ptr` cannot access the underlying data directly. Instead, it must use the member `lock()` which will return a `shared_ptr` to the underlying data if it still is valid, or a default constructed `shared_ptr` for the underlying data. Like a `shared_ptr`, you can also check the amount of active owning references with `use_count()` and you can also check if the underlying data is still valid with the `expired()` member function. Finally, you can pass a reference to a `shared_ptr` to the `weak_ptr` constructor to construct a non-owning reference to the shared pointer's underlying data.
+This isn't a problem however because a `weak_ptr` cannot access the underlying data directly. 
+Instead, it must use the member `lock()` which will return a `shared_ptr` to the underlying data if it still is valid, or a default constructed `shared_ptr` for the underlying data if it isn't. 
+Like a `shared_ptr`, you can also check the amount of active owning references with `use_count()` and you can also check if the underlying data is still valid with the `expired()` member function. 
+Finally, you can pass a reference to a `shared_ptr` to the `weak_ptr` constructor.
 
 ```C++
 std::vector<std::weak_ptr<Foo>> foos;

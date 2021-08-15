@@ -1,8 +1,12 @@
 # GDB
 
-GDB is the GNU Debugger for Linux. It allows us to use a command line interface to investigate the stack trace, set breakpoints, step through execution, and more. On Windows, Visual Studio comes with a debugger that is pretty self-explanatory to use.
+GDB is the GNU Debugger for Linux. It allows us to use a command line interface to investigate the stack trace, set breakpoints, step through execution, and more. 
+On Windows, Visual Studio comes with a debugger that is pretty self-explanatory to use.
 
-In order to start debugging a program, we'll need to compile our program so that it includes the debugging symbol tables. To do this, we need to add the "-g" flag to the command line arguments of g++. In CMake, there are a few ways to do this. The first is to set the build type to `Debug` or `RelWithDebugInfo`. The latter produces an optimized release build except it also contains debug symbols. The former produces a debug build. Another option is to set C++ compiler flags. We'll discuss CMake more later.
+In order to start debugging a program, we'll need to compile our program so that it includes the debugging symbol tables. 
+To do this, we need to add the "-g" flag to the command line arguments of g++. In CMake, there are a few ways to do this. 
+The first is to set the build type to `Debug` or `RelWithDebugInfo`. The latter produces an optimized release build except it also contains debug symbols. 
+The former produces a debug build. Another option is to set C++ compiler flags. We'll discuss CMake more later.
 
 ```CMake
 set(CMAKE_BUILD_TYPE Debug) # Sets the build type to debug
@@ -19,21 +23,27 @@ target_compile_options(TargetName PRIVATE "-g")
 # sets the -g flag to the specific target
 ```
 
+We can also do this via the CMake command line by adding the flag `-DCMAKE_BUILD_TYPE=Debug`.
+
 Now our compiled binary can be run with the debugger. With `gdb` installed, run the command `gdb <path to exe>` to start debugging. You'll enter an interactive CLI that accepts commands.
 
 Without doing anything else but running the program, the debugger will break execution whenever the program crashes or an exception is thrown out of the program. To run the program use the `r` or `run` command specify any command line arguments the program may need.
 
-A backtrace can be displayed with `backtrace` or `bt`. And `q` quits gdb.
+A backtrace can be displayed with `backtrace` or `bt`, and `q` quits gdb.
 
-It may be helpful to log output to a file. To enable logging use `set logging on`. You can change the output file with `set logging file <file>`. By default, output is displayed to terminal as well as being logged. You can change this by turning on redirect, which when enabled only outputs to the log file. This can be turned on with `set logging redirect [on/off]`. Disable logging with `set logging off`. Everything printed to the terminal, will be saved in the log file.
+It may be helpful to log output to a file. To enable logging use `set logging on`. 
+You can change the output file with `set logging file <file>`. 
+By default, output is displayed to terminal as well as being logged. 
+You can change this by turning on redirect, which, when enabled, only outputs to the log file. This can be turned on with `set logging redirect [on/off]`. 
+Disable logging with `set logging off`. Everything printed to the terminal, will be saved in the log file.
 
 Here are a list of some commands:
-* `b`/`break` `(<class>::<member function> | <line number> | <file>::<line number> | <function name> | +<relative line num>) [if <expr>]`
+* `b`/`break` `(<class>::<member function> | <line number> | <file>:<line number> | <function name> | +<relative line num>) [if <expr>]`
     * `b 45` - breakpoint at line 45 of main file
     * `b MyClass::doFoo` - breakpoint at start of `doFoo()` of class `MyClass`
     * `break main` - breakpoint at start of `main()`
     * `b +10` - breakpoint 10 lines down from current position
-    * `b source.cpp::23 if x == 2` - breaks line 23 in source.cpp if a variable x is 2
+    * `b source.cpp:23 if x == 2` - breaks line 23 in source.cpp if a variable x is 2
 * `info breakpoints` - get a list of breakpoints. Each one has a numeric id
 * `delete <breakpoint number>`
 * `ignore <breakpoint number>`
@@ -42,9 +52,9 @@ Here are a list of some commands:
 * `next`/`n` `[lines]` - same as `step` but does not trace through (step into) functions
 * `stepi`/`si` `[instructions]` - goes to next *machine instruction*. Option param amount of instructions. Similar to `step`
 * `nexti`/`ni` `[instructions]` - same as `next` but with machine instructions.
-* `c` - continues to next breakpoint or error
+* `continue`/`c` - continues to next breakpoint or error
 * `watch <expr>` - breaks when the value of `expr` changes
-    * `watch str` - breaks every time the value of the variable changes
+    * `watch str` - breaks every time the value of the variable `str` changes
     * `watch str.size() > 10`
 * `condition <breakpoint number> <expr>` - makes the specified breakpoint conditional. The breakpoint will now only break when `expr` is true
 
@@ -88,7 +98,9 @@ More information can pretty easily be found online. Also check out the [GDB chea
 
 # GProf
 
-GProf is the GNU profiler. To use the profiler we must compile with the "-pg" compiler flag. See above for how to do that in CMake. From there we can simply run the program like normal. When execution is finished, a file called `gmon.out` will be generated in the build directory. Next, we can simply run the `gprof` tool on this executable which will display a lot of profiler information. So you probably want to redirect the output to a log file.
+GProf is the GNU profiler. To use the profiler we must compile with the "-pg" compiler flag. See above for how to do that in CMake. 
+From there we can simply run the program like normal. When execution is finished, a file called `gmon.out` will be generated in the build directory. 
+Next, we can simply run the `gprof` tool on this executable which will display a lot of information. So you probably want to redirect the output to a log file.
 
 ```
 gprof [<options>] <path to exe> gmon.out [> <log file name>]
@@ -116,7 +128,9 @@ Each sample counts as 0.01 seconds.
 ```
 [Source](https://ftp.gnu.org/old-gnu/Manuals/gprof-2.9.1/html_chapter/gprof_5.html#SEC11)
 
-The cumulative seconds is the time spent in the current function and all functions above that once in the table. Self seconds is the time spent only in that function. Gprof works by taking samples at fixed intervals. The sampling interval is displayed before the flat profile. In this case samples are every `0.01` seconds. Functions that are not called, are not compiled, or take an insignificant amount of time may not appear in the profile. The function `mcount` is used internally to perform this timing analysis.
+The cumulative seconds is the time spent in the current function and all functions above that once in the table. Self seconds is the time spent only in that function. 
+Gprof works by taking samples at fixed intervals. The sampling interval is displayed before the flat profile. In this case samples are every `0.01` seconds. 
+Functions that are not called, are not compiled, or take an insignificant amount of time may not appear in the profile. The function `mcount` is used internally to perform this timing analysis.
 
 Next is the call graph which shows how much time was spent in a function and its children. The graph is divided into entries separated by horizontal bars and looks something like this:
 ```
@@ -150,5 +164,6 @@ index % time    self  children    called     name
 -----------------------------------------------
 ```
 
-The primary line is the line for the function that the entry is analyzing. This line has the name of the function not on an indent. The direct caller of the function being analyzed is also included in the same entry.
+The primary line is the line for the function that the entry is analyzing. 
+This line has the name of the function not on an indent. The direct caller of the function being analyzed is also included in the same entry.
 

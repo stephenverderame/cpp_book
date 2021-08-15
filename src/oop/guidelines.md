@@ -2,7 +2,12 @@
 
 ## Prefer Non-member non-friend functions
 
-A non-member, non-friend function can only use the public interface of a class. This promotes encapsulation by only allowing the function to access data it needs. Of course, there are plenty of functions that need to be a member or access private data. These types of functions can be kept as members, but convenience functions and other operations that can be implemented with the public interface should be non-members so long as they don't incur *premature pessimization*. This helps promote the *coherence* of a class. Coherence is basically a measure of how many member variables are used in a member function. Ideally, every method of a class uses every member variable. Poor coherence indicates that the class may be doing too many things and therefore exposing members to functions which are unrelated.
+A non-member, non-friend function can only use the public interface of a class. 
+This promotes encapsulation by only allowing the function to access data it needs. 
+Of course, there are plenty of functions that need to be a member or access private data. 
+These types of functions can be kept as members, but convenience functions and other operations that can be implemented with the public interface should be non-members so long as they don't incur 
+*premature pessimization*. This helps promote the *coherence* of a class. Coherence is basically a measure of how many member variables are used in a member function. 
+Ideally, every method of a class uses every member variable. Poor coherence indicates that the class may be doing too many things and therefore exposing members to functions which are unrelated.
 
 ```C++
 class RingBuffer {
@@ -15,11 +20,14 @@ bool empty(const RingBuffer & rb) {
 }
 ```
 
-There's actually a TS (technical specification, basically a proposal for a language or library feature) for *unified function calls* which would allow `empty()` to be called as if it were a member function or `size()` to be called as if it were a free function. Will this ever be part of a future version of C++? Not sure.
+There's actually a TS (technical specification, basically a proposal for a language or library feature) for *unified function calls* which would allow `empty()` 
+to be called as if it were a member function or `size()` to be called as if it were a free function. Will this ever be part of a future version of C++? Not sure.
 
 ## NVI Idiom
 
-NVI stands for non-virtual interface and it's basically an application of GOF's Strategy Pattern. The idea is to have a public interface which is non-virtual (public virtual destructor not included) and provide private or protected methods which serve as hooks of customization by subtypes. This allows breaking up a complex computation into smaller customizable steps and/or enforce pre and post conditions which all subtypes must uphold.
+NVI stands for non-virtual interface, and it's basically an application of GOF's Strategy Pattern. 
+The idea is to have a public interface which is non-virtual (public virtual destructor not included) and provide private or protected methods which serve as hooks of customization by subtypes. 
+This allows breaking up a complex computation into smaller customizable steps and/or enforcing pre and post conditions which all subtypes must uphold in the supertype.
 
 A private virtual function can be overriden by subtypes, but unlike protected functions, the subtype cannot call it directly.
 

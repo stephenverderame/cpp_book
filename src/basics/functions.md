@@ -1,6 +1,7 @@
 # Functions
 
-As we have seen, if functions are not declared and defined separately, we can use `auto` to have the compiler use type deduction on the return type. Otherwise, just like function parameters, the return type must be specified.
+As we have seen, if functions are not declared and defined separately, we can use `auto` to have the compiler use type deduction on the return type. 
+Otherwise, just like function parameters, the return type must be specified.
 
 ```c++
 void printHello(); //declaration
@@ -17,11 +18,14 @@ void printHello() {
 }
 ```
 
-Declaring a function ahead of it's definition like in the above snippet is known as *forward declaring* and it allows us to not have to manually ensure that every function is defined in topological order. It basically tells the compiler "hey, I'm going to define this later so if you see this name before you see its definition don't freak out."
+Declaring a function ahead of its definition like in the above snippet is known as *forward declaring*. 
+It allows us to not have to manually ensure that every function is defined in topological order. 
+It basically tells the compiler "hey, I'm going to define this later so if you see this name before you see its definition don't freak out."
 
 `void` is a special type that essentially means there is no type. We can use it for functions that don't return anything. 
 
-Functions can be *pass-by-value* or *pass-by-reference*. When a function is pass-by-value, the function parameter is copied, when it's pass-by-reference the actual object is not passed to the function, but the address of the object is.
+Functions can be *pass-by-value* or *pass-by-reference*. When a function is pass-by-value, the function parameter gets copied, 
+when it's pass-by-reference the actual object is not passed to the function, but the address of the object is.
 
 ```c++
 

@@ -1,6 +1,9 @@
 # Policies
 
-Taking the term from Andrei Alexandrescu, a policy is a small little class that handles a single behavior or structural element for larger, more complex classes. *Policy Based Design* is the methodology to design classes by using such policies. Policy based design is sort of like the generic programming equivalent of object composition with class hierarchies. Let's look at an OOP and generic way of abstracting the thread safety and comparator behavior of a Linked List:
+Taking the term from Andrei Alexandrescu, a policy is a small little class which handles a single behavior or structural element for larger, more complex classes. 
+*Policy Based Design* is the methodology to design classes by using such policies. 
+Policy based design is sort of like the generic programming equivalent of object composition with class hierarchies. 
+Let's look at an OOP and generic way of abstracting the thread safety and comparator behavior of a Linked List:
 
 ```C++
 // OOP object composition (untested)
@@ -92,9 +95,18 @@ public:
 };
 ```
 
-There's a few problems with this approach. Firstly, we cannot have templated virtual functions. This means we'd need to manually create comparators for every type of arguments we'd want to support. Instead of an interface, we could accept a generic `std::function` to ameliorate that. Secondly, we are a bit limited. What if we wanted to have a per node locking system to improve the concurrency of the list? We could make the threading policy follow the *prototype* OOP pattern. Notice how this OOP approach however requires 2 parallel hierarchies, and because of the nature of polymorphism, indirection due to dynamic dispatch. This might be manageable, but what if we decide to make allocation something the user can control? Once again we'd be off creating another set of parallel class hierarchies.
+There's a few problems with this approach. 
+Firstly, we cannot have template virtual functions. This means we'd need to manually create comparators for every type of arguments we'd want to support. 
+Instead of an interface, we could accept a generic `std::function` to ameliorate that.
+What if we wanted to have a per node locking system to improve the concurrency of the list? A solution could be to make the threading policy follow the *prototype* OOP pattern. 
+Notice how this OOP approach however requires 2 parallel hierarchies, and because of the nature of polymorphism, indirection due to dynamic dispatch. 
+This might be manageable, but what if we decide to make allocation something the user can control? Once again we'd be off creating another set of parallel class hierarchies.
 
-We can make OOP work, but a better solution, especially when we're already dealing with generic code is to use policies. Customizable behaviors such as object allocation, comparators, threading, different algorithm implementations, etc. can be *policies* passed as template arguments. Each policy would adhere to a certain concept allowing the usage of many different, unrelated types. For example, a threading policy would no longer have to have a `lock()` function returning an implementation of a specific interface, but rather any object adhering to a certain concept. In our previous example, the concept would simply be `Destructible`.
+We can make OOP work, but a better solution, especially when we're already dealing with generic code is to use policies. 
+Customizable behaviors such as object allocation, comparators, threading, different algorithm implementations, etc. can be *policies* passed as template arguments. 
+Each policy would adhere to a certain concept allowing the usage of many different, unrelated types. 
+For example, a threading policy would no longer have to have a `lock()` function returning an implementation of a specific interface, but rather any object adhering to a certain concept. 
+In our previous example, the concept would simply be `Destructible`.
 
 ```C++
 #include <mutex>
@@ -267,15 +279,21 @@ public:
 };
 ```
 
-We've gained finer grain locking with policies because when we pass a type via template parameter, we have more control. We can easily construct instances of the locking policy wherever we see fit without forcing the locking policy to implement the prototype pattern. We also don't need to have an instance of the comparator. And probably most importantly, we cut down on the amount of classes we have to create. Supporting a different type is as easy as changing a single template parameter. We use SFINAE to enforce that the template parameters adhere to the policy interface. In C++20, concepts makes this much easier and cleaner.
+We've gained finer grain locking with policies because when we pass a type via template parameter, we have more control. 
+We can easily construct instances of the locking policy wherever we see fit without forcing the locking policy to implement the prototype pattern. 
+We also don't need to have an instance of the comparator. 
+And probably most importantly, we cut down on the amount of classes we have to create. Supporting a different type is as easy as changing a single template parameter. 
+We use SFINAE to enforce that the template parameters adhere to the policy interface. In C++20, concepts makes this much easier and cleaner.
 
-Notice that these policies are general enough to apply to many different classes. 
+Notice that these policies are general enough to apply to many classes. 
 
 Template-template parameters and more policy design examples will come later, but for now, I want to focus on using these ideas to customize the STL.
 
-STL uses this design a lot. We've already seen it in action with Deleters on smart pointers and comparison predicates in STL containers. One thing to note is that the STL wasn't so kind as to use SFINAE to prevent incorrect concept implementations. 
+STL uses this design a lot. We've already seen it in action with deleters on smart pointers and comparison predicates in STL containers. 
+One thing to note is that the STL wasn't so kind as to use SFINAE to prevent incorrect concept implementations. 
 
-A common STL policy is an allocator. These are typically the last template argument (because they are typically the least frequently customized) and are pretty similar to custom deleters with smart pointers. I won't discuss them here, but it's good to know they exist.
+A common STL policy is an allocator. These are typically the last template argument (because they are typically the least frequently customized) and are pretty similar to custom deleters with smart pointers. 
+I won't discuss them here, but it's good to know they exist.
 
 Let's start with an `std::map`. `std::set` is an ordered container typically implemented as a RB Tree. If we want to have a map of students, we'd need to be able to order them.
 
@@ -286,9 +304,13 @@ struct Student {
 };
 
 ```
-The concept for a comparator (`Compare` named requirement) requires a type that takes in a template parameter and defines an `operator(const T&, constT&)` which returns a bool (or something implicitly convertible to bool). It also requires that `!cmp(a, b) && !cmp(b, a)` establishes that `a == b`. The default ones provided are `std::less` and `std::greater` with use `operator<` and `operator>` respectively. Containers will order their elements so that `a` is before `b` if `cmp(a, b)` returns true. Thus, an out-of-the-box `std::set` will order elements least to greatest using the type's defined `operator<`.
+The concept for a comparator (`Compare` named requirement) requires a type that takes in a template parameter and defines an `operator(const T&, constT&)` which returns a bool 
+(or something implicitly convertible to bool). It also requires that `!cmp(a, b) && !cmp(b, a)` establishes that `a == b`. 
+The default ones provided are `std::less` and `std::greater` which use `operator<` and `operator>` respectively. 
+Containers will order their elements so that `a` is before `b` if `cmp(a, b)` returns true. Thus, an out-of-the-box `std::set` will order elements least to greatest using the type's defined `operator<`.
 
-Say we wanted to dehumanize our students and order them from highest to lowest gpa. Since equal gpa's should be allowed, we'll need an `std::multiset`. We could do this relatively simply by defining an `operator>` and changing the template parameter.
+Say we wanted to dehumanize our students and order them from highest to lowest gpa. Since equal gpa's should be allowed, we'll need an `std::multiset`. 
+We could do this relatively simply by defining an `operator>` and changing the template parameter.
 
 ```C++
 struct Student {
@@ -303,7 +325,8 @@ struct Student {
 std::multiset<Student, std::greater<Student>> students;
 ```
 
-Now let's say we wanted a multiset of students in an order that's different from the typical method to compare students: all CS students first, then alphabetically by major. we probably don't want to change `operator>` since users of our type wouldn't expect such an ordering when using the comparison operators. So instead, we'll just change the comparator on the set.
+Now let's say we wanted a multiset of students in an order that's different from the typical method to compare students: all CS students first, then alphabetically by major. 
+We probably don't want to change `operator>` since users of our Student type wouldn't expect such an ordering when using the comparison operators. So instead, we'll just change the comparator on the set.
 
 ```C++
 
@@ -321,9 +344,11 @@ struct StudentMajorOrdering {
 std::multiset<Student, StudentMajorOrdering> students;
 ```
 
-The STL comparator is not a template template parameter which allows us to easily implement specific orderings like this one. However it also means that when we do use template comparators like `std::less`, we'll have to pass the element type as a parameter to both the container and comparator as well.
+The STL comparator is not a template template parameter which allows us to easily implement specific orderings like this one. 
+However, it also means that when we do use template comparators like `std::less`, we'll have to pass the element type as a parameter to both the container and comparator as well.
 
-A difference between OOP and generic interfaces is that these two sets are not the same type. Unless our class defines generic member functions (which the STL does not), we cannot easily convert the two types and any code wishing to abstract away the specific implementation would need to use templates.
+A difference between OOP and generic interfaces is that these two sets are not the same type. Unless our class defines generic member functions (which the STL does not), 
+we cannot easily convert the two types and any code wishing to abstract away the specific implementation would need to use templates.
 
 ```C++
 
@@ -338,7 +363,10 @@ void useSet(T&&) {}
 // the interface T must adhere to.
 ```
 
-We already saw how we can specialize `std::hash` to make custom types work with hash containers, but what if we just wanted one `std::unordered_map` with a custom hash function? We can change the hashing and the comparison templates in a similar way to changing a comparator. Let's saw we wanted a map keyed on a student where we'll have only 1 student per school. That is to say two students are equal if they go to the same school. We'll need to change the hash function and the predicate used to compare for equality.
+We already saw how we can specialize `std::hash` to make custom types work with hash containers, but what if we just wanted one `std::unordered_map` with a custom hash function? 
+We can change the hashing and the comparison templates similarly to changing a comparator in a set. 
+Let's saw we wanted a map keyed on a student where we'll have only 1 student per school. That is to say two students are equal if they go to the same school. 
+We'll need to change the hash function and the predicate used to compare for equality.
 
 ```C++
 struct StudentSchoolEquality {
@@ -359,16 +387,22 @@ struct StudentSchoolHash {
 std::unordered_map<Student, std::string, StudentSchoolHash, StudentSchoolEquality> map;
 ```
 
-Notice how the `operator()` member functions are `const` and are passed `const` references. Because they do not modify any outside state or have side effects, these functions are known as *pure* and should be preferred to non-pure. For those familiar with functional programming, a pure function is like a step below a functional function. They don't have side effects or modify outside state, but they can modify internal local state and have things like loops.
+Notice how the `operator()` member functions are `const` and are passed `const` references. 
+Because they do not modify any outside state or have side effects, these functions are known as *pure* and should be preferred to non-pure. 
+For those familiar with functional programming, a pure function is like a step below a functional function. 
+They don't have side effects or modify outside state, but they can modify internal local state and have things like loops.
 
-For the last example, let's implement a case insensitive string. We can customize `std::string` which is a type alias for `std::basic_string<char>`. The full template definition of `std::basic_string` is as follows:
+For the last example, let's implement a case-insensitive string. We can customize `std::string` which is a type alias for `std::basic_string<char>`. The full template definition of `std::basic_string` is as follows:
 ```C++
  template<class charT,
            class traits = char_traits<charT>,
            class Allocator = allocator<charT> >
       class basic_string;
 ```
-So writing a case insensitive string really just boils down to implementing a `char_traits` policy. `std::char_traits<T>` is a struct that defines quite a few <u>static</u> member functions such as `eq(), lt(), compare(), copy(), length(), move(), eof()`, and more. Unlike before where we created an entire implementation of the concept, this time we'll use inheritance to borrow the implementation of the default `std::char_traits<T>` and just shadow what we want to rewrite. Although `char_traits` is not meant to be inherited from (no virtual destructor), this is safe because we never instantiate either of them. We only use their static methods.
+So writing a case-insensitive string really just boils down to implementing a `char_traits` policy. `std::char_traits<T>` is a struct that defines quite a few <u>static</u> member functions such as 
+`eq(), lt(), compare(), copy(), length(), move(), eof()`, and more. Unlike before where we created an entire implementation of the concept, this time we'll use inheritance to borrow the 
+implementation of the default `std::char_traits<T>` and just shadow what we want to rewrite. Although `char_traits` is not meant to be inherited from (no virtual destructor), 
+this is safe because we never instantiate either of them. We only use their static methods.
 ```C++
 // Herb Sutter's GOTW #29
 struct ci_char_traits : public char_traits<char> {
@@ -402,6 +436,7 @@ ci_string s1 = "HeLlO";
 ci_string s2 = "helLO";
 s1 == s2; // true
 ```
-One thing to remember is that `std::vector<int>` is not the same type as `std::vector<char>` and thus `std::basic_string<char>` is a different type from `std::basic_string<char, ci_char_traits>`. Therefore, using things like `operator+()` or `operator<<()` will require you to convert to a c string with `c_str()` or write functions that work for the new type.
+One thing to remember is that `std::vector<int>` is not the same type as `std::vector<char>` and thus `std::basic_string<char>` is a different type from `std::basic_string<char, ci_char_traits>`. 
+Therefore, using things like `operator+()` or `operator<<()` will require you to convert to a c string with `c_str()` or write functions that work for the new type.
 
 This implementation only supports `char`, but does a good job getting the point across.

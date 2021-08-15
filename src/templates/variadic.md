@@ -1,8 +1,10 @@
 # Variadic Templates
 
-As we've seen with `std::void_t`, `emplace()`, and `make_unique`/`make_shared`, there is a way to take an unknown amount of parameters of different types. This can be done using a *parameter pack*. A template that uses a parameter pack is known as a variadic template.
+As we've seen with `std::void_t`, `emplace()`, and `make_unique`/`make_shared`, there is a way to take an unknown amount of parameters of different types. 
+This can be done using a *parameter pack*. A template that uses a parameter pack is known as a variadic template.
 
-You can almost think of a parameter pack as a list of template parameters (both type and non-type parameters). A variadic template can be instantiated with any number of parameters, including 0 if there are no other template arguments besides the parameter pack.
+You can almost think of a parameter pack as a list of template parameters (both type and non-type parameters). 
+A parameter pack can have any number of parameters, including none.
 
 ```C++
 template<typename ...Ts>
@@ -21,7 +23,8 @@ func();
 func(100, "Hello", 'g');
 ```
 
-We can define a parameter pack by putting the ellipsis in front of the pack name, and expand a parameter pack by putting the ellipsis after the *pattern*. The pattern is the pack name with any adornments (such as `&`) which are given to all elements of the pack. During expansion, the pattern is substituted by the elements of the pack separated by commas.
+We can define a parameter pack by putting the ellipsis in front of the pack name, and expand a parameter pack by putting the ellipsis after the *pattern*. 
+The pattern is the pack name with any adornments (such as `&`) which are given to all elements of the pack. During expansion, the pattern is substituted by the elements of the pack separated by commas.
 
 ```C++
 template<class ...Us> 
@@ -96,9 +99,11 @@ auto make_unique(Args&& ... args) {
 }
 ```
 
-Basically, each use case of `...` expands a comma separated list of the pattern `...` is applied to. The name of the pack typename (`Args` in this case) is substituted which each type in the pack and the name of the pack arguments (`args` here) is substituted with each argument passed to the function.
+Basically, each use case of `...` expands a comma separated list of the pattern `...` is applied to. 
+The name of the pack typename (`Args` in this case) is substituted which each type in the pack, and the name of the pack arguments (`args` here) is substituted with each argument passed to the function.
 
-We can "unpack" an expansion by using two function overloads (or class specializations), one which takes no arguments, this will be the base case, and one which takes a "head" argument and a "tail" parameter pack. The idea here is the same as in functional programming. Here's a simple function to get the length of a parameter pack.
+We can "unpack" an expansion by using two function overloads (or class specializations), one which takes no arguments, this will be the base case, and one which takes a "head" argument and "tail" parameter pack. 
+The idea here is the same as in functional programming. Here's a simple function to get the length of a parameter pack.
 ```C++
 constexpr auto argCount() {
     return 0;
@@ -113,7 +118,8 @@ constexpr auto count = argCount(5);
 static_assert(count == 1);
 static_assert(argCount("Hello", 50.0, 10, 'c') == 4);
 ```
-When we call argCount with non-zero amount of arguments, the first argument gets bound to `T&&` and the rest (which may be 0) gets bound to `Args&&`. If the pack has no arguments in it, the expansion won't do anything and the no parameter overload will be called.
+When we call `argCount` with non-zero amount of arguments, the first argument gets bound to `T&&` and the rest (which there may be none) gets bound to `Args&&`. 
+If the pack has no arguments in it, the expansion won't do anything, and the no parameter overload will be called.
 
 A better way to do this is to use the `sizeof...` operator, which gets the amount of arguments in a parameter pack.
 
@@ -154,15 +160,20 @@ using sndType = typename NthType<2, void*, char*, int, long, double&>::Type;
 
 ## Fold Expressions
 
-A fold expression is like another type of pack expansion, except that instead of producing comma separated arguments, the pack is expanded over a binary operator. A fold expression can have an inital value as well, and must be surrounded by parenthesis.
+A fold expression is like another type of pack expansion, except that instead of producing comma separated arguments, the pack is expanded over a binary operator. 
+A fold expression can have an initial value as well, and must be surrounded by parentheses.
 
-I won't explain the details of folds here, so if you haven't taken 3110 yet you can ignore this section or look it up if you're interested (basically left folds operate on the leftmost argument first, right folds go from the rightmost argument to leftmost). Fold expression have the following syntax where `pack` is the pattern containing the name of the pack, `op` is the operator, `init` is the initial value and `...` are the actual ellipsis.
+I won't explain the details of folds here, so if you haven't taken 3110 yet, you can ignore this section or look it up if you're interested 
+(basically left folds operate on the leftmost argument first, right folds go from the rightmost argument to leftmost). 
+Fold expression have the following syntax where `pack` is the pattern containing the name of the pack, `op` is the operator, `init` is the initial value and `...` are the actual ellipsis.
+
 * Unary fold right - `(pack op ...)`
 * Unary fold left - `(... op pack)`
 * Binary fold right - `(pack op ... op init)`
 * Binary fold left - `(init op ... op pack)`
 
-The difference between a unary and binary fold is not that one uses unary operators (that would be a normal pack expansion) but rather the binary fold has an initial value. The syntax for a left fold is when the `...` is on the left side of the pack name.
+The difference between a unary and binary fold is not that one uses unary operators (that would be a normal pack expansion), but rather the binary fold has an initial value. 
+The syntax for a left fold is when the `...` is on the left side of the pack name.
 
 ```C++
 template<typename ... Ts>
@@ -196,7 +207,8 @@ constexpr auto selfDot(Args... args) {
 }
 ```
 
-Notice the need for the parenthesis to make an entire expression such as `args * args` or `args == needle` part of the pattern. We define all of these function `constexpr` so that the result of the function can be available at compile time (and therefore not done during runtime) if we pass arguments that are also `constexpr` such as literals.
+Notice the need for the parenthesis to make an entire expression such as `args * args` or `args == needle` part of the pattern. 
+We define all of these function `constexpr` so that the result of the function can be available at compile time (and therefore not done during runtime) if we pass arguments that are also `constexpr` such as literals.
 
 ## Packs and Concepts
 
@@ -213,13 +225,18 @@ constexpr auto sum(Ts... args)
 constexpr auto s = sum(10, 20.3, 100.f, 'c'); // double 229.3
 ```
 
-Unlike before, in this situation we *need* to use the trailing return type because the parameter `args` is used in determining the return type. Also notice how when we want a fold expression using the types of the pack, we use the name of the template parameter `Ts`. However when we want a fold expression using the values of the pack, we use the name of the function argument `args`.
+Unlike before, in this situation we *need* to use the trailing return type because the parameter `args` is used in determining the return type. 
+Also, notice how when we want a fold expression using the types of the pack we use the name of the template parameter `Ts`. 
+However, when we want a fold expression using the values of the pack, we use the name of the function argument `args`.
 
 In this case we fold over `&&` to ensure that all types in the pack are arithmetic. We could fold over `||` to check that at least one type upholds a certain condition.
 
 We can use a type alias to make this a bit cleaner
 
-Another less graceful, (and pre C++17 friendly) way of doing this is to create an `all_true` struct using SFINAE. What we'll do is instantiate a struct with a pack of bools. Then we'll check that the type of the bool pack is the same when we append a `true` to the front of the pack as when we push a `true` to the back. If all elements of the bool pack are the `true`, then the types will be the same. However if any of the elements in the pack are `false`, the position of this `false` will differ between the two instantiations of the template and they won't be the same type.
+Another less graceful, (and pre C++17 friendly) way of doing this is to create an `all_true` struct using SFINAE. 
+What we'll do is instantiate a struct with a pack of bools. Then we'll assert that the type of the bool pack is the same when we append a `true` to the front of the pack as when we push a `true` to the back. 
+If all elements of the bool pack are the `true`, then the types will be the same. However, if any of the elements in the pack are `false`, the position of this `false` will differ between the two 
+instantiations of the template, and they won't be the same type.
 
 ```C++
 

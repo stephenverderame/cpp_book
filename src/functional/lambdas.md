@@ -1,6 +1,6 @@
 # Lambdas
 
-You've likely seen lambdas in other programming languages so I'll just get into the C++ specifics.
+You've likely seen lambdas in other programming languages, so I'll just get into the C++ specifics.
 
 Lambdas have the syntax:
 ```
@@ -8,7 +8,9 @@ Lambdas have the syntax:
 
 }
 ```
-Where `[]` denotes the variables captured by the lambda from the local scope, `()` denotes the arguments, and `{}` denotes the code that is part of the lambda. Data that is captured is copied into the lambda's *closure* which is a runtime object that holds copies or references to captured data and is an instance of the *closure class* that the lambda belongs to. We can think of a lambda as being syntactic sugar for the compiler creating a class that provides an `operator()` and instantiating it like so:
+Where `[]` denotes the variables captured by the lambda from the local scope, `()` denotes the arguments, and `{}` denotes the code that is part of the lambda. 
+Data that is captured is copied into the lambda's *closure* which is a runtime object that holds copies or references to captured data and is an instance of the *closure class* that the lambda belongs to. 
+We can think of a lambda as being syntactic sugar for the compiler creating a class which provides an `operator()`, and instantiating that class like so:
 
 ```C++
 class ClosureClass {
@@ -35,7 +37,8 @@ const auto lambda = [myCapture](auto arg) {
 const auto test = lambda(20);
 ```
 
-Unlike functions, the arguments in lambdas can be `auto`, leaving the compiler to deduce their type using the same method it uses to deduce template types. The return type is also automatically deduced, however it can be manually specified with a trailing return type.
+Unlike functions, the arguments in lambdas can be `auto`, leaving the compiler to deduce their type using the same method it uses to deduce template types. 
+The return type is automatically deduced, however it can be manually specified with a trailing return type.
 
 ```C++
 int capture = 10;
@@ -44,7 +47,9 @@ const auto lambda2 = [capture](int arg) -> bool {
 };
 ```
 
-The variables captured by a lambda are, by default, copied unless you manually request a reference by prepending the variable name with `&`.  The captured variables are captured once, where the lambda is defined Although the variables are copied, they are immutable unless you make the lambda a `mutable` lambda, which allows the closure to modify the members of the closure class. 
+The variables captured by a lambda are, by default, copied unless you manually request a reference by prepending the variable name with `&`.  
+The captured variables are captured once, when the lambda is defined. 
+Even though the variables are copied, they are immutable unless you make the lambda a `mutable` lambda, which allows the closure to modify the members of the closure class. 
 
 ```C++
 int cap = 30;
@@ -72,7 +77,10 @@ l3();
 cap; // 20
 ```
 
-A better way to capture variables is by *init-capture*. This method allows you to move variables into the closure along with making it very clear how each variable is captured. It uses the syntax `<name> = <expression>` where `<name>` is the name of the variable within the closure that will store the result of `<expression>`. This variable is created by move or copy constructing a new instance of the same type of the result of `<expression>`.
+A better way to capture variables is by *init-capture*. 
+This method allows you to move variables into the closure along with making it very clear how each variable is captured. 
+It uses the syntax `<name> = <expression>` where `<name>` is the name of the variable within the closure that will store the result of `<expression>`. 
+This variable is created by move or copy constructing a new instance of the result of `<expression>`.
 
 ```C++
 std::unique_ptr<Person> pp;
@@ -86,7 +94,11 @@ const auto l4 = [person1 = std::move(pp), num = num, person2 = &p] {
 };
 ```
 
-If we wanted a reference instead of a pointer, we can wrap the data in a `std::reference_wrapper<T>` using `std::ref`. A `std::reference_wrapper` provided *value semantics* (is copyable) for a reference. It is implicitly converted to a `T` reference, or explicitly with its member function `get()`. It also provides `operator()` so that if it holds a reference to a callable object, it can directly invoke that callable object without unwrapping it. If we wanted a `const` reference we can create one with `std::cref`. This is needed because passing an lvalue reference will invoke the copy constructor, and rvalue will invoke the move constructor. Therefore, we wrap the reference in a `reference_wrapper`, which can then be copy constructed into the closure.
+If we wanted a reference instead of a pointer, we can wrap the data in a `std::reference_wrapper<T>` using `std::ref`. 
+A `std::reference_wrapper` provided *value semantics* (is copyable) for a reference. It is implicitly converted to a `T` reference, or explicitly with its member function `get()`. 
+It also provides `operator()` so that if it holds a reference to a callable object, it can directly invoke that callable object without unwrapping it. 
+If we wanted a `const` reference we can create one with `std::cref`. This is needed because passing a lvalue reference will invoke the copy constructor, and rvalue references will invoke the move constructor. 
+Therefore, we wrap the reference in a `reference_wrapper` which avoids constructing a new instance of the underlying data and instead will construct a new instance of `std::reference_wrapper`.
 
 ```C++
 const auto l5 = [person3 = std::ref(p)] {
@@ -97,7 +109,9 @@ const auto l5 = [person3 = std::ref(p)] {
 };
 ```
 
-`std::reference_wrapper<T>` is also useful to allow containers such as `std::vector` that cannot hold references to be able to. However `std::reference_wrapper`, is just, well a `reference_wrapper` and provides no mechanisms to prevent or check for dangling references. In terms of safety, its not much better than having a container of raw pointers.
+`std::reference_wrapper<T>` is also useful to allow containers such as `std::vector` that cannot hold references to be able to do so. 
+However `std::reference_wrapper`, is just, well a `reference_wrapper` and provides no mechanisms to prevent or check for dangling references. 
+In terms of safety, its not much better than having a container of raw pointers.
 
 ```C++
 std::vector<std::reference_wrapper<int>> nums;
@@ -112,15 +126,31 @@ nums.back() = 20;
 myNum; //20
 ```
 
-Back to lambdas: there are limitations to what can be captured. Static variables cannot be captured and neither can member variables. Static variables can be accessed from within a lambda without capturing them, and member variables can be accessed by copying the pointer of the owning instance object.
+Back to lambdas: there are limitations to what can be captured. 
+Static variables cannot be captured and neither can member variables. 
+Static variables can be accessed from within a lambda without capturing them, and member variables can be accessed by copying the pointer of the owning instance object.
+This means that in both of these cases, the value of the variable will be what the value is at the time the lambda is invoked, and not at the time the lambda is defined.
+This is opposite the normal behavior!
 
-Variables in a lambda can be captured by a default capture mode `[&] or [=]`. Default capture modes capture all used variables by reference or by value, respectively. You should prefer init capture or enumerating the variables you capture instead of using default capture modes. The reason is because default captures have some implicit behaviors that can cause you trouble if you're not aware of them. 
+Variables in a lambda can be captured by a default capture mode `[&] or [=]`. 
+Default capture modes capture all used variables by reference or by value, respectively. 
+You should prefer init capture or enumerating the variables you capture instead of using default capture modes. 
+The reason is that default captures make it harder to reason about object lifetimes and realize when certain variables cannot be captured.
 
-Let's start with passing by reference. You must take care to ensure that the object you capture outlives the lambda. Lambdas are very easy to bring out of the scope they were declared in (say, adding it to a vector) and thus anything that is captured must live outside that scope as well.
+Let's start with passing everything by reference. 
+You must take care to ensure that the objects you capture outlives the lambda. 
+Lambdas are very easy to bring out of the scope they were declared in (say, adding it to a vector) and thus anything that is captured must live outside that scope as well.
 
-To avoid this, you might be tempted to just copy all variables you use with the default copy capture mode. But believe it or not, the capture mode `[=]` to pass by value doesn't always have the same semantics you would expect. First and foremost, when you capture member variables you aren't actually copying them. You are copying the pointer to the owning object. Thus the default "pass by value" capture is susceptible to the same dangling pointer problem as passing by reference.
+To avoid this, you might be tempted to just copy all variables you use with the default copy capture mode. 
+But the capture mode `[=]` to capture by copy doesn't always copy everything you "capture". 
+Remember, when you capture member variables you aren't actually copying them. You are copying the `this` pointer to the owning object. 
+Thus, the default "pass by value" capture is susceptible to the same dangling pointer problem as passing by reference.
+Furthermore, using the default copy capture mode might make you think a static variable's value was saved in the closure, however no copy was actually made
+and any outside code that mutates the static variable also affects the lambda! 
+A static variable "captured" by a default capture mode isn't really captured, as the code will simply refer to the single instance of the static variable that exists outside the scope of the lambda. 
+Therefore, a default capture by value isn't actually capturing everything by value. 
+This confusion can be avoided by using *init-capture*.
 
-What's more is that although lambda's cannot capture static variables, default capture modes may make it seem like they actually do. One might assume that all variables you use are copied, when in fact they are not. A static variable "captured" by a default capture mode isn't really captured, as the code will simply refer to the single instance of the static variable that exists outside the scope of the lambda. Therefore, a default capture by value isn't actually capturing by value. This confusion can be avoided by using *init-capture*.
 ```C++
 class Foo {
 private:
@@ -162,7 +192,11 @@ The closure class's `operator()` is by default const. So mutating a captured var
 
 # Generic Functions
 
-Lambdas are a type of callable object, but not the only one. In the header `<functional>`, the STL provides a generic function class `std::function` which can wrap any callable object (lambdas, function pointers, objects that define `operator()`, etc.). They are copyable and moveable and otherwise work like you might expect from a function. They enable us to use higher order programming and to pass function-like objects as values. The syntax for declaring one is as follows:
+Lambdas are a type of callable object, but not the only one. In the header `<functional>`, the STL provides a generic function class `std::function` which can wrap any callable object 
+(lambdas, function pointers, objects that define `operator()`, etc.). 
+They are copyable and moveable and otherwise work like you might expect from a function. 
+They enable us to use higher order programming and to pass function-like objects as values. The syntax for declaring one is as follows:
+
 ```C++
 std::function<ReturnType(Args, ...)>
 
@@ -213,7 +247,8 @@ std::function<void()> f2 = []() {
 f2();
 ```
 
-The real power of `std::function` is to be able to pass callable objects to functions and classes to control behavior. However, especially in the case of lambdas, you must be careful not to let a function outlive any references it may use.
+The real power of `std::function` is to be able to pass callable objects to functions and classes to control behavior. 
+However, especially in the case of lambdas, you must be careful not to let a function outlive any references it may use.
 
 ```C++
 /**
@@ -259,7 +294,19 @@ auto res = stalinSort<std::vector<int>, int>(nums, [](auto a, auto b) { return a
 ```
 ## Partial Application and Bind
  
- Generally, lambdas should be preferred to `bind`. But I do feel it has its place. Bind can be used to partially apply a callable object. It takes a callable object, and constructs a *bind object* from it by copying in the arguments passed to `std::bind`. The bind object works similarly to a closure. However it's `operator()` can only delegate to the callable object that was passed to `std::bind`. The first argument of `std::bind` is the callable object, if the callable object is a member function then the second argument is a pointer to the owning instance (or a placeholder). Remember, this owning object pointer can really be viewed as the first argument to the function. The rest of the arguments are placeholders or parameters bound to the underlying function arguments based on position. The arguments passed to `std::bind` are constructed in the bind object. Thus lvalues are copied into the bind object and rvalues are moved. Furthermore, we can use `std::placeholders` to map arguments of the bind object's `operator()` to arguments in the underlying callable object. Each placeholder has a number that corresponds to the argument index during invocation of the bind object. This is best explained with an example:
+Generally, lambdas should be preferred to `bind`, but I do feel it is good to know about. 
+Bind can be used to partially apply a callable object. 
+It takes a callable object, and constructs a *bind object* from it by copying in the arguments passed to `std::bind`. 
+The bind object works similarly to a closure. 
+However, its `operator()` can only delegate to the callable object that was passed to `std::bind`. 
+The first argument of `std::bind` is the callable object, if the callable object is a member function then the second argument is a pointer to the owning instance (or a placeholder). 
+Remember, this owning object pointer can really be viewed as the first argument to the function. 
+The rest of the arguments are placeholders or parameters bound to the underlying function arguments based on position. 
+The arguments passed to `std::bind` are constructed in the bind object. 
+Thus, lvalues are copied into the bind object and rvalues are moved. 
+Furthermore, we can use `std::placeholders` to map arguments of the bind object's `operator()` to arguments in the underlying callable object. 
+Each placeholder has a number that corresponds to the argument index during invocation of the bind object. This is best explained with an example:
+
 ```C++
 class Bar {
 public:
@@ -296,7 +343,8 @@ auto foo3 = std::bind(&doFoo, std::placeholders::_2, std::placeholders::_1);
 foo3("Hello", "World");
 // calls doFoo("World", "Hello")
 ```
-References must be wrapped in `std::reference_wrapper` for the same reason as lambdas. Like lambdas, unless you use a `reference_wrapper` arguments are evaluated at the call site of `std::bind`, not at the call site of the bind object.
+References must be wrapped in `std::reference_wrapper` for the same reason as lambdas. 
+Like lambdas, unless you use a `reference_wrapper`, arguments are evaluated at the call site of `std::bind`, not at the call site of the bind object.
 
 ```C++
 auto str = "Billy";

@@ -1,6 +1,8 @@
 # RAII
 
-RAII is probably the most important idiom in C++. It stands for Resource Acquisition is Initialization, although it has more to do with destruction than initialization. Objects stored on the stack have automatic lifetimes and are automatically popped off the stack when they go out of scope. RAII is the idea of wrapping some resource in an object with an automated lifetime so you never have to worry about cleaning it up. Here's the basic idea:
+RAII is probably the most important idiom in C++. It stands for Resource Acquisition is Initialization, although it has more to do with destruction than initialization. 
+Objects stored on the stack have automatic lifetimes and are automatically popped off the stack when they go out of scope. 
+RAII is the idea of wrapping some resource in an object with an automated lifetime so you never have to worry about cleaning it up. Here's the basic idea:
 ```C++
 class Socket {
 private:
@@ -22,9 +24,12 @@ public:
     //...
 } // socket closed when s is destroyed
 ```
-So what's the advantage of RAII you ask? Well now you need not worry about `Socket` being cleaned up. If an exception is thrown, or the variable goes out of scope, the resource is automatically released. If you ask me this is quite a lot nicer than try-catch-finally blocks or Java's try-with-resources.
+So what's the advantage of RAII you ask? Well now you need not worry about `Socket` being cleaned up. 
+If an exception is thrown or the variable goes out of scope, the resource is automatically released. 
+If you ask me this is quite a lot nicer than try-catch-finally blocks or Java's try-with-resources.
 
-When you have behavior that must run on every single execution paths or resources managed by a class, think RAII! If you have to call a resource freeing function (something like `free`, `delete`, `cleanup`, etc.), think RAII.
+When you have behavior that must run on every single execution path, think RAII! 
+If you have to cleanup a resource or call a resource freeing function (something like `free`, `delete`, `cleanup`, etc.), think RAII.
 
 ```C++
 class BlanketErrorLogger {
@@ -76,9 +81,13 @@ int main(int argc, char ** argv) {
 }
 ```
 
-In this example, no matter what happens we cleanup the Windows Socket API. And if execution stops before `err.succeed()` is called, then we'll also get a log message with the command line arguments that caused the error.
+In this example, no matter what happens we cleanup the Windows Socket API. If execution stops before `err.succeed()` is called, then we'll also get a log message with the command line arguments that caused the error.
 
-Now you may be wondering why `ctxCount` is defined as `inline` and `static`. Well a `static` variable means there is only one copy of the data. We can have static variables in functions and classes. Here, we define `ctxCount` static so that we retain a count of all instances of `WinsockContext`. This allows us to check in the destructor if the current instance being destroyed is the last existing instance, and if so cleans up WSA. This allows us to nest instances of `WinsockContext` without accidentally cleaning up the resource while other code is still using it.
+Now you may be wondering why `ctxCount` is defined as `inline` and `static`. 
+Well a `static` variable means there is only one copy of the data. We can have static variables in functions and classes. 
+Here, we define `ctxCount` static so that we retain a count of all instances of `WinsockContext`. 
+This allows us to check in the destructor if the current instance being destroyed is the last existing instance, and if so cleans up WSA. 
+This check allows us to nest instances of `WinsockContext` without accidentally cleaning up the resource while other code is still using it.
 
 ```C++
 int amtOfCalls() {
@@ -91,9 +100,16 @@ amtOfCalls(); // 2
 amtOfCalls(); // 3
 ```
 
-A static variable is initialized the first time the path of execution goes through the static variable's definition. It's destroyed when the program ends, however the order of de-initialization between static variables when the program terminates is undefined. Therefore using a static variable in the destructor of a class which has a static instance can lead to problems. This issue commonly arises in Singletons, and as such is referred to as the Singleton Dead Reference problem, which we'll discuss later.
+A static variable is initialized the first time the path of execution goes through the static variable's definition. 
+It's destroyed when the program ends, however the order of de-initialization between static variables when the program terminates is undefined. 
+Therefore, using a static variable in the destructor of a class which has a static instance can lead to problems. 
+This issue commonly arises in Singletons, and as such is referred to as the Singleton Dead Reference problem, which we'll discuss later.
 
-Ok so that's `static`. Then what's the deal with `inline`? Well, if `WinsockContext` was defined in a header, and we include this header in multiple source files, then if `ctxCount` weren't inline then we'd have multiple definitions of `WinsockContext::ctxCount`. `inline` variables allow us to declare and define variables in a header file by telling the compiler that if multiple definitions are generated, they're all the same and to choose one of them. Without `inline`, we'd have to do something like this:
+Ok so that's `static`. Then what's the deal with `inline`? 
+Well let's say that `WinsockContext` was defined in a header, and we include this header in multiple source files. 
+Then if `ctxCount` weren't inline then we'd have multiple definitions of `WinsockContext::ctxCount`. 
+`inline` variables allow us to declare and define variables in a header file by telling the compiler that if multiple definitions are generated, they're all the same and to choose one of them. 
+Without `inline`, we'd have to do something like this:
 
 WinsockContext.h
 ```C++
@@ -121,7 +137,7 @@ WinsockContext.cpp
 static int WinsockContext::ctxCount = 0;
 ```
 
-Just to ram this into your head a tad bit more, here's another example:
+Just to ram RAII into your head a tad bit more, here's another example:
 
 ```C++
 // DISCLAIMER: Not necessarily the actual stb_image or OpenGL API
@@ -193,9 +209,14 @@ public:
 };
 ```
 
-Now I mention that copy operations can delete data we are still using. How? Well suppose we copied `Texture` by copying `tex`. `tex` is just a handle to memory allocated in VRAM, so we're copying the handle but not the actual data. But now we have two instances of classes that claim to own the data and will delete it when they are destroyed. This isn't good! The second destructor to get called will delete invalid data! If we wanted, we could override the copy operations to perform deep copies, but for simplicity, it's easier to just prevent those operations from occurring.
+Now I mention that copy operations can delete data we are still using. 
+How? Well suppose we copied `Texture` by copying `tex`. 
+`tex` is just a handle to memory allocated in VRAM, so we're copying the handle but not the actual data. 
+But now we have two instances of classes that claim to own the data and will delete it when they are destroyed. 
+This isn't good! The second destructor to get called will delete invalid data! 
+If we wanted, we could override the copy operations to perform deep copies, but for simplicity, it's easier to just prevent those operations from occurring.
 
-However we could easily make `Texture` moveable.
+However, we could easily make `Texture` moveable.
 
 ```C++
     Texture(Texture && other) {
@@ -203,7 +224,7 @@ However we could easily make `Texture` moveable.
         other.tex = GL_INVALID;
         // invalidate the temporary's data
         // so that when it's destroyed it doesn't delete our data
-        // other is a temporary or value we don't care about so its safe to
+        // other is a temporary or value we don't care about, so it's safe to
         // invalidate its handle
     }
 
@@ -216,7 +237,11 @@ However we could easily make `Texture` moveable.
     }
 ```
 
-You may be wondering: "If the program is going to terminate anyway, must we be so careful with releasing resources?". In today's day and age, no, probably not. The OS should be able to cleanup any resources that a program doesn't when it terminates. But that's only *when* it terminates. What if we decide to catch texture loading errors and then try again with a lower resolution image? Perhaps whatever image we are trying to load is nonessential, so if it fails to load we just ignore it. This might not be something we are currently doing at the time of writing the code, but maybe months or years down the line that might change.
+You may be wondering: "If the program is going to terminate anyway, must we be so careful with releasing resources?". 
+In today's day and age, no, probably not. The OS should be able to cleanup any resources that a program doesn't when it terminates. 
+But that's only *when* it terminates. What if we decide to catch texture loading errors and then try again with a lower resolution image? 
+Perhaps whatever image we are trying to load is nonessential, so if it fails to load we just ignore it. 
+This might not be something we are currently doing at the time of writing the code, but maybe months or years down the line that might change. 
 
 ### Possible Exercises
 

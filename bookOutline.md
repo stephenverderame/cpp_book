@@ -179,3 +179,4 @@
 
 Notes:
 * ODR and how inline functions can be defined "multiple" times -> defined in headers
+* Most vexing parse
