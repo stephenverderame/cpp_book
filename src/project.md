@@ -1,6 +1,7 @@
 # Project
 
-To put all of this together, we're going to make an HTTP client and server utility. The program will be able to host web servers and connect to others as well. It will be a command line program that accepts the following commands:
+To put all of this together, we're going to make an HTTP client and server utility. The program will be able to host web servers and connect to others as well. 
+It will be a command line program that accepts the following commands:
 * `-serve <directory>` - create a server with the specified root directory
 * `-get <url>` - GET request
 * `-post <url>` - POST request
@@ -111,6 +112,24 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
 
 ## Other Notes
 
-You can use preprocessor conditions around the definition of `WIN32` to conditionally enable code depending on if using Windows or Unix. `WIN32` is a macro defined by the compiler when compiling on Windows (even Win64). In the CMake, I also define `WINDOWS` when the platform is Windows and `UNIX` when it is not.
+You can use preprocessor conditions around the definition of `WIN32` to conditionally enable code depending on if using Windows or Unix. 
+`WIN32` is a macro defined by the compiler when compiling on Windows (even Win64). In the CMake, I also define `WINDOWS` when the platform is Windows and `UNIX` when it is not.
 
 Feel free to change the implementation or design of anything. Although there is a comment saying not to, you may change the Port interface so long as you make sure to have tests.
+
+The current project structure is as follows:
+```
+<Project Directory>
+|   CMakeLists.txt
+|---HttpProject
+|   |   CMakeLists.txt
+|   |---include
+|   |---src
+|   |---test
+|   |   |   CMakeLists.txt
+|   |   |---data
+|   |
+|---external
+|---out
+|
+```
