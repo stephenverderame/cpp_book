@@ -33,13 +33,21 @@ Rational r5(10, 2); // ctor 1
 Rational r6{20, 10}; //ctor 1
 ```
 
-Constructors can use `()` or `{}`. This is to avoid *the most vexing parse* which we'll discuss later.
+Constructors can use `()` or `{}`. This is to avoid *the most vexing parse*. Consider the following ambiguous line:
+```C++
+Bar bar(FooBar());
+```
+This can be interpreted two ways: as a variable definition for `bar` which is passed a new instance of `FooBar` in its constructor,
+or a function declaration for `bar` which returns an object of type `Bar` and accepts a pointer to a function that takes no input and
+returns a `FooBar` object. The standard dictates that the latter interpretation must be chosen. Braces allow us to avoid
+this issue: `Bar bar(FoorBar{})` or `Bar bar{FooBar()}`.
 
-We have already seen how to overload functions, but we can also overload operators as well.
+Back to overloading: we have already seen how to overload functions, but we can also overload operators as well.
 
 Binary operator overloads take two arguments (the left and right operand), and unary operators take one. 
 If the two arguments are different types, then you'd have to define two overloads in order for the operator to be commutative. 
-One overload has type `x` as the left operand (first arguments) and type `y` as the right (second arguments) and the other is the opposite with `y` for the left operand (first arg) and `x` as the right.
+One overload has type `x` as the left operand (first arguments) and type `y` as the right (second arguments),
+and the other is the opposite with `y` for the left operand (first arg) and `x` as the right.
 
 But first, it's important to realize that methods (member functions) of a class have an implicit first argument that is the context object for that function. 
 So if you define a binary operator overload as a member function, the left argument will be an instance of the class.
@@ -292,7 +300,7 @@ In C++20, we can let the compiler generate all those comparison functions for us
     * `operator<<` and `operator>>`
     * `operator+=`, `operator-=` for vectors and scalars
     * `operator[]` where index 0 gets the `x` value, index 1 `y`, and 2 `z`.
-        * Out of bounds is undefined behavior and you can do (or not do) whatever you see fit
-    * It's data may or may not be encapsulated
+        * Out of bounds is undefined behavior, and you can do (or not do) whatever you see fit
+    * Its data may or may not be encapsulated
     * Separate the interface and implementation into a header and code file
         * Can you do this without any include directives in the header file?

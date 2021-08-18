@@ -23,8 +23,8 @@ Earlier I discussed how the types passed to our `LList<T>` class needed to be de
 These are two major criteria for the *Regular* concept which among being default constructable and copyable also needs to be comparable with `==` and `!=`.
 
 The `type_traits` header provides many helpers to query types or the adherence of a type to a certain quality. 
-Traits that end in `_v` "return" a value and those that end in `_t` "return" a type. 
-These "helpers" are not actually functions but rather templated `constexpr` variables or type aliases in `struct`s. Therefore, the results of these queries are available at compile time.
+Traits that end in `_v` "return" values, and those that end in `_t` "return" types. 
+These "helpers" are not actually functions but rather template `constexpr` variables or type aliases in `struct`s. Therefore, the results of these queries are available at compile time.
 
 ```C++
 std::is_default_constructable_v<std::string>; // true
@@ -87,7 +87,7 @@ template<typename T>
 inline constexpr auto is_bool2_v = std::is_same_v<T, bool>;
 ```
 
-There's a whole bunch more of them that can be found [here](https://en.cppreference.com/w/cpp/header/type_traits). 
+There's a bunch more of them that can be found [here](https://en.cppreference.com/w/cpp/header/type_traits). 
 Now that we have these traits, the most basic approach to enforcing adherence of template parameters to a concept is with `static_cast`.
 
 ```C++
@@ -104,9 +104,9 @@ This incurs no runtime penalty since the check happens during compilation.
 A better approach is to use `std::enable_if_t`. As the name might suggest, the main usage of this is to conditionally enable functions. 
 How this works is by replacing the entire statement with the second template type parameter if the first template parameter evaluates to a true condition at compile time. 
 Then you can specify the return type of the function to be an `enable_if_t` expression. 
-If the function is called with template parameters that make the condition true, all is well since the return type will be the second template argument to 
+If the function is called with template parameters that make the condition true, all is well since the return type will be the second template argument to
 `std::enable_if_t`. Otherwise, the `enable_if` effectively prevents the instantiation of the function template causing the compiler to complain that the function doesn't exist. 
-Not as clear as an error message as you'd get in C++ 20 with concepts and constraints, but trust me it's far nicer than some of the monstrosities you might receive without it.
+Not as clear as an error message as you'd get in C++ 20 with concepts and constraints, but trust me it's far nicer than some monstrosities you might receive without it.
 You can omit the second type parameter to `enable_if`, in that case it defaults to `void`.
 
 The default type for the second template argument is `void`. 
@@ -238,9 +238,9 @@ Now what if for some type `T`, it doesn't have the function `onThreadDestroy`?
 Well, we get a specialization failure, and by the name of SFINAE this does not halt compilation, rather it just goes on to the next possible instantiation which is the struct that inherits from `false_type`. 
 This is why our primary definition needed that second parameter. We need a parameter to put the `std::void_t` to see if we can resolve a correct type. 
 If we can't, because this second parameter is defaulted, the compiler will then choose the less restricting primary definition of the struct. 
-It won't choose this first, because our users will only supply one type parameter and a specialization taking one parameter will be chosen over one in which it takes a second, defaulted argument.
+It won't choose this first, because our users will only supply one type parameter, and a specialization taking one parameter will be chosen over one in which it takes a second, defaulted argument.
 
-Let's create a struct to check if a type implements an iterable concept. We'll check the type has `begin()` and `end()` member functions and that whatever returned from those functions is 
+Let's create a struct to check if a type implements an iterable concept. We'll check the type has `begin()` and `end()` member functions and that whatever returned from those functions is
 incrementable, dereferenceable, and comparable with `==` and `!=`. As we'll soon see, there's a better way to check if a type is an interator, and these requirements don't even cover all our bases.
 
 ```C++

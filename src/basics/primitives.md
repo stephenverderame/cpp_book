@@ -20,9 +20,12 @@ unsigned char c2; // [0 to 2^8]
 
 ```
 
-We also have floating-point types: `float`, `double` and `long double`. The standard only requires that `double` provides at least as much precision as `float` and that `long double` provides at least as much as `double`. On x86 systems, `float` is typically 32 bits, `double` is typically 64, and `long double` is commonly 80 or 128.
+We also have floating-point types: `float`, `double` and `long double`.
+The standard only requires that `double` provides at least as much precision as `float` and that `long double` provides at least as much as `double`.
+On x86 systems, `float` is typically 32 bits, `double` is typically 64, and `long double` is commonly 80 or 128.
 
-C++ also has literal type specifiers to convert a literal value to a certain type. A literal is something that's already a value and cannot be assigned such as `42` or `0.0`.
+C++ also has literal type specifiers to convert a literal value to a certain type.
+A literal is something that's already a value and cannot be assigned such as `42` or `0.0`.
 
 ```c++
 

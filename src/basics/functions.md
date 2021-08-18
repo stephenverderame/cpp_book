@@ -48,7 +48,13 @@ int main() {
 }
 ```
 
-In `add()` a new copy of `num` is created which is called `a`. `a` goes out of scope when `add()` terminates. In `addRef()`, `b` binds to `num`. Thus, they share the same object and the same data. In `addRef()`, `b` is used as an output parameter because the result of the function is returned in one of its parameters. **You should avoid output parameters.** This is because when you're looking at the call site of `addRef()`, there's nothing to tell you that `num` is being mutated and you may reasonably expect that `num` would retain it's value.
+In `add()` a new copy of `num` is created which is called `a`. `a` goes out of scope when `add()` terminates.
+In `addRef()`, `b` binds to `num`.
+Thus, they share the same object and the same data.
+In `addRef()`, `b` is used as an output parameter because the result of the function is returned in one of its parameters.
+**You should avoid output parameters.**
+This is because when you're looking at the call site of `addRef()`, there's nothing to tell you that `num` is mutated,
+and you may reasonably expect that `num` would retain its value.
 
 Does that mean we shouldn't pass by reference? No! Far from it. We can pass by `const` reference.
 
@@ -68,11 +74,15 @@ int main() {
 
 In this example, you can look at the call site of `addRef2()` and pretty clearly see that `num` is being mutated. 
 
-For built-in types, passing by reference is likely tantamount to premature pessimization. On a 32 bit OS, and address will be 4 bytes and 64 bit OS will have 8 byte addresses. Therefore, it would be less data being copied if we just passed by value since an address is at best the same size as an integer (in almost all implementations, but not necessarily). However, we will soon see how this is very very useful.
+For built-in types, passing by reference is likely tantamount to premature pessimization.
+On a 32-bit OS, and address will be 4 bytes, and a 64-bit OS will have 8-byte addresses.
+Therefore, there would be less data being copied if we just passed by value since an address is at best the same size as an integer (in almost all implementations, but not necessarily).
+However, we will soon see how this is very useful.
 
 ## Function Overloading
 
-Functions with the same name can be overloaded by having different argument types or different amount of arguments. The function with arguments more closely matching the parameters passed is the one that is called.
+Functions with the same name can be overloaded by having different argument types or different amount of arguments.
+The function with arguments more closely matching the parameters passed is the one called.
 
 ```c++
 void func1(int); //version a
@@ -90,7 +100,8 @@ func1(l); // a
 func1(false, 100ll); // d
 ```
 
-If there are multiple equally good matches, the compiler won't guess and will not compile. Likewise, if no parameter is implicitly convertible to the type of any overload's arguments, then compilation fails.
+If there are multiple equally good matches, the compiler won't guess and will not compile. 
+Likewise, if no parameter is implicitly convertible to the type of any overload's arguments, then compilation fails.
 
 ## Function Design
 
@@ -100,7 +111,18 @@ If there are multiple equally good matches, the compiler won't guess and will no
 [^1]
 
 
-Making functions small organizes sections of your code into named units. How small is small? Well most should rarely hit 20 lines. For example, when you take/took CS 3110, you'll/you'd lose points if a function is > 20 lines. Furthermore, functions should **do one thing**. How do you know they do one thing? Well you should be able to describe it in about one sentence without using a conjunction like "and."
+Making functions small organizes sections of your code into named units. 
+It's easy to know what your code does when it's part of a named function with a narrow scope.
+So how small is small? Well most should rarely hit 20 lines. 
+A good rule of thumb is 80 characters wide by 20 lines long or smaller. Not only are small functions easier to reason about and debug,
+but such functions are readable for most ways in which you might be viewing it. For example, when developing on a PC and being able to
+have your code fullscreened on a 27" monitor it's pretty easy to read lines of code over 150 character long. However,
+if you want to do a side-by-side diff comparison, work on the codebase from your 15" laptop with only one screen,
+or have other developers who might use a "busier" IDE layout, those 150 character lines become quite annoying.
+Vertical size is less annoying to deal with, but it's still quite nice when you can view an entire function in one glance
+without scrolling on various different viewing modes.
+Furthermore, functions should **do one thing**. 
+How do you know they do one thing? Well you should be able to describe it in about one sentence without using a conjunction like "and."
 
 Example:
 
@@ -127,7 +149,10 @@ if(attendCollegeAfterHS(person)) {
 }
 ```
 
-Notice how by creating a helper function, we were able to encode the comment in a name. Commenting what the code does is unnecessary since the function name says it all. If you find yourself commenting what code does, that's a good hint that you might want to make a function. We also see how `attendCollegeAfterHS()` does just one thing. We also pass by `const` reference since the function only uses accessors of `Person` and doesn't do any mutations.
+Notice how by creating a helper function, we were able to encode the comment in a name. 
+Commenting what the code does is unnecessary since the function name says it all. 
+If you find yourself commenting what code does, that's a good hint that you might want to make a function. 
+We also see how `attendCollegeAfterHS()` does just one thing. We also pass by `const` reference since the function only uses accessors of `Person` and doesn't do any mutations.
 
 For another example, we saw in our guessing game how we turned this:
 
@@ -162,9 +187,14 @@ int main() {
     displayWin(secretNum, tries);
 }
 ```
-Once again, we see that the different tasks done during the main loop are easier to read since they essentially have labelled names. We could be more pedantic and make the loop it's own function as well, but this function is 10 lines long so I felt that was good enough. I like functions to be of a size so that in one "eye-space" I can take in the entire function. So no scrolling, moving my head, etc. Generally I have found this corresponds to 20 lines or less pretty well.
+Once again, we see that the different tasks done during the main loop are easier to read since they essentially have labelled names. 
+We could be more pedantic and make the loop its own function as well, but this function is 10 lines long, so I felt that was good enough. 
+I like functions to be of a size so that in one "eye-space" I can take in the entire function. So no scrolling, moving my head, etc.
 
-Functions should also not use output parameters, and have a small amount of arguments. Generally shoot for no more than 4. And if you have parameters of the same type next to each other (and order matters), you can encode the order in the function name or separate the parameters by some argument of a different type (if there are more arguments).
+Functions should also not use output parameters, and have a small amount of arguments. 
+Generally shoot for no more than 4. 
+Also, if you have parameters of the same type next to each other (and order matters),
+you can encode the order in the function name or separate the parameters by some argument of a different type (if there are more arguments).
 
 Ex.
 ```c++
@@ -193,14 +223,25 @@ struct Range {
 void copyDstFromSrc(Range dst, Range src);
 ```
 
-Notice how the first function was *missing an abstraction* which led to having 4 parameters. In the second function, we created a `struct` to organize the parameters into an `abstraction`. In C++20, this can be done with `std::span`.
+Notice how the first function was *missing an abstraction* which led to having 4 parameters. 
+In the second function, we created a `struct` to organize the parameters into an `abstraction`.
+In C++20, this can be done with `std::span`.
 
-We should also prefer *pure functions* a pure function has no side effects, and returns the same output for the same inputs. It should not mutate variables or have any other effect other than the value it returns.
+We should also prefer *pure functions* a pure function has no side effects, and returns the same output for the same inputs.
+It should not mutate variables or have any other effect other than the value it returns.
 
 
 ## Inline Functions
 
-Earlier you saw me use the `inline` keyword. What this does is it *suggests* to the compiler that the function can be inlined. What is an inlined function? Well, we'll cover the details later but basically every time you call a function the state of the current function must be saved, you must jump to the new function, then you must restore the state of the old function and jump back. Abstractly, this process can be viewed as having to push an *activation record* onto the stack and then popping it off. An *activation record* basically contains all the data like arguments being passed, where the function is called from (so it can jump back), and the state of the callee. Sounds like a complex task? Well it sort of is. When a function is inlined, the compiler puts the body of the function right at the call site. So all this jumping and state saving doesn't need to occur. Let's look at another example of factoring out some code into an inline function:
+Earlier you saw me use the `inline` keyword. 
+This keyword *suggests* to the compiler that the function can be inlined. 
+What is an inlined function? 
+Well, we'll cover the details later but basically every time you call a function the state of the current function must be saved, you must jump to the new function,
+then you must restore the state of the old function and jump back. 
+Abstractly, this process can be viewed as having to push an *activation record* onto the stack and then popping it off. 
+An *activation record* basically contains all the data like arguments being passed, where the function is called from (so it can jump back), and the state of the callee.
+Sounds like a complex task? Well it sort of is. When a function is inlined, the compiler puts the body of the function right at the call site.
+So all this jumping and state saving doesn't need to occur. Let's look at another example of factoring out some code into an inline function:
 
 ```c++
 constexpr auto expFac = 0.83;
@@ -218,13 +259,16 @@ inline auto getExperience(const Person & person) {
 
 const auto experience = getExperience(person);
 ```
-For most compilers, the generated machine instructions will be pretty much the exact same. But the second option gives us greater readability.
+For most compilers, the generated machine instructions will be pretty much the exact same, but the second option gives us greater readability.
 
-A function can only be inlined if it is defined and declared in the same place. So an inline function cannot have separate declarations and definitions unless the declaration and definition are in the same file.
+A function can only be inlined if it is defined and declared in the same place. 
+So an inline function cannot have separate declarations and definitions unless the declaration and definition are in the same file.
 
 ## Constexpr Functions
 
-Like `constexpr` variables have values that are available at compile time, `constexpr` function have computations that *can be* available at compile time. If you pass non-constexpr arguments to a `constexpr` function, the function will behave normally, but if you pass literals or `constexpr` variables to a `constexpr` function, the result will be computed at compile time and the literal value will be inserted in the code.
+Like `constexpr` variables have values that are available at compile time, `constexpr` function have computations that *can be* available at compile time.
+If you pass non-constexpr arguments to a `constexpr` function, the function will behave normally, but if you pass literals or `constexpr` variables to a `constexpr` function,
+the result will be computed at compile time, and the literal value will be inserted in the code.
 
 `constexpr` functions are implicitly inline as well.
 
