@@ -1,1 +1,4 @@
-In light of my tip to stay updated, I'm going to provide a very brief tour of some C++20 features. Some besides what I mention here and in the concurrency section, some other C++ features include: constexpr constructors and destructors, a better date libary, consteval, constinit, and syncstreams. Important note, currently, C++20 is only partially supported, thus some code samples are untested.
+# C++20
+In light of my tip to stay updated, I'm going to provide a very brief tour of some C++20 features.
+Some others C++20 features that I don'tmention here or in the concurrency section include: constexpr constructors and destructors, a better date library,
+`consteval`, `constinit`, `std::format`, and `std::syncstream`s.

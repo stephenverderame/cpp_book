@@ -95,7 +95,7 @@ My point is threading is powerful, but it's not to be used everywhere.
 
 ### JThread
 
-C++20 adds a jthread class, which joins on destruction. It also allows the thread to be interrupted via a `stop_token`.
+C++20 adds a jthread class, which joins on destruction ("joining thread"). It also allows the thread to be interrupted via a `stop_token`.
 I will say no more, but show a code sample from cppreference. 
 ```C++
 using namespace std::chrono_literals;

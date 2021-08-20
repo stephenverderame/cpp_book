@@ -136,6 +136,10 @@ Now thread `C` is safe to read `result[0]` from thread `A`.
 If however, `A` made another update to `result[0]` after it resumed from the barrier, then `C` might read the old value (the one set before the barrier),
 the new value, or something in-between.
 
+A `std::flex_barrier` is very similar to a barrier, however its constructor also takes a callable object that returns an `int`.
+When all threads are released from the barrier, this callable object is run on one thread, and the resulting integer will be the new
+thread count for the barrier.
+
 A latch is exactly like a barrier, but it cannot be reset.
 
 ```C++

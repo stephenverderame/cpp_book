@@ -159,3 +159,10 @@ Moreover, when we return by smart pointer (whose copy cannot throw), we could no
 Lock free data structures are generally hard to design and even harder to get right, so only go for it if it is **necessary**.
 They're even harder when we relax the memory ordering and start using relaxes, or acquire-release memory ordering instead of sequentially consistent.
 As far as I know however, x86 only supports sequentially consistent memory ordering.
+
+Here's a common issue with lock-free data structures known as the *ABA* problem. Consider:
+1. Thread 1 reads a value `A` from a variable. Then Thread 1 does something to `A` (such as dereference it).
+2. Thread 1 is stalled
+3. Thread 2 performs an operation changing the variable's value to `B`. Another thread does something based on the new value `B` so that it invalidates `A` (such as freeing `A`)
+4. Another thread then changes the value back to `A` based on the new data (such as a new pointer with the same address)
+5. Thread 1 resumes, uses a `compare_exchange` to find that the value is still `A` (although now it's a different `A`), and continues on with invalid data.

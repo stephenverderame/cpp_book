@@ -237,7 +237,7 @@ Shared locks have the same semantics as `unique_lock`, except for being shared a
 When a thread wants to get exclusive access, it blocks other threads from locking the mutex for either shared or exclusive access, waits for all in-progress operations to stop, then
 performs the operation and unlocks th lock. Threads waiting for the exclusive lock get priority. So then what happens if we have more threads looking for exclusive access than shared access? 
 Well, we can end up with a situation known as
-*starvation* where threads continually acquire the exclusive lock leaving threads waiting for the shared lock for a long time. Thus, it's important that such locks be used in situations
+*starvation* where threads continually acquire the exclusive lock leaving threads waiting for the shared lock for a long time. Thus, it's important such locks be used in situations
 where shared access is the common case and exclusive access happens less frequently.
 
 Earlier I mentioned reentrant locks. Let's see that in C++. C++ has `std::recursive_mutex` which allows one thread to lock the mutex multiple times

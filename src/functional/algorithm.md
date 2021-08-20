@@ -50,6 +50,10 @@ A comparator is a function that takes in two arguments and returns true if the f
     std::generate(nums.begin(), nums.end(), [count = 0]() mutable {
         return count++;
     });
+  
+    std::vector<char> letters;
+    std::generate_n(std::back_inserter(letters), 100, [](){ return 'A'; });
+    letters.size(); //100
     ```
 *  `std::transform(begin, end, [optional 2nd range begin], dstBegin, func)` - analogous to `map`, and `zip`
     * Iterates through a range or two, calls the function and stores the result of that function in the destination range
@@ -85,9 +89,29 @@ A comparator is a function that takes in two arguments and returns true if the f
     * Selects `count` elements at random from `begin` and `end` and writes them to `out` using `gen` (a random number generator) as a source or randomness
 * `std::unique(begin, end)`
     * Removes consecutive duplicates from the range
+    * Removal is done by moving all elements to be removed to the back of the iterator range, then returning a new ending iterator that does not include these removed elements
     * `std::unique_copy(begin, end, out)` - same but does not perform in-place
+* `std::remove_if(begin, end, predicate)`
+    * Removes all elements satisfying the predicate by moving them to the end of the iterator range
+    * Returns an iterator to the first removed element which is also an iterator off the back of the range of remaining elements
+    ```C++
+    std::vector v = {100, 200, 300, 400, 500, 600};
+    const auto new_end = 
+        std::remove_if(v.begin(), v.end(), [](auto e) { return e <= 300; });
+  
+    for(auto num : v) {
+        std::cout << num << std::endl;
+    }
+    // Prints 400, 500, 600, then the remaining numbers (probably: 100, 200, 300)
+  
+    for(auto it = v.begin(); it != new_end; ++it) {
+        std::cout << *it << std::endl;
+    }
+    // Only prints 400, 500, 600 
+    ```
 * `std::partition(begin, end, pred)`
     * Partitions a range so that elements that satisfy `pred` are at the beginning of the range and those that don't are at the end
+    * Returns an iterator to the point at which the range is partitioned
     * `std::partition_copy` - same idea but not in place
 * `std::sort(begin, end, [optional comparator])`
 * `std::stable_sort(being, end, [optional comparator])` - sort that guarantees that elements that compare equally are kept in the same order as they were
@@ -131,7 +155,7 @@ The following are part of the `<numeric>` header
 * `std::accumulate(begin, end, start, [optional operation])` - similar to `fold_left` or `reduce`
     * Sums all the elements in the range with an initial value of `start`
     * If a binary function is passed, calls that function with the first argument as the current accumulation value (initialized to `start`) and the second argument as the current value in the range. The returned value becomes the new accumulated value
-    * `std::reduce` is similar to `accumulate` but it can take an execution policy and the initial value is optional
+    * `std::reduce` is similar to `accumulate` but it can take an execution policy, and the initial value is optional
 
     ```C++
     const std::vector v = {10.0, 5.4, 2, -1.2};

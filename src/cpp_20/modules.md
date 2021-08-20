@@ -1,7 +1,13 @@
-subsection{Modules}\index{module}
+# Modules
 
-Modules\index{C++20!module} help with some of the problems of includes in C++. They are compiled independently of the transnational units\index{translation unit} that import them and unlike headers, are saved in a binary format. Thus once they're compiled, they are quick to load and remain unchanged and independent from the code that depends on them. They are similar to Java's .class files but with greater encapsulation. You may define a module in separate interface and implementation files, or all in one file. In modules, code is not available outside the module unless its explictly exported. Furthermore, macros and includes used in one module does not affect the code that imports the module. Here's an example:
-\begin{lstlisting}[language=C++]
+Modules help with some problems of includes in C++.
+They are compiled independently of the transnational units that import them and unlike headers, are saved in a binary format.
+Thus, once they're compiled, they are quick to load and remain unchanged and independent of the code that depends on them.
+They are similar to Java's .class files but with greater encapsulation.
+You may define a module in separate interface and implementation files, or all in one file.
+In modules, code is not available outside the module unless it's explicitly exported.
+Furthermore, macros and includes used in one module do not affect the code that imports the module. Here's an example:
+```C++
 //begin interface file MyModule.ixx
 //--------------------------------------
 export module MyModule; 
@@ -18,6 +24,8 @@ namespace ModuleNS {
     export int getInt(); 
     //give a function external linkage
 }
+```
+```C++
 //begin implementation file MyModule.cppm
 //---------------------------------------
 module MyModule; //module implementation, no export
@@ -29,16 +37,19 @@ int ModuleNS::internalFunc() {
 int ModuleNS::getInt() {
     return ModuleNS::internalFunc();
 }
+```
+```C++
 //begin Main.cpp
 //----------------------------------------
 import MyModule;
 
 int i = ModuleNS::getInt();
 int bad = ModuleNS::internalFunc(); //error
-\end{lstlisting}
-For the interface file, we must explicitly export the things we want to make available to outside code.\index{export}An implementation file does not contain the keyword export, but it can import other modules. We can also define a module all in one file as well.
+```
+For the interface file, we must explicitly export the things we want to make available to outside code.
+An implementation file does not contain the keyword export, but it can import other modules. We can also define a module all in one file as well.
 
-\begin{lstlisting}[language=C++]
+```C++
 export module Module2;
 
 
@@ -64,16 +75,19 @@ export namespace EntireExportedNS {
     }
 }
 //template functions can be defined in modules
-\end{lstlisting}
-When we export a namespace like above, all the names in the namespace are exported. I'm not sure if this is a quirk but I have found that exporting a template directly does not seem to work, but it can be done if you put it in an exported namespace.
+```
+When we export a namespace like above, all the names in the namespace are exported.
+I'm not sure if this is a quirk, but I have found that exporting a template directly does not seem to work, but it can be done if you put it in an exported namespace.
 
+You may be curious how templates can be defined in modules if they are precompiled.
+Well that's because they aren't exactly precompiled. Instead, they're stored as abstract syntax trees.
 
-You may be curious how templates can be defined in modules if they are precompiled. Well that's because they aren't' exactly precompiled. Instead they're stored as abstract syntax trees.
+Modules also have *partitions* that allow an implementation to be split up into multiple files.
+Last time I checked, this is currently unsupported, at least in MSVC.
+I also believe that modules are still in early stages for other compilers and is the most fleshed out in MSVC. 
 
-Modules also have \textit{partitions}\index{module!partition}\index{C++20!module!partition} that allow an implementation to be split up into multiple files. Last time I checked, this is currently unsupported at least in MSVC. I also believe that modules are still in early stages for other compilers and is the most fleshed out in MSVC. 
-
-But here's the partition syntax. A partition is specified following a colon and can be used exactly like a module.
-\begin{lstlisting}[language=C++]
+Here's the partition syntax. A partition is specified following a colon and can be used exactly like a module.
+```C++
 // Begin file hello.cpp
 // ------------------------------
 export module Hello:inter; 
@@ -108,11 +122,14 @@ export import :inter;
 import :impl; // import the implementation partition
 // export the string header-unit
 export import <string_view>;  
-\end{lstlisting}
-\footnote{\href{https://accu.org/journals/overload/28/159/sidwell/}{Source for code sample}}
-To use in MSVC, module interfaces must have the .ixx file extension and module implementations must have the .cppm extension. You must also download the experimental module extensions to the C++ build tools and enable it with the compiler flag /experimental:module. Modules are currently unsupported in cmake with the ninja build system.
-Here's a narrow case utility re-implemented with concepts and modules:
-\begin{lstlisting}[language=C++]
+```
+[^1]
+To use in MSVC, module interfaces must have the .ixx file extension and module implementations must have the .cppm extension.
+You must also download the experimental module extensions to the C++ build tools and enable it with the compiler flag `/experimental:module`.
+Modules are currently unsupported in cmake with the ninja build system.
+
+Here's a narrow cast utility re-implemented with concepts and modules:
+```C++
 export module Cast;
 import std.core;
 
@@ -184,5 +201,9 @@ public:
         return age;
     }
 }
-\end{lstlisting}
-While templates can be in modules, they only seem to be able to go in module interface files, for the same reasoning as having to put them in header files. I didn't try it, but I'm sure you can manually instantiate a finite number of templates the same way you would if you put a template definition in a source file.
+```
+While templates can be in modules, they only seem to be able to go in module interface files, for (presumably) the same reasoning as having to put them in header files.
+I didn't try it, but I'm sure you can manually instantiate a finite number of templates the same way you would if you put a template definition in a source file.
+
+---
+[^1]: [Sample Source](https://accu.org/journals/overload/28/159/sidwell/)

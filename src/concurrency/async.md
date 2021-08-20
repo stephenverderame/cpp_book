@@ -9,10 +9,11 @@ That isn't the case for futures. Futures are essentially a handle to a concurren
     These functions return a `std::future_status` which indicates if the future is ready (can call `get()` without blocking) or not
 
 Futures are returned from `std::async` which may run a task in parallel.
-When using `std::async`, the library controls if the code is run on a new thread or sequentially to avoid the problem of oversubscription and excessive task switching.
+When using `std::async`, the library controls if the code is run on a new thread or sequentially to avoid over-subscription and excessive task switching.
 If you must force it to run in parallel, pass `std::launch::async` as the first parameter.
 The next parameter to `std::asycnc` would be the callable object to run, and any remaining parameters would be arguments passed to that callable object.
-This works similarly to `std::bind`.
+This works similarly to `std::bind`. `std::async` will then return a `std::future`, which is like a handle for a value that isn't available yet, but is expected
+in the future.
 
 ```C++
 int foo();
@@ -55,15 +56,16 @@ for(auto& fu : futures) {
 ```
 Like threads, futures are move-only.
 So notice when we iterate through the vector, we use `auto&` instead of `auto`.
-This is because, if you remember, our type deduction rules, a plain `auto` is exactly like a plain `T`.
+This is because, if you remember our type deduction rules, a plain `auto` is exactly like a plain `T`.
 Therefore, it will copy by-value. Futures cannot be copied (nor did we want to copy it), so we use `auto&` to get a reference to the deduced type.
 
 We also have `std::launch::deferred` which is diametrically opposed to `std::launch::async`.
 Instead of requiring a parallel mode of execution, it requires execution be deferred until `get()` is called.
 
-`get()` can **only be called once** per future object. Once `get()` is called, the future moves out whatever shared state it had.
+`get()` can **only be called once** per future object. Once `get()` is called, when the result is ready, the future moves out whatever shared state it had.
 At this point it becomes invalid.
 You can check if a future is valid by calling `valid()`. If you do call `get()` twice on the same future, you will get a `std::future_error`.
+If a future is destroyed without calling `get()`, the destructor will wait for the task to finish.
 
 `std::async` is great for recursive algorithms, times when you don't know how best to split up work among different threads ahead of time,
 or using functional programming idioms with concurrent programming.

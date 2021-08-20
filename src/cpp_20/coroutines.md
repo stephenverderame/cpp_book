@@ -1,31 +1,61 @@
-\subsection{Coroutines}\index{coroutines}
-\index{C++20!coroutines}
+# Coroutines
 
-At the time of writing this, I really don't know much about it. I'll explain the basics, but I will continue to look into this topic on my own time. In short, coroutines are functions that can be suspended and resumed mid-execution. They are stackless: they don't (nor could they) use a stack to store their activation records. Instead of the traditional subroutine model: a caller executes a subroutine from the start, waits until completion and then resumes, for a coroutine execution can be interleaved. The coroutines are more like partners, one makes progress, yields to the other, the second makes progress, yields to the first and so on. To this end they provide concurrency, but not parallelism. When you use the operators co\_return, co\_yield, and/or co\_await in a function, the compiler converts it to a coroutine with a finite state machine to control program flow and transfers. C++20 provides a pretty low-level API that's designed for library writers to build upon. For a good coroutine library, check out \href{https://github.com/lewissbaker/cppcoro}{cppcoro} and for more detailed information, check our \href{https://lewissbaker.github.io/}{Lewis Baker's github}.
-\index{co\_await}\index{co\_yield}\index{co\_return}
+At the time of writing this, I really don't know much about these. I'll explain the basics, but I will continue to look into this topic on my own time.
+In short, coroutines are functions that can be suspended and resumed mid-execution.
+They are stackless: they don't use a stack to store their activation records.
+I believe this is a quality of C++20 coroutines and not a requirement of coroutines in general.
+Instead of the traditional subroutine model: a caller executes a subroutine from the start,
+waits until completion and then resumes, a coroutine execution can be interleaved.
+The coroutines are more like partners, one makes progress, yields to the other, the second makes progress, yields to the first and so on.
+To this end, they provide concurrency, but not parallelism.
+When you use the operators `co_return`, `co_yield`, and/or `co_await` in a function,
+the compiler converts it to a coroutine with a finite state machine to control program flow and transfers.
+C++20 provides a pretty low-level API that's designed for library writers to build upon.
+For a good coroutine library, check out [cppcoro](https://github.com/lewissbaker/cppcoro) and for more detailed information, check our [Lewis Baker's github](https://lewissbaker.github.io/).
 
-Coroutines (henceforth referred to as "coro") can be resumed, suspended, and destroyed. Resuming a coro will transfer execution back at where it left off. Suspending one will save the current suspension point onto the activation frame and return control to the awaiter/caller. Destroying a coro cleans up the activation frame. The activation frame for coroutines are known as coroutine frames which contains space for parameters, local variables, temporaries, execution state (how to resume) and promises (for return values)
+Coroutines (henceforth referred to as "coro") can be resumed,
+suspended, and destroyed.
+Resuming a coro will transfer execution back to it at where it left off.
+Suspending one will save the current suspension point onto the activation frame and return control to the awaiter/caller.
+Destroying a coro cleans up the activation frame.
+The activation frame for coroutines are known as coroutine frames which contains space for parameters, local variables, temporaries, execution state (how to resume) and promises (for return values).
 
-C++20 provides two interfaces for coros, a promise\_type and awaiter. Note that these interfaces are not interfaces in the OOP sense, but rather concepts with certain functions that the compiler calls when turning a function into a coroutine. It should also be noted that the coro promise is not the same as the concurrency promise.
+C++20 provides two interfaces for coros, a `promise_type` and `awaiter`.
+Note that these interfaces are not interfaces in the OOP sense, but rather concepts with certain functions (static interfaces) that the compiler calls when turning a function into a coroutine.
+It should also be noted that the coro promise is not the same as the concurrency promise.
 
-An awaiter specifies three methods: await\_suspend(), await\_resume(), and await\_ready(). When you call co\_await on the object, the compiler first checks if the promise defines a function await\_transform(), which will be called if it exists otherwise the compiler just gets the awaiter directly.
+An awaiter specifies three methods: `await_suspend()`, `await_resume()`, and `await_ready()`.
+When you call `co_await` on the object, the compiler first checks if the promise defines a function `await_transform()`, which will be called if it exists otherwise the compiler just gets the awaiter directly.
 
+`await_ready()` returns a bool indicating if the next value to be produced by the coro is ready.
+Internally, when you `co_await` on an awaiter, it calls `await_ready()`, if it returns true, it will then call `await_resume()`, otherwise `await_suspend()` is called.
 
-await\_ready() returns a bool indicating if the next value to be produced by the coro is ready. Internally, when you co\_await an awaiter, it calls await\_ready(), if ready it will then call await\_resume() otherwise await\_suspend().
+`await_suspend()` takes in a handle to a coro, and can either return `void` or the handle to the coro to resume.
+The latter is known as a *symmetric transfer* and prevents allocating excess stack frames.
+This works by following a premise similar to tail recursion vs non-tail recursion.
+When a coro is suspended, the compiler stores all relevant state and creates a `coroutine_handle` object.
 
-await\_suspend() takes in a handle to a coro, and can either return void or the handle to the coro to resume. The latter is known as a symmetric transfer and prevents allocating excess stack frames. This works by following a premise similar to tail recursion vs non-tail recursion. When a coro is suspended, the compiler stores all relevant state and creates a coroutine\_handle object.
+`await_resume()` is what produces the return type for a `co_await` expression.
 
-await\_resume() is what produces the return type for a co\_await expression.
+A `promise_type` specifies methods for customizing the behavior of the coro itself.
+The `promose_type` interface has a few methods including `initial_suspend()`, `final_suspend()`, `yield_value()`, `return_value()`, `get_return_object()`, and `unhandled_exception()`.
+`initial_suspend()` is called on the first suspension of the coro, `final_suspend()` and `yield_value()` are called from `co_yield`, `return_value()` is called from `co_return`,
+and `get_return_object()` is for returning the result of the coro.
+`unhandled_exception()` is called in a catch block for any exception the propagates out.
+For initial and final suspend, the standard defined `std::suspend_always` and `std::suspend_never` can be returned to control suspension behavior.
 
-A promise\_type specifies methods for customizing the behavior of the coro itself. initial\_suspend() is called on the first suspension of the coro, final\_suspend(), yield\_value() (called on co\_yield), return\_value (called on co\_return), get\_return\_object() for returning the value, unhandled\_exception() which is called in a catch block for any exception the propagates out and some more. For intial and final suspend, the standard defined std::suspend\_always and std::suspend\_never can be returned to control suspension behavior.
+`co_return` takes the place of a normal `return` call, while `co_yield` doesn't clean up the coro frame, but instead returns a value and resumes execution on the cooperating coro or caller.
 
-co\_return takes the place of a normal return call, while co\_yield doesn't clean up the coro frame, but instead returns a value and resumes execution on the cooperating coro or caller.
+The `promise_type` is wrapped in an `std::coroutine_handle<>` which allows the holder to manage the coro and call operations such as `resume()`, `destroy()`, and `done()`.
 
-The promise\_type is wrapped in an \inlinecode{std::coroutine_handle<>} which allows the holder to manage the coro and call operations such as resume(), destroy(), and done().
-
-This probably made little sense, probably because I'm not even quite sure if it all made sense to me. So here's an example. A generator is something that evaluates lazily. If you are familiar with Python (I actually am not) range() is a generator. So that's what we'll do. We can do this without coros with just iterators, but where's the fun in that. The general structure will be that we have a Generator class with a promise type and an iterator. Each time the iterator is incremented, it resumes the coro which uses co\_yield to produce a value.
+This probably made little sense, probably because I'm not even quite sure if it all made sense to me.
+So here's an example. A generator is something that evaluates lazily. If you are familiar with Python `range()` is an example of a generator.
+SSo for this example we'll implement a `range()` function with coroutines.
+We can do this without coros with just iterators, but where's the fun in that.
+The general structure will be that we have a `Generator` class with a promise type and an iterator.
+Each time the iterator is incremented, it resumes the coro which uses `co_yield` to produce a value.
 Let's first start by defining our promise type.
-\begin{lstlisting}[language=C++]
+```C++
 template<typename T>
 struct Generator {
 	// must be named promise_type
@@ -50,6 +80,10 @@ struct Generator {
 		}
 		std::suspend_always yield_value(T const& other) {
 			value = std::addressof(other);
+            // assign data to value
+
+            // std::addressof() gets the address of a variable even if someone
+            // (evily) overloaded `operator&`
 			return {};
 		}
 
@@ -64,15 +98,18 @@ struct Generator {
 			value = std::current_exception();
 		}
         
-        // this function called when on co_await
+        // this function called by co_await
+        //
         // disable awaiting on the generator since
         // it can be an infinite stream of values
 		void await_transform() = delete;
 	};
-\end{lstlisting}
-We store the value of our coro as a variant, since it can hold either a value or an exception. we define the necessary functions to satify the promise\_type interface. Notice we define, but don't implement await\_transform which prevents anybody from calling co\_await on this promise.
+```
+We store the value of our coro as a variant, since it can hold either a value or an exception.
+We define the necessary functions to satisfy the `promise_type` interface.
+Notice we define, but don't implement `await_transform` which prevents anybody from calling `co_await` on this promise.
 Next we'll define the iterator:
-\begin{lstlisting}[language=C++]
+```C++
 	using handle_type = std::coroutine_handle<promise_type>;
 	struct iterator {
 		handle_type handle;
@@ -112,10 +149,13 @@ Next we'll define the iterator:
 			return operator*();
 		}
 	};
-\end{lstlisting}
-For an iterator in an enhanced for-loop, the compiler needs to be able to compare equality with == and !=, so we define those which delegate the comparisons to the handle. We also provide derefence capability, which will through if an exception is stored in the variant instead of a value. In the iterator incrementation, we resume the coro. If the coro finishes abruptly, then we know an error has occurred and rethrow the exception.
+```
+For an iterator in an enhanced for-loop, the compiler needs to be able to compare equality with `==` and `!=`,
+so we define those which delegate the comparisons to the handle.
+We also provide derefence capability, which will throw if an exception is stored in the variant instead of a value.
+In the iterator incrementation, we resume the coro. If the coro finishes abruptly, then we know an error has occurred and rethrow the exception.
 Here's the rest of the Generator:
-\begin{lstlisting}[language=C++]
+```C++
     // local variable handle to coro
 	handle_type handle{ nullptr };
 
@@ -125,7 +165,7 @@ Here's the rest of the Generator:
 
 	Generator() = default;
 
-	Generator(handle_type& handle) :
+	Generator(const handle_type& handle) :
 		handle(handle) {};
 
 	Generator(handle_type&& handle) :
@@ -176,9 +216,13 @@ Generator<T> range(T end) {
 		co_yield begin++;
 	}
 }
-\end{lstlisting}
-We use RAII features to destroy the coro frame on destruction of the generator. We provide move capabilities and remove copy capabilities. Finally we provide begin() and end() to our generator so it can be used in a for loop. Notice our coroutine doesn't explictly create a Generator itself. Instead the compiler handles all of that and constructing the coro handle to pass to the generator. Here's the usage:
-\begin{lstlisting}[language=C++]
+```
+We use RAII features to destroy the coro frame on destruction of the generator.
+We provide move capabilities and remove copy capabilities.
+Finally, we provide `begin()` and `end()` methods to our generator so it can be used in a for loop.
+Notice our coroutine doesn't explicitly create a Generator itself.
+Instead, the compiler handles all of that and constructs the coro handle to pass to the generator. Here's the usage:
+```C++
 int main() {
     for (auto i : range(10)) {
         printf("%d ", i);
@@ -186,10 +230,11 @@ int main() {
     printf("\n");
     return 0;
 }
-\end{lstlisting}
+```
 
-Here's another example. This one is a Task class that allows taks to be scheduled and lazily evaluated when you await them.
-\begin{lstlisting}[language=C++]
+Here's another example. This one is a Task class which allows tasks to be scheduled and lazily evaluated when you await them.
+
+```C++
 template<typename T>
 struct Task {
 	struct promise_type;
@@ -283,16 +328,19 @@ struct Task {
 			std::rethrow_exception(std::get<1>(var));
 	}
 };
-\end{lstlisting}
-A few things to point out is that main cannot be a coro. Thus no calls to co\_await, co\_yield etc. can occur inside it. Thus we define an operator() for getting the result of the task. We also use C++17's init-if syntax that allows you to form an if statement like so:\index{init-if}
-\begin{lstlisting}[language=C++]
+```
+A few things to point out is that `main()` cannot be a coro.
+Thus, no calls to `co_await`, `co_yield` etc. can occur inside it.
+To circumvent this in our simply example, we define an `operator()` for getting the result of the task from a normal function.
+We also use C++17's init-if syntax that allows you to form an if statement like so:
+```C++
 if(auto = /*initializer*/; /*condition*/){
 
 }
-\end{lstlisting}
-The condition and following if-else block has scope of the initialized variable.
+```
+The condition block and following if-else block has scope of the initialized variable.
 Usage of the task looks like the following:
-\begin{lstlisting}[language=C++]
+```C++
 Task<int> getNum() {
     co_return 5;
 }
@@ -306,5 +354,5 @@ int main() {
     printf("%d \n", result());
     return 0;
 }
-\end{lstlisting}
-Once again, notice no co\_await calls were performed in main.
+```
+Once again, notice no `co_await` calls were performed in main.
