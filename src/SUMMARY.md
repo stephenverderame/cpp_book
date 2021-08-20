@@ -1,13 +1,12 @@
 # Summary
 
-# An Introduction
 [About](about.md)
 - [Getting Started](./intro/getting_started.md)
     - [Hello World](./intro/hello_world.md)
     - [Hello CMake](./intro/hello_cmake.md)
 - [Guessing Game](./guessing_game/gg1.md)
     - [Coding the Guessing Game](./guessing_game/gg2.md)
-# The Basics
+---
 - [Basics](./basics/basics.md)
     - [Control Flow](./basics/control_flow.md)
     - [Primitive Types](./basics/primitives.md)
@@ -40,7 +39,7 @@
     - [Arrays](./basic_containers/arrays.md)
     - [Strings](./basic_containers/strings.md)
     - [List of Containers](./basic_containers/vector.md)
-# More Stuff
+---
 - [Move Semantics](./move/intro.md)
     - [Lvalues, Rvalues, and more; Oh My!](./move/values.md)
     - [RVO and NRVO](./move/optimizations.md)
@@ -78,7 +77,7 @@
     - [Ranges](./cpp_20/ranges.md)
     - [Coroutines](./cpp_20/coroutines.md)
     - [Other Features](./cpp_20/misc.md)
-# Practice
+---
 - [Tools](./testing/tools.md)
     - [Testing](./testing/intro.md)
         - [GTest](./testing/gtest.md)
@@ -89,4 +88,5 @@
     - [Static Analysis]()
 - [Project](project.md)
     - [SWE Tips]()
+
 [Further Resources](resources.md)

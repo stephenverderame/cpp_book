@@ -17,4 +17,4 @@ We'll discuss some aspects of cross-platform and systems development, but mostly
 Please feel free to reach out with comments, criticisms, or questions, and let me know if you spot a typo,
 mistake, or other error.
 
-- 08/19/2021
+\- 08/19/2021
