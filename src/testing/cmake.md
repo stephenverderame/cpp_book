@@ -1,0 +1,1 @@
+[Not written by me, feel free to peruse](https://cliutils.gitlab.io/modern-cmake/)

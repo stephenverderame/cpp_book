@@ -10,11 +10,12 @@ It returns an object that is implicitly convertible to an `int` that is:
 * `< 0` if `a < b`
 * ` = 0` if `a == b`
 * ` > 0` if `a > b`
+
 What it actually returns is an object of type `std::strong_ordering` or `std::partial_ordering`, which are convertible to integers.
 `std::strong_ordering` has 3 members, `std::strong_ordering::equal`, `less`, and `greater`.
 `std::partial_ordering` has 4: `equivalent`, `less`, `greater` and `unordered`.
 
-The nice thing about our little rocketship here, is that we don't have to explicitly use it to take advantage of it. Consider:
+The nice thing about our little rocketship here [^1], is that we don't have to explicitly use it to take advantage of it. Consider:
 
 ```C++
 #include <compare>
@@ -71,3 +72,7 @@ However, determining if one string is less than another always requires an `O(n)
 The good news is that's perfectly fine because the compiler will implement `==` independently of the spaceship operator and handle that for you.
 If you had your own type with your own equality comparison that wasn't simply delegating the comparison to a member, you can simply define your own operator==().
 Any manually defined comparison operators will take precedence over the rocketship operator.
+
+---
+
+[^1]: No innuendo intended

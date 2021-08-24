@@ -11,6 +11,7 @@ It will be a command line program that accepts the following commands:
 * `-content [-f] <text>` - specifies the content in a request or server. An optional `-f` command may follow indicating that the content is to be read from the specified file. If the content contains spaces, it must be enclosed with quotes. If content is specified for a server, this essentially specifies the `index.html`.
 * `-ssl [-only] <certificate>` - makes the server use SSL using the specified certificate file. If the `-only` flag is set the server rejects plaintext
 * `-o <file>` - stores the result of a request into the specified file
+* If no arguments are passed, or invalid/incorrect arguments are used, a help message containing the above information should be shown.
 
 The program should be cross-compatible on Windows and Unix systems. For windows, you will have to link with `Ws2_32.lib` and most of the networking stuff will be in the `WinSock2.h` header. You may also need `WS2tcpip.h` (and others). For Unix, you may want to look at `sys/socket.h, sys/types.h, netinet/in.h, sys/select.h, fcntl.h, arpa/inet.h, sys/ioctl.h, unistd.h, netdb.h`. The socket API for both libraries are very similar, but there are a few slight differences: (these are not the only ones)
 
@@ -28,9 +29,30 @@ Since both of these APIs are C APIs, most of their functions return error codes.
 
 ## Setup
 
-[Starter code available here](https://github.com/stephenverderame/CppBookProject). You will also need to install OpenSSL. For windows, you can download pre-compiled binaries via an installer [here](https://slproweb.com/products/Win32OpenSSL.html). OpenSSL also have a list of some other reccomended third parties for getting the pre-compiled binaries [here](https://wiki.openssl.org/index.php/Binaries).
+[Starter code available here](https://github.com/stephenverderame/CppBookProject).
+You will also need to install OpenSSL.
+For windows, you can download pre-compiled binaries via an installer [here](https://slproweb.com/products/Win32OpenSSL.html).
+OpenSSL also have a list of some other recommended third parties for getting the pre-compiled binaries [here](https://wiki.openssl.org/index.php/Binaries).
 
-For Unix users, you can simply install `libssl-dev` and `openssl` from your package manager. You will also need to make sure you have CMake and Doxygen installed. Ubuntu users can simply install `cmake` and `doxygen` from `apt` (other distros might have the binaries available from the package manager, otherwise go the the link)  and Windows users can find installations for [cmake here](https://cmake.org/download/) and [doxygen here](https://www.doxygen.nl/download.html). You may need to install GraphViz (what Doxygen uses to generate inheritance graphs) separately [here](https://graphviz.org/download/). For windows you should add `dot` to your path system variable via the installer.
+For Unix users, you can simply install `libssl-dev` and `openssl` from your package manager.
+You will also need to make sure you have CMake and Doxygen installed. Ubuntu users can simply install `cmake` and `doxygen` from `apt`
+(other distros might have the binaries available from the package manager, otherwise go the the link),
+and Windows users can find installations for [cmake here](https://cmake.org/download/) and
+[doxygen here](https://www.doxygen.nl/download.html).
+You may need to install GraphViz (what Doxygen uses to generate inheritance graphs)
+separately [here](https://graphviz.org/download/). For Windows, you should add `dot` to your path system variable via the installer.
+
+The starter code has the following architecture. Black boxes indicate already provided modules. The double angled brackets indicates an interface,
+an open arrow indicates a subtyping relationship, and a closed arrow indicates a dependency. Boxes with dotted lines indicates
+unimplemented modules and only show **a possible** implementation.
+You may find that this possible architecture poses problems (I just drew it up quickly).
+Furthermore, in the spirit of YAGNI ("you ain't gonna need it"), you may find some things (such as an abstract server and client)
+unnecessary.
+
+![Image of Possible Architecture](res/CppBookProjectSetup.png)
+
+The starter code contains a `Networking.h` file that has os dependent includes. Ideally, you should minimize dependencies of every module, thus
+this file should really only be included in source files or header files that do not need to be directly included by the client.
 
 ## Goals
 
@@ -41,6 +63,12 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
 * Familiarize yourself with the standard library
 * Learn about socket programming
 * Experience with Doxygen
+
+### What you'll (probably) need to know
+* Section 2 (Basics to Basic Containers)
+* Template Basics Chapter (at least to specialization)
+* STL Functional Programming Chapter
+* Section 4 (Tools and Project)
 
 ## Tasks
 
@@ -78,6 +106,7 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
     * See `ChunkedTest` and `QueryTest`
 * Implement the command line argument marshallers
     * Recognize command line arguments
+    * The arguments can be specified in any order
 * ~~Feel free to~~ add your own tests and expand upon the existing ones
 * Tie it all together:
     * Create a website with a C++ backend:
@@ -86,6 +115,8 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
         * Bonus:
             * CRUD (create, read, update, delete) operations on some "database"
             * Fetching images (or some other non-plaintext data) from the site
+* Use Doxygen to generate documentation for your project
+    * Comment your code in a Doxygen recognized format
 * (Optional) Implement `FdSet`
     * Not really necessary because HTTP is a stateless connection protocol
     * But if you needed to keep track of active connections this would be vital
@@ -113,9 +144,22 @@ For Unix users, you can simply install `libssl-dev` and `openssl` from your pack
 ## Other Notes
 
 You can use preprocessor conditions around the definition of `WIN32` to conditionally enable code depending on if using Windows or Unix. 
-`WIN32` is a macro defined by the compiler when compiling on Windows (even Win64). In the CMake, I also define `WINDOWS` when the platform is Windows and `UNIX` when it is not.
+`WIN32` is a macro defined by the compiler when compiling on Windows (even Win64).
+In the CMake, I also define `WINDOWS` when the platform is Windows and `UNIX` when it is not.
 
-Feel free to change the implementation or design of anything. Although there is a comment saying not to, you may change the Port interface so long as you make sure to have tests.
+```C++
+#ifdef WIN32
+// windows only code
+
+// ifdef -> "if defined"
+// if the macro WIN32 is defined, include this code
+#else
+// non-windows code
+#endif
+```
+
+Feel free to change the implementation or design of anything.
+Although there is a comment saying not to, you may change the Port interface so long as you make sure to have tests.
 
 The current project structure is as follows:
 ```
@@ -133,3 +177,9 @@ The current project structure is as follows:
 |---out
 |
 ```
+
+To connect to a HTTP server running on your machine, you can simply type `localhost` or `127.0.0.1` into the address bar of your browser.
+If you use a port other than `80` for HTTP and `443` for HTTPS, then the port must be specified by a colon and port number following the address.
+Ex: `localhost:3000`
+
+Other devices on the same network as you can connect via your LAN address which is listed when you run the command `ipconfig` on Windows or `ifconfig` on Unix.

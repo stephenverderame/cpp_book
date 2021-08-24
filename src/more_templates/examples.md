@@ -1,5 +1,33 @@
 # Iterator Chain
 
+Let's design a class to have similar syntax and semantics to Python and Rust's `chain`. What we'll do is make a more abstract version of our Rope class.
+A chain will be able to chain together objects with a `begin()` and `end()` function so that they can be iterated over by one iterator.
+We'll want this iterator to be `const` if any of the containers' iterators are `const`.
+For simplicity, we'll make the `chain` iterator random access, however it won't truly be random access unless all the iterators it is composed of
+are random access as well. This is because technically, random access iterators require `O(1)` random access; however, for iterators that don't support
+that, the random access iterator methods of `chain` (such as `operator[]`) will have `O(n)` lookup time.
+
+We actually already designed a `min_iter_tag` template which can be used to prevent the user from having to keep track of what the chain is a chain of
+before using certain iterator features.
+
+Let's see some example usage:
+```C++
+std::vector v = {10, 20, 30, 50};
+auto init_lst = {50, 60, 70, 20};
+std::list ls = {100, 200, 300};
+
+for (auto e : chain(v, lst, ls)) {
+    std::cout << e << ", ";
+}
+std::cout << std::endl;
+
+auto c = chain(ls, v);
+std::sort(c); // mutates ls and v
+
+```
+
+Let's start with a dynamic way to access tuple elements:
+
 ```C++
 /**
 * Returns the result of calling the specified function on the tuple element

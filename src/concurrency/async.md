@@ -70,65 +70,38 @@ If a future is destroyed without calling `get()`, the destructor will wait for t
 `std::async` is great for recursive algorithms, times when you don't know how best to split up work among different threads ahead of time,
 or using functional programming idioms with concurrent programming.
 
-Here's and example of a parallel FFT implementation:
-//TODO: Nicer async example
+Here's and example of a parallel merge sort.
 
 ```C++
-void butterfly_mt(signal_t& s, size_t butterflySize, 
-    size_t startIndex, size_t endIndex, cmplx_t twiddleFactor)
-{
-    const auto hMergeSize = butterflySize >> 1; 
-    //half of butterfly size
-    if (butterflySize > 2) {
-        const auto smallerTwiddle = 
-            exp(cmplx_t{ 0, -pi2 / hMergeSize });
-            
-        // call the same function on the first half of the signal
-        auto fu = std::async(butterfly_mt, 
-            std::ref(s), hMergeSize, 
-            startIndex, (endIndex + startIndex) / 2, 
-            smallerTwiddle);
-            
-        // perform the butterfly step on the second half
-        butterfly_mt(s, hMergeSize, 
-            (endIndex + startIndex) / 2, 
-            endIndex, smallerTwiddle);
-        
-        //wait for the first half
+#include <future>
+#include <algorithm>
+template<typename T>
+void mergeSort(std::vector<T>& vec, size_t begin, size_t end) {
+    if (end > begin + 1) {
+        const auto middle = (begin + end) / 2;
+        auto fu = std::async([&]() { mergeSort(vec, begin, middle); });
+        mergeSort(vec, middle, end);
         fu.get();
+        std::inplace_merge(&vec[begin], &vec[middle], vec.data() + end);
     }
-
-    // combine the two results
-    for (auto j = startIndex; j < endIndex; 
-        j += butterflySize) {
-        // for each butterfly chunk in the list
-        for (auto i = decltype(butterflySize){0}; i < hMergeSize; ++i) {           
-            const auto wn = pow(twiddleFactor, i);
-            const auto temp = s[j + i];
-            s[j + i] = s[j + i] + wn * s[j + hMergeSize + i];
-            s[j + hMergeSize + i] = temp - wn *  s[j + hMergeSize + i];        
-        }
-    }
-}
-
-signal_t FFT::fft(signal_t&& s)
-{
-    if (!isPowerOf2(s.size()))
-        padToPowerOf2(s);
-    s = bitReverse(std::move(s));
-    
-    butterfly_mt(s, s.size(), 0, s.size(), 
-    exp(cmplx_t{ 0, -pi2 / s.size() }));
-    return s;
 }
 ```
-What's going on is that we start with the entire signal, and at each step we subdivide the signal into two halves.
+What's going on is that we start with the entire vector, and at each step we subdivide the vector into two halves.
 One half is (possibly) performed in parallel while the main thread is doing the other half.
-If we used pure threads here, then we'd quickly get up to too large of an amount of threads.
-We start big, and go into smaller and smaller chunks so that the new threads are likely created for the big chunks, and the smaller chunks are likely executed sequentially.
+If we used pure threads here, then we could quickly get up to too large of an amount of threads.
+We start big, and go into smaller and smaller chunks so that the new threads are likely created for the big chunks,
+and the smaller chunks are likely executed sequentially.
 
-Notice also that the butterfly function doesn't return anything. We can still use futures however.
-In this case we use a future to notify when the task is completed instead of using condition variables and mutexes. Consider using void futures to notify one-off events.
+Notice also that the merge sort function doesn't return anything and performs the operation in-place. We can still use futures however.
+In this case we use a future to notify when the task is completed instead of using condition variables and mutexes.
+Consider using void futures to notify one-off events.
+
+Since `mergeSort` is a template, we wrap it in a lambda and pass it to `std::async` instead of passing its address and function arguments directly.
+This is because it's difficult to get the address of a template function.
+
+Since `end` is going to be off the back of the vector for some calls to `std::inplace_merge`, we don't get the end pointer by doing `&vec[end]`, because
+that would be undefined behavior if `end >= size()`. Finally, I'd also like to remind you that doing `&vec[index]` will not work for boolean vectors.
+For an explanation, refer to [the vectors section in the basic containers chapters](../basic_containers/vector.md).
 
 Now what if you wanted to be able to call `get()` multiple times?
 Let's say you have multiple threads that all need some result.

@@ -1,12 +1,13 @@
 # Templates
 
-We've been using these quite a bit already, and you may already be familiar with things like templates from another programming language. 
+We've been using these quite a bit already, and you may already be familiar with things like templates from another programming language.
 Templates allow us to pass parameters (often types) to classes, structs, and functions at compile time. 
 Effectively, what this does is replace every template argument with whatever type is passed to it. 
-For example, `std::vector` is a template that is *instantiated* with the type we specify. This allows one definition of `std::vector` to be used for many types.
- Each template *instantiation* is a different type; behind the scene each unique combination of template parameters passed to a template type results in 
- the compiler generating a unique class/function. 
- As we've seen, this means that `std::unique_ptr<Base>` and `std::unique_ptr<Derived>` are totally distinct classes even though `Derived` is a subclass of `Base`.
+For example, `std::vector` is a template that is *instantiated* with the type we specify.
+This allows one definition of `std::vector` to be used for many types.
+Each template *instantiation* is a different type; behind the scene each unique combination of template parameters passed to a template type results in 
+the compiler generating a unique class/function. 
+As we've seen, this means that `std::unique_ptr<Base>` and `std::unique_ptr<Derived>` are totally distinct classes even though `Derived` is a subclass of `Base`.
 
 ```C++
 template<typename T> // this is the template parameter
@@ -77,10 +78,15 @@ MyVec_int mv(100);
 ```
 
 In order to instantiate a template, the template's full definition (not just declaration) must be available. 
-Since translation units (source file + all included headers) are compiled independently, the general result is that a template function or class must be defined in a header file. 
-This allows multiple source files to declare instances of template types because when the compiler compiles the translation unit, the definition is available since it's in the header file. 
-There is a way around this however. If the amount of different instantiations of a template is limited, you can define the class in a source file and manually enumerate through all allowed instantiations in that file. 
-This way, when another translation unit uses an instance of a template class, the linker can link the instance defined in an external translation unit with its usage.
+Since translation units (source file + all included headers) are compiled independently,
+the general result is that a template function or class must be defined in a header file. 
+This allows multiple source files to declare instances of template types because when the compiler compiles the translation unit,
+the definition is available since it's in the header file. 
+There is a way around this however.
+If the amount of different instantiations of a template is limited,
+you can define the class in a source file and manually enumerate through all allowed instantiations in that file. 
+This way, when another translation unit uses an instance of a template class,
+the linker can link the instance defined in an external translation unit with its usage.
 
 ```C++
 // my_vec.h
@@ -331,7 +337,7 @@ One type that won't satisfy this is a unique pointer for example. What we've don
 
 ## One Definition Rule
 
-Ok, later is now. Firstly, *definitions* are *declarations* that fully define something except for the following cases (and a few more):
+Firstly, *definitions* are *declarations* that fully define something except for the following cases (and a few more):
 * Function declaration without a body
 * Declaration with `extern` that lacks an initial value
     ```C++
@@ -348,7 +354,7 @@ Ok, later is now. Firstly, *definitions* are *declarations* that fully define so
 
     int S::j; // definition
     ```
-* Declaratiion of class without body
+* Declaration of class without body
     ```C++
     class S;
     class ReturnType func(class ArgType a);
@@ -359,7 +365,8 @@ Ok, later is now. Firstly, *definitions* are *declarations* that fully define so
     template<typename T> //T is declared
     ```
 
-Now as the name implies, only one definition of something is allowed in a single translation unit, and one and only one definition of non-inline functions and variables must exist in a program. 
+Now as the name implies, only one definition of something is allowed in a single translation unit,
+and one and only one definition of non-inline functions and variables must exist in a program. 
 Finally, one definition of inline functions and variables must be present in every translation unit where they are ODR-used.
 
 Functions are ODR used when somebody makes a call to it or takes its address. Objects are ODR used when its value is read (unless it's a compile-time constant), written, has its address taken, 

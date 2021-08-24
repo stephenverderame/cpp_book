@@ -76,18 +76,14 @@ This allows certain stages of the pipeline to occur at the same time, but not ev
 To get the amount of threads supported concurrently, use `std::thread::hardware_concurrency()`. 
 
 Moreover, Amdahl's Law states:
-$$\frac{1}{(1 - p) + \frac{p}{c}} \leq \frac{1}{1 - p}$$
-Where
-\begin{align*}
-p &= \mbox{ fraction of parallelizeable work} \\
-c &= \mbox{ number of cores} \\
-\end{align*}
-Thus lets say our application spends 20% (quite a good chunk) of its time doing parallel work, then it can only be improved by a factor of:
-$$\frac{1}{1 - 0.2} = 1.25$$
+![Amdahl's Law Image](../res/AmdahlsLaw.PNG)
+Let's say our application spends 20% (quite a good chunk) of its time doing parallel work, then it can only be improved by a factor of:
+1/(1 - 0.2) = 1.25
 no matter how many threads or cores you have.
 
 There's more to the story, but my main point is don't overuse threads.
 When you have much more threads than your hardware can handle, you get what's called *oversubscription* and *task switching*.
+In order to support more threads than processor, each processor will have to perform small bits of a task at a time, then switch to another.
 To switch tasks, the processor has to save all the state of the current thread, store it, and load up the next thread and state of that.
 This can take a lot of time and if it has to do this excessively... no bueno.
 

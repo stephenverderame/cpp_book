@@ -3,7 +3,8 @@
 We saw how `std::exception::what()` is defined as `noexcept`. This means that it cannot throw an exception, or a thrown exception indicates a fatal error. 
 Any exception that propagates out of a `noexcept` function calls `std::terminate` and ends the program. 
 So you should declare functions that do not throw, or only throw to indicate program-terminating failures (like memory allocation failures), as `noexcept`. 
-Furthermore, a `noexcept` function permits the compiler to optimize away error handling infrastructure for that function. So it's a good idea to declare everything that you can as `noexcept`.
+Furthermore, a `noexcept` function permits the compiler to optimize away error handling infrastructure for that function.
+So it's a good idea to declare everything that you can as `noexcept`.
 
 ```C++
 int add(int a, int b) noexcept {

@@ -152,7 +152,8 @@ if(attendCollegeAfterHS(person)) {
 Notice how by creating a helper function, we were able to encode the comment in a name. 
 Commenting what the code does is unnecessary since the function name says it all. 
 If you find yourself commenting what code does, that's a good hint that you might want to make a function. 
-We also see how `attendCollegeAfterHS()` does just one thing. We also pass by `const` reference since the function only uses accessors of `Person` and doesn't do any mutations.
+We also see how `attendCollegeAfterHS()` does just one thing.
+We also pass by `const` reference since the function only uses accessors of `Person` and doesn't do any mutations.
 
 For another example, we saw in our guessing game how we turned this:
 
@@ -192,7 +193,7 @@ We could be more pedantic and make the loop its own function as well, but this f
 I like functions to be of a size so that in one "eye-space" I can take in the entire function. So no scrolling, moving my head, etc.
 
 Functions should also not use output parameters, and have a small amount of arguments. 
-Generally shoot for no more than 4. 
+Generally shoot for no more than 4 arguments. 
 Also, if you have parameters of the same type next to each other (and order matters),
 you can encode the order in the function name or separate the parameters by some argument of a different type (if there are more arguments).
 
@@ -225,9 +226,9 @@ void copyDstFromSrc(Range dst, Range src);
 
 Notice how the first function was *missing an abstraction* which led to having 4 parameters. 
 In the second function, we created a `struct` to organize the parameters into an `abstraction`.
-In C++20, this can be done with `std::span`.
+In C++20, this can be done with ranges and `std::span`.
 
-We should also prefer *pure functions* a pure function has no side effects, and returns the same output for the same inputs.
+We should also prefer *pure functions*; a pure function has no side effects, and returns the same output for the same inputs.
 It should not mutate variables or have any other effect other than the value it returns.
 
 

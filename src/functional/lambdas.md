@@ -8,8 +8,9 @@ Lambdas have the syntax:
 
 }
 ```
-Where `[]` denotes the variables captured by the lambda from the local scope, `()` denotes the arguments, and `{}` denotes the code that is part of the lambda. 
-Data that is captured is copied into the lambda's *closure* which is a runtime object that holds copies or references to captured data and is an instance of the *closure class* that the lambda belongs to. 
+Where `[]` contains the variables captured by the lambda from the local scope, `()` encloses the arguments, and `{}` encloses the code that is part of the lambda. 
+Data that is captured is copied into the lambda's *closure* which is a runtime object that holds copies or references to captured data and is an instance of the
+*closure class* that the lambda belongs to. 
 We can think of a lambda as being syntactic sugar for the compiler creating a class which provides an `operator()`, and instantiating that class like so:
 
 ```C++
@@ -49,7 +50,8 @@ const auto lambda2 = [capture](int arg) -> bool {
 
 The variables captured by a lambda are, by default, copied unless you manually request a reference by prepending the variable name with `&`.  
 The captured variables are captured once, when the lambda is defined. 
-Even though the variables are copied, they are immutable unless you make the lambda a `mutable` lambda, which allows the closure to modify the members of the closure class. 
+Even though the variables are copied, they are immutable unless you make the lambda a `mutable` lambda,
+which allows the closure to modify the members of the closure class. 
 
 ```C++
 int cap = 30;
@@ -111,7 +113,7 @@ const auto l5 = [person3 = std::ref(p)] {
 
 `std::reference_wrapper<T>` is also useful to allow containers such as `std::vector` that cannot hold references to be able to do so. 
 However `std::reference_wrapper`, is just, well a `reference_wrapper` and provides no mechanisms to prevent or check for dangling references. 
-In terms of safety, its not much better than having a container of raw pointers.
+In terms of safety, it's not much better than having a container of raw pointers.
 
 ```C++
 std::vector<std::reference_wrapper<int>> nums;
@@ -137,9 +139,10 @@ Default capture modes capture all used variables by reference or by value, respe
 You should prefer init capture or enumerating the variables you capture instead of using default capture modes. 
 The reason is that default captures make it harder to reason about object lifetimes and realize when certain variables cannot be captured.
 
-Let's start with passing everything by reference. 
+Consider we use the default reference capture mode to pass everything by reference. 
 You must take care to ensure that the objects you capture outlives the lambda. 
-Lambdas are very easy to bring out of the scope they were declared in (say, adding it to a vector) and thus anything that is captured must live outside that scope as well.
+Lambdas are very easy to bring out of the scope they were declared in (say, adding it to a vector)
+and thus anything that is captured must live outside the initial scope as well.
 
 To avoid this, you might be tempted to just copy all variables you use with the default copy capture mode. 
 But the capture mode `[=]` to capture by copy doesn't always copy everything you "capture". 
@@ -147,7 +150,8 @@ Remember, when you capture member variables you aren't actually copying them. Yo
 Thus, the default "pass by value" capture is susceptible to the same dangling pointer problem as passing by reference.
 Furthermore, using the default copy capture mode might make you think a static variable's value was saved in the closure, however no copy was actually made
 and any outside code that mutates the static variable also affects the lambda! 
-A static variable "captured" by a default capture mode isn't really captured, as the code will simply refer to the single instance of the static variable that exists outside the scope of the lambda. 
+A static variable "captured" by a default capture mode isn't really captured,
+as the code will simply refer to the single instance of the static variable that exists outside the scope of the lambda. 
 Therefore, a default capture by value isn't actually capturing everything by value. 
 This confusion can be avoided by using *init-capture*.
 
@@ -225,8 +229,22 @@ my_func_t f3 = [](auto a, auto b) {
     return a * b;
 };
 ```
+The syntax `ReturnType(Args...)` such as `int()` or `char(std::string, int)` is the syntax for a function type.
+The syntax might be somewhat reminiscent to you of function pointer syntax. You can think of this as the non-pointer function type.
+```C++
+int fun(char c) {
+    return c - 'a';
+}
 
-Here are some more examples:
+using fun_ptr_t = int(*)(char); //function pointer
+using fun_val_t = int(char); //function "value"
+// I use the term "value", but functions are not values in C++
+
+fun_ptr_t funPtr1 = &fun;
+fun_val_t * funPtr2 = &fun;
+```
+
+Here are some more `std::function` examples:
 
 ```C++
 struct Test {
@@ -295,11 +313,14 @@ auto res = stalinSort<std::vector<int>, int>(nums, [](auto a, auto b) { return a
 ## Partial Application and Bind
  
 Generally, lambdas should be preferred to `bind`, but I do feel it is good to know about. 
-Bind can be used to partially apply a callable object. 
-It takes a callable object, and constructs a *bind object* from it by copying in the arguments passed to `std::bind`. 
+Bind can be used to partially apply a callable object.
+Partial application is when you supply some, but not all the arguments to a function.
+The returned object of a partial application is another callable objects that takes the unspecified arguments.
+`std::bind` takes a callable object, and constructs a *bind object* from it by copying in the arguments passed to `std::bind`. 
 The bind object works similarly to a closure. 
 However, its `operator()` can only delegate to the callable object that was passed to `std::bind`. 
-The first argument of `std::bind` is the callable object, if the callable object is a member function then the second argument is a pointer to the owning instance (or a placeholder). 
+The first argument of `std::bind` is the callable object, if the callable object is a member function then the second argument is a pointer to the
+owning instance (or a placeholder). 
 Remember, this owning object pointer can really be viewed as the first argument to the function. 
 The rest of the arguments are placeholders or parameters bound to the underlying function arguments based on position. 
 The arguments passed to `std::bind` are constructed in the bind object. 

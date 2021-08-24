@@ -1,4 +1,4 @@
-#Mutexes and Locks#
+# Mutexes and Locks
 "Shared state is broken state"[^1].
 If you have two threads reading from the same piece of memory, that's fine, but if you have one reading while another is writing you can get tons of issues.
 Firstly, the reading thread might not read a completely changed value on an object (ie. halfway between changing an integer) then for larger data types like classes,
