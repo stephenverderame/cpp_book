@@ -208,4 +208,15 @@ We can decouple code simply by having separate functions. Later we may find that
 We can create stronger boundaries by creating different deployment components, separating code to run on independent threads, independent processes, 
 or even independent services connected remotely. Stronger boundaries strengthens decoupling but increases the cost of crossing the boundary.
 
+### Defensive Programming
+
+Always be on the look out for "impossible" program states. Act like there is a little gremlin in your code that's trying to mess you up.
+For example, maybe in a switch block the default case should never be executed. Instead of just leaving it out, knowing the default
+case should never be chosen, make the default case throw an exception.
+
+Make your interfaces really easy to use and hard to mess up. Finally, document everything you are assuming. It might be hard to notice things
+you are subconsciously assuming, but whenever you can see an assumption made in your code, document it. For example,
+if you use any of the C string functions on a `const char *`, you are assuming that `const char *` is a C string, which
+ends in the null terminator.
+
 ## Examples

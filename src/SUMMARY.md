@@ -88,5 +88,6 @@
     - [Static Analysis](./testing/analysis.md)
 - [Project](project.md)
     - [SWE Tips](swe_tips.md)
+    - [Design Patterns](design_patterns.md)
 
 [Further Resources](resources.md)
