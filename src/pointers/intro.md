@@ -3,7 +3,7 @@
 I've been skirting around this topic for a bit because I wanted to start with the modern C++ smart pointers, and then mention the C style raw pointers. 
 However, I think understanding the smart pointers takes some groundwork, which I think we finally have laid out.
 
-The C++ smart pointers are template types, that is they are classes which take template type arguments. Like raw pointers and references, smart pointers enable the class that they wrap to behave polymorphically. 
+The C++ smart pointers are template types, that is to say they are classes which take template type arguments. Like raw pointers and references, smart pointers enable the class they wrap to behave polymorphically. 
 The three smart pointers (`unique_ptr`, `shared_ptr`, and `weak_ptr`) all have slightly different semantics and uses, but taken as a whole they have a few key advantages over "dumb" pointers:
 
 1. Firstly, smart pointers are RAII classes for regular pointers. The smart pointer itself has an automatic lifetime, so when it goes out of scope it handles any resource management it may need to do. 
@@ -48,8 +48,9 @@ cpy.b; // 50
 
 ### Const Smart Pointers
 
-Declaring the smart pointer itself `const` prevents changing the data the smart pointer points to but does not make the data itself `const`. 
-This is akin to putting `const` after the `*` for a normal pointer declaration. To make the data constant, the template argument to the smart pointer must be `const`.
+Declaring the smart pointer itself `const` prevents changing the data the smart pointer points to, but does not make the data itself `const`. 
+This is akin to putting `const` after the `*` for a normal pointer declaration.
+To make the data constant, the template argument to the smart pointer must be `const`.
 
 ```C++
 const std::unique_ptr<int> ptr = new int(5);
@@ -63,24 +64,39 @@ ptr2 = nullptr; // good
 
 ### Make Functions
 
-As I've shown, the constructor for a smart pointer takes a raw pointer to take ownership of. But consider the following:
+As I've shown, the constructor for a smart pointer takes a raw pointer to take ownership of.
+Now, the evaluation order of function arguments are unspecified. This is to allow,
+the compiler to perform optimizations it otherwise wouldn't be allowed to do.
+So consider the following:
 
 ```C++
-const auto ptr = new int(100);
-std::unique_ptr managedData = ptr;
-//...
-// Hey what's this raw pointer ptr
-// better clean that up
-delete ptr;
-// Uh Oh!
+void foo(std::unique_ptr<X> && x, std::unique_ptr<Y> && y) {}
+
+foo(std::unique_ptr(new X()), std::unique_ptr(new Y());
 ```
 
-Or what if we accidentally pass an address to an object with automatic lifetime? Or even pass a pointer already managed by another smart pointer? 
-Plus, we once again are stuck manually matching the correct allocation function with deletion function.
+We can think of `new` as performing two operations. Allocating memory, and calling the constructor.
+So one possible execution order is the following:
 
-To solve this (well really the final point), the C++ library has `std::make_unique` and `std::make_shared` template functions to help us. 
+1. Allocate memory for `X`
+2. Construct an `X`
+3. Allocate memory for `Y`
+4. Construct a `Y`
+5. Construct a smart pointer of `Y`
+6. Construct a smart pointer of `X`
+7. Call `foo`
+
+What if the constructor to `Y` throws in step 4? Memory for `X` is already allocated!
+Now we can have a memory leak!
+
+Another downside is we are stuck manually matching the correct allocation function with deletion function.
+
+To solve this, the C++ library has `std::make_unique` and `std::make_shared` template functions to help us. 
 Whatever you pass as arguments to these functions are *forwarded* (more on this later) to the constructor of the object you are wrapping in a smart pointer. 
 Like smart pointers themselves, these functions are templated on the type that they are creating a smart pointer of.
+
+Using make functions, the allocation, construction, and adoption by a smart pointer steps occur in a single step. This prevents the
+unspecified evaluation order memory leak.
 
 ```C++
 auto smartPtr = std::make_unique<int>(100);

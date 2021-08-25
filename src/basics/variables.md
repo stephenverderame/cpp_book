@@ -6,7 +6,8 @@ We've already used quite a lot of variables already. So we'll skip the formaliti
 
 As I previously mentioned, anything that can be `const` should be `const`. A `const` "variable" is one whose value cannot change. 
 It's good practice to make `const` variables the default and mutable variables the exception. 
-Mutability makes things harder to reason about and const correctness is another form of type safety. Like an unsigned vs signed primitive type, a const and non-const type are two fundamentally different types. 
+Mutability makes things harder to reason about and const correctness is another form of type safety.
+Like an unsigned vs signed primitive type, a const and non-const type are two fundamentally different types. 
 A non-constant can be automatically converted to a constant version of the type, but not the other way around.
 
 ```c++
@@ -21,12 +22,16 @@ mutNum += 10; //good
 
 In Java, when you declare a variable, it is set to a default value. 
 This isn't the case in C++ since there's no reason for the extra instruction to set a default if the programmer is going to set it to something else anyway. 
-It's part of the "pay for only what you use" mentality of C++. Thus, if you don't initialize a primitive variable to a value, it essentially holds a garbage value. 
+It's part of the "pay for only what you use" mentality of C++.
+Thus, if you don't initialize a primitive variable to a value, it essentially holds a garbage value. 
 What really happens is it will just keep whatever bytes in memory happen to be where the variable now occupies. 
-Therefore, **you should always initialize your variables**. Now you might be asking: now hold on, you're saying to manually give each of my variables a default value? 
-So then what's the point of the compiler not doing it? Well, if you **introduce the variable immediately before you need it (and no earlier)**, 
+Therefore, **you should always initialize your variables**.
+
+Now you might be asking: "now hold on, you're saying to manually give each of my variables a default value?
+So then what's the point of the compiler not doing it?" Well, if you **introduce the variable immediately before you need it (and no earlier)**, 
 chances are the initial value you set it to has some bearing on your computation. 
-So you don't necessarily initialize a variable to some default value every time, you initialize it with something that should be based on the logic of your program.
+So you don't necessarily initialize a variable to some default value every time,
+you initialize it with something that should be based on the logic of your program.
 
 ```c++
 int a;
@@ -42,8 +47,12 @@ int powi(int base, unsigned exp) {
 }
 ``` 
 
-Notice how `res` is introduced right when we need it, and therefore have a value to set it to which has a meaning for our computation. Moreover, defining variables as late as possible makes code easier to read. 
-Furthermore, notice that `auto` prevents us from forgetting to initialize a variable. This is because without an initial value, the compiler would have no idea what type to deduce for `auto`.
+Notice how `res` is introduced right when we need it, and therefore has an initial value which has a meaning for our computation.
+Moreover, defining variables as late as possible makes code easier to read. 
+
+Notice that `auto` prevents us from forgetting to initialize a variable.
+This is because without an initial value, the compiler would have no idea what type to deduce for `auto`.
+This is another good reason to always use `auto`.
 
 ### Names
 
@@ -70,12 +79,17 @@ For example, it's best not to have some names with `length` and others with `siz
 ### Scope
 
 The variables we have seen have *automatic lifetimes*. This means that when their *scope* ends, they are popped off the stack. 
-The stack is an area in memory we'll talk about later but for now, know that these variables of built-in types we have been working with are pushed on the stack when 
+The stack is an area in memory. Each program is allocated its own stack of limited size. When a variable is declared, it
+is pushed on the stack. When a variable goes out of scope, the variable is destroyed and popped off the stack. Having a stack
+structure allows variables to be destroyed in the reverse order that they were declared. This allows one variable to depend on another.
+We may talk more about this later but for now, know that these variables of built-in types we have been working with are pushed on the stack when 
 they are declared and popped off when they go out of scope. 
 
+So what is this scope I talk about?
 A scope roughly corresponds to a block, which are delimited by `{}` pairs. 
 The local scope is the scope of a function; variables in this scope are destroyed when the function returns. 
-The class scope is the scope of class members. Values in this scope are initialized when an instance of the object is created and destroyed when that same instance is destroyed. 
+The class scope is the scope of class members. Values in this scope are initialized when an instance of the object is created
+and destroyed when that same instance is destroyed. 
 Finally, the namespace scope is the scope of a namespace. Variables in this scope are destroyed when the program ends.
 
 ```c++
@@ -89,12 +103,48 @@ Finally, the namespace scope is the scope of a namespace. Variables in this scop
 // a cannot be used here
 ```
 
+```C++
+class Foo {
+    // start class scope
+    int a;
+public:
+    
+    void bar() {
+        // start function scope
+        if (a == 3) {
+            // inner scope for if
+            int c = a * 3;
+        } else {
+            // scope for else
+            // c cannot be accessed here
+        }
+
+        // c cannot be accessed here
+
+
+    } // end function scope
+
+
+}; // end class scope
+
+
+int main() {
+    Foo foo; // Foo.a created here
+} // Foo is destroyed here, and so is Foo.a
+```
+
 ### Globals
 
 Global variables are variables that are defined outside any scope (not within a function or curly braces). 
 Unless they are immutable, you should avoid globals. In the words of Bjarne Stroustrup: "global variables should have names starting with //". 
-This is because the order of variable initialization between *compilation units* (different source files) is undefined. 
-Globals also make code harder to reason about since it's harder to tell when a function or class depend on them. This is something we'll talk about more later.
+This is because the order of variable initialization between *compilation units* (different source files) is undefined.
+So if we use a global variable outside the source file it is defined in, then there is the chance we may try to use a variable
+that hasn't been created yet or has already been destroyed. Specifically, this occurs if we use a global
+in the constructor or destructor of a class with a global instance. A constructor is a function that is called at
+the initialization of a variable, and a destructor is called at the destruction of a variable. More on this later.
+
+Globals also make code harder to reason about since it's harder to tell when a function or class depend on them.
+This is something we'll talk about more later.
 
 ```c++
 const auto globalVar = 10;

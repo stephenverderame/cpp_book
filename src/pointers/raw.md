@@ -42,7 +42,8 @@ auto bSubA = elementWiseOp(&sub, vecB, vecA);
 auto aPlusB = elementWiseOp(addPtr2, vecA, vecB);
 ```
 
-Function pointers aren't as powerful as the modern `std::function`, which can use ANY callable object. I showed a bunch of things I haven't discussed yet, so we'll talk about that later.
+Function pointers aren't as powerful as the modern `std::function`, which can use ANY callable object.
+I showed a bunch of things I haven't discussed yet, so we'll talk about that later.
 
 Finally, function pointers to methods are a little different. 
 We need to encode the method's owning class in the type of the pointer and pass an instance of that class to the function pointer via dot syntax when calling it.

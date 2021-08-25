@@ -7,6 +7,7 @@
 - [Guessing Game](./guessing_game/gg1.md)
     - [Coding the Guessing Game](./guessing_game/gg2.md)
 ---
+# Basics
 - [Basics](./basics/basics.md)
     - [Control Flow](./basics/control_flow.md)
     - [Primitive Types](./basics/primitives.md)
@@ -40,6 +41,7 @@
     - [Strings](./basic_containers/strings.md)
     - [List of Containers](./basic_containers/vector.md)
 ---
+# Details and More Advanced Topics
 - [Move Semantics](./move/intro.md)
     - [Lvalues, Rvalues, and more; Oh My!](./move/values.md)
     - [RVO and NRVO](./move/optimizations.md)
@@ -78,6 +80,7 @@
     - [Coroutines](./cpp_20/coroutines.md)
     - [Other Features](./cpp_20/misc.md)
 ---
+# In Practice
 - [Tools](./testing/tools.md)
     - [Testing](./testing/intro.md)
         - [GTest](./testing/gtest.md)

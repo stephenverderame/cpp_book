@@ -1,6 +1,7 @@
 # Concepts and Type Traits
 
-In C++20, concepts and constraints are a direct language feature. However, the idea of a concept has long existed before then. Consider the following function:
+In C++20, concepts and constraints are a direct language feature.
+However, the idea of a concept has long existed before then. Consider the following function:
 
 ```C++
 template<typename T, typename U>
@@ -51,7 +52,8 @@ std::underlying_type_t<myEnum>; // int
 ```
 
 [cppreference](https://en.cppreference.com/w/cpp/header/type_traits) has a list of all of them.
-Now how do these work? I won't explain the full story just yet, but they can use template specialization behind the scenes. Let's create a simple `is_bool` type trait.
+Now how do these work? I won't explain the full story just yet, but they can use template specialization behind the scenes.
+Let's create a simple `is_bool` type trait.
 
 ```C++
 template<typename T>
@@ -77,6 +79,7 @@ One solution would be to pass the argument into `std::remove_reference_t` and `s
 template<typename T>
 using strip_t = std::remove_cv_t<std::remove_reference_t<T>>;
 // order matters here, remove_cv removes the top level const and volatile qualifiers
+
 remove_cv_t<int * const volatile>; // int* because const and volatile apply to the pointer
 remove_cv_t<const volatile int *>; // const volatile int * because const and volatile apply to the data
 
@@ -87,7 +90,7 @@ template<typename T>
 inline constexpr auto is_bool2_v = std::is_same_v<T, bool>;
 ```
 
-There's a bunch more of them that can be found [here](https://en.cppreference.com/w/cpp/header/type_traits). 
+There's a bunch more type traits in the STL that can be found [here](https://en.cppreference.com/w/cpp/header/type_traits). 
 Now that we have these traits, the most basic approach to enforcing adherence of template parameters to a concept is with `static_cast`.
 
 ```C++
@@ -102,7 +105,8 @@ V sum(T a, U b) {
 This incurs no runtime penalty since the check happens during compilation.
 
 A better approach is to use `std::enable_if_t`. As the name might suggest, the main usage of this is to conditionally enable functions. 
-How this works is by replacing the entire statement with the second template type parameter if the first template parameter evaluates to a true condition at compile time. 
+How this works is by replacing the entire statement with the second template type parameter
+if the first template parameter evaluates to a true condition at compile time. 
 Then you can specify the return type of the function to be an `enable_if_t` expression. 
 If the function is called with template parameters that make the condition true, all is well since the return type will be the second template argument to
 `std::enable_if_t`. Otherwise, the `enable_if` effectively prevents the instantiation of the function template causing the compiler to complain that the function doesn't exist. 
@@ -132,14 +136,15 @@ auto sum2(T a, U b) -> std::enable_if_t<are_arithmetic_v<T, U>, V>
 }
 /*
 This is not type deduction, the auto doesn't mean auto like normal
-but instead its syntac for trailing return type
+but instead its syntax for trailing return type
 the return type of the function is specified after it using a ->
 allows the parameters to be used in the return type
 */
 ```
 
 A trailing return type is most useful with `decltype()` which "returns" the type of the expression passed to it. 
-The expression passed is not evaluated, but instead the compiler figures out what the type of the expression is and replaces the `decltype` expression with this type during compilation. 
+The expression passed is not evaluated, but instead the compiler figures out what the type of the expression is and replaces the `decltype`
+expression with this type during compilation. 
 Thus, it incurs no runtime penalty.
 
 
@@ -162,7 +167,8 @@ auto getIter(const T& container) {
 ```
 
 So how does all this work? By a language feature known as *SFINAE* which stands for specialization failure is not an error. 
-Basically, if instantiating a template causes an error, the compiler will look for another template specialization. If no other template is found, it complains that it can't find the class or function.
+Basically, if instantiating a template causes an error, the compiler will look for another template specialization.
+If no other template is found, it complains that it can't find the class or function.
 
 I think it's best to start with an example.
 ```C++
@@ -186,7 +192,8 @@ static_assert(SFINAE<std::string>::value);
 ```
 
 Let's walk this through. First we create our default struct which inherits `false_type` so that it has a constant member `value` that is false. 
-This is the primary definition. The `typename = void` is somewhat odd, but all it's doing is creating a template with two parameters, where the second one is unnamed and defaults to `void`. 
+This is the primary definition. The `typename = void` is somewhat odd, but all it's doing is creating a template with two parameters,
+where the second one is unnamed and defaults to `void`. 
 This allows code to reach this version of the struct `SFINAE` if the specialization fails. Then we create a specialization. 
 The specialization subtypes `std::true_type` to get a `constexpr` member `value` that's true.
 

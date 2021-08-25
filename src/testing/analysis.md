@@ -19,4 +19,25 @@ Some helpful command line arguments:
 * `-i [directories]` - search through the following directories
 * `--library=<lib>` - uses information about an external library such as `googletest` or `openssl`
 
+For the following file structure:
+```
+Project
+|
+|___include
+|   |
+|
+|___src
+|   |
+|
+|___test
+|   |
+|
+```
+we can run `cppcheck` with the command
+```
+cppcheck -i Project/include Project/src Project/test --library=googletest
+```
+
+When specifying directories to run the tool on, I believe include directories must come first.
+
 More information can be found online.

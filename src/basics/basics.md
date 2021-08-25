@@ -1,3 +1,5 @@
 # Basics
 
-Probably the best sources of information would be [C++ Primer 5th Edition](https://github.com/yanshengjia/cpp-playground/blob/master/cpp-primer/resource/C%2B%2B%20Primer%20(5th%20Edition).pdf) and [A Tour of C++ 2nd Edition](https://github.com/Kikou1998/textbook/blob/master/A%20Tour%20of%20C%2B%2B%20(2nd%20Edition)%20(C%2B%2B%20In-Depth%20Series).pdf). I'll provide chapters for further reading.
+A great source of information would be [A Tour of C++ 2nd Edition](https://github.com/Kikou1998/textbook/blob/master/A%20Tour%20of%20C%2B%2B%20(2nd%20Edition)%20(C%2B%2B%20In-Depth%20Series).pdf)
+[C++ Primer 5th Edition](https://github.com/yanshengjia/cpp-playground/blob/master/cpp-primer/resource/C%2B%2B%20Primer%20(5th%20Edition).pdf) 
+is also very thorough but is more geared towards those without much programming experience.

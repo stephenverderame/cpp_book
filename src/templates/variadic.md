@@ -160,19 +160,22 @@ using sndType = typename NthType<2, void*, char*, int, long, double&>::Type;
 
 ## Fold Expressions
 
-A fold expression is like another type of pack expansion, except that instead of producing comma separated arguments, the pack is expanded over a binary operator. 
+A fold expression is like another type of pack expansion, except that instead of producing comma separated arguments,
+the pack is expanded over a binary operator. 
 A fold expression can have an initial value as well, and must be surrounded by parentheses.
 
-I won't explain the details of folds here, so if you haven't taken 3110 yet, you can ignore this section or look it up if you're interested 
-(basically left folds operate on the leftmost argument first, right folds go from the rightmost argument to leftmost). 
-Fold expression have the following syntax where `pack` is the pattern containing the name of the pack, `op` is the operator, `init` is the initial value and `...` are the actual ellipsis.
+I won't explain the details of folds here, but basically left folds operate on the leftmost argument first,
+right folds go from the rightmost argument to leftmost. Folds come from functional programming languages. 
+Fold expression have the following syntax where `pack` is the pattern containing the name of the pack,
+`op` is the operator, `init` is the initial value and `...` are the actual ellipsis.
 
 * Unary fold right - `(pack op ...)`
 * Unary fold left - `(... op pack)`
 * Binary fold right - `(pack op ... op init)`
 * Binary fold left - `(init op ... op pack)`
 
-The difference between a unary and binary fold is not that one uses unary operators (that would be a normal pack expansion), but rather the binary fold has an initial value. 
+The difference between a unary and binary fold is not that one uses unary operators (that would be a normal pack expansion),
+but rather the binary fold has an initial value. 
 The syntax for a left fold is when the `...` is on the left side of the pack name.
 
 ```C++
@@ -226,16 +229,19 @@ constexpr auto s = sum(10, 20.3, 100.f, 'c'); // double 229.3
 ```
 
 Unlike before, in this situation we *need* to use the trailing return type because the parameter `args` is used in determining the return type. 
-Also, notice how when we want a fold expression using the types of the pack we use the name of the template parameter `Ts`. 
+Also, notice how when we want a fold expression using the types of the pack, we use the name of the template parameter `Ts`. 
 However, when we want a fold expression using the values of the pack, we use the name of the function argument `args`.
 
-In this case we fold over `&&` to ensure that all types in the pack are arithmetic. We could fold over `||` to check that at least one type upholds a certain condition.
+In this case we fold over `&&` (boolean AND) to ensure that all types in the pack are arithmetic.
+We could fold over `||` (boolean OR) to check that at least one type upholds a certain condition.
 
-We can use a type alias to make this a bit cleaner
+We can use a type alias to make this a bit cleaner.
 
 Another less graceful, (and pre C++17 friendly) way of doing this is to create an `all_true` struct using SFINAE. 
-What we'll do is instantiate a struct with a pack of bools. Then we'll assert that the type of the bool pack is the same when we append a `true` to the front of the pack as when we push a `true` to the back. 
-If all elements of the bool pack are the `true`, then the types will be the same. However, if any of the elements in the pack are `false`, the position of this `false` will differ between the two 
+What we'll do is instantiate a struct with a pack of bools.
+Then we'll assert that the type of the bool pack is the same when we append a `true` to the front of the pack as when we push a `true` to the back. 
+If all elements of the bool pack are the `true`, then the types will be the same.
+However, if any of the elements in the pack are `false`, the position of this `false` will differ between the two 
 instantiations of the template, and they won't be the same type.
 
 ```C++
@@ -258,7 +264,11 @@ foo(Ts... args) {
 
 ### Possible Exercises
 
-1. Can you create a function that takes an arbitrary number of arguments and serializes all of them into a single byte array? The function should return an `std::vector<std::byte>` or an `std::array<std::bytes, N>`. If you go the latter route, the function can be `constexpr`. You'll need an overload to handle containers like `std::vector`, `std::list`, etc. You may choose the endianness of the result
+1. Can you create a function that takes an arbitrary number of arguments and serializes all of them into a single byte array?
+The function should return an `std::vector<std::byte>` or an `std::array<std::byte, N>`.
+If you go the latter route, the function can be `constexpr`.
+You'll need an overload to handle containers like `std::vector`, `std::list`, etc.
+You may choose the endianness of the result.
     * So when passed `"Hello", 5, static_cast<short>(1000)` the function should return a single byte array that would look something like:
         ```C++
         0x48 0x65 0x6C 0x6C 0x6F 0x00 0x00 0x00 0x05 0x03 0xE8

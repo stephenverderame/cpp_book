@@ -3,6 +3,8 @@
 If you have been following the advice of Herb Sutter to almost always use auto, then you will have had much experience with type deduction. 
 For the most part, type deduction just works as you'd expect, but there are cases where things might snag you.
 
+Here is my template for the following explanation:
+
 ```C++
 template<typename T>
 void fun(ParamType t);
@@ -91,7 +93,8 @@ auto& v2 = v;
 ```
 
 The `decltype` rules are very simple. 
-It produces the exact type of the expression passed. We can use `decltype` rules in place of `auto` or template rules for variables and return values with the syntax `decltype(auto)`.
+It produces the exact type of the expression passed.
+We can use `decltype` rules in place of `auto` or template rules for variables and return values with the syntax `decltype(auto)`.
 
 ```C++
 auto operator[](int index) {
@@ -159,9 +162,11 @@ auto make_unique_cpy(T&& t) {
 ```
 
 If a lvalue is passed to `make_unique_simple`, then `T` will be deduced to a lvalue reference. 
-Since we can't create a pointer to a reference, we must use `std::remove_reference_t` to ensure that the type being passed to `unique_ptr` and `new` is not a reference.
+Since we can't create a pointer to a reference, we must use `std::remove_reference_t` to ensure that the type being passed to `unique_ptr`
+and `new` is not a reference.
 
-During type deduction, there may be cases where a reference to a reference is produced. Since such double references are illegal, the compiler follows the rules of *reference collapsing* to produce a single reference. 
+During type deduction, there may be cases where a reference to a reference is produced.
+Since such double references are illegal, the compiler follows the rules of *reference collapsing* to produce a single reference. 
 This can occur when using `decltype`, type aliases, or during type deduction, for example. When a reference to a reference is produced:
 * If either references is a lvalue references, the result is a lvalue reference
 * Otherwise, the expression collapses to a rvalue reference.
