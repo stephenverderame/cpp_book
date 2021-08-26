@@ -23,3 +23,7 @@ Child c;
 ```
 
 This information won't become important until later (concurrency), but I thought I'd mention it now to avoid confusion.
+
+> "Any problem in computer science can be solved with another level of indirection"
+>
+> \- David Wheeler

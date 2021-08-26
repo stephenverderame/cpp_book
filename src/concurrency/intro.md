@@ -40,3 +40,7 @@ However, it is not parallelism because instructions were executed linearly and o
 
 When using the concurrency API, there's no easy way to know if code is running in parallel, or just concurrently.
 And truthfully, it doesn't matter.
+
+> "All race conditions, deadlock conditions, and concurrent update problems are due to mutable variables."
+>
+> \- Uncle Bob

@@ -24,8 +24,8 @@ It basically tells the compiler "hey, I'm going to define this later so if you s
 
 `void` is a special type that essentially means there is no type. We can use it for functions that don't return anything. 
 
-Functions can be *pass-by-value* or *pass-by-reference*. When a function is pass-by-value, the function parameter gets copied, 
-when it's pass-by-reference the actual object is not passed to the function, but the address of the object is.
+Functions can be *pass-by-value* or *pass-by-reference*. When a function is pass-by-value, the function parameter gets copied.
+When it's pass-by-reference the actual object is not passed to the function, but the address of the object is.
 
 ```c++
 
@@ -49,8 +49,7 @@ int main() {
 ```
 
 In `add()` a new copy of `num` is created which is called `a`. `a` goes out of scope when `add()` terminates.
-In `addRef()`, `b` binds to `num`.
-Thus, they share the same object and the same data.
+In `addRef()`, `b` binds to `num`, so `b` and `num` share the same object and the same data.
 In `addRef()`, `b` is used as an output parameter because the result of the function is returned in one of its parameters.
 **You should avoid output parameters.**
 This is because when you're looking at the call site of `addRef()`, there's nothing to tell you that `num` is mutated,
@@ -103,6 +102,35 @@ func1(false, 100ll); // d
 If there are multiple equally good matches, the compiler won't guess and will not compile. 
 Likewise, if no parameter is implicitly convertible to the type of any overload's arguments, then compilation fails.
 
+## Other Notes
+
+We can also define the return type after we declare the function parameters.
+This is known as a trailing return type, and it looks like this:
+
+```C++
+auto foo(int a, int b) -> int {
+    return a - b;
+}
+```
+
+The evaluation order of function arguments is undefined. So given the following:
+
+```C++
+int i = 0;
+auto res = foo(i++, ++i);
+```
+
+There are two possible execution orders:
+
+1.
+    * `b = ++i = 1`
+    * `a = i++ = 1`
+    * `res = a - b = 0`
+2.
+    * `a = i++ = 0`
+    * `b = ++i = 2`
+    * `res = a - b = -2`
+
 ## Function Design
 
 > The first rule of functions is that they should be small.
@@ -115,12 +143,13 @@ Making functions small organizes sections of your code into named units.
 It's easy to know what your code does when it's part of a named function with a narrow scope.
 So how small is small? Well most should rarely hit 20 lines. 
 A good rule of thumb is 80 characters wide by 20 lines long or smaller. Not only are small functions easier to reason about and debug,
-but such functions are readable for most ways in which you might be viewing it. For example, when developing on a PC and being able to
-have your code fullscreened on a 27" monitor it's pretty easy to read lines of code over 150 character long. However,
-if you want to do a side-by-side diff comparison, work on the codebase from your 15" laptop with only one screen,
+but such functions are readable for most ways in which you might be viewing it. For example, when developing on a PC with
+your code fullscreened on a 27" monitor, it's pretty easy to read lines of code over 150 character long. However,
+if you want to do a side-by-side diff comparison, work on the codebase from your 15" laptop with,
 or have other developers who might use a "busier" IDE layout, those 150 character lines become quite annoying.
 Vertical size is less annoying to deal with, but it's still quite nice when you can view an entire function in one glance
 without scrolling on various different viewing modes.
+
 Furthermore, functions should **do one thing**. 
 How do you know they do one thing? Well you should be able to describe it in about one sentence without using a conjunction like "and."
 
@@ -136,7 +165,7 @@ if(person.getAge() >= 18 && person.getAge() < 25
 ```
 OR
 ```c++
-inline auto attendCollegeAfterHS(const Person & person) {
+inline auto didAttendCollegeAfterHS(const Person & person) {
     return person.getAge() >= 18 && person.getAge() < 25 
         && person.getHighestEdu() == EducationLevel::Highschool
         && !person.livingAtHome();
@@ -144,7 +173,7 @@ inline auto attendCollegeAfterHS(const Person & person) {
 
 // ...
 
-if(attendCollegeAfterHS(person)) {
+if(didAttendCollegeAfterHS(person)) {
 
 }
 ```
@@ -152,8 +181,9 @@ if(attendCollegeAfterHS(person)) {
 Notice how by creating a helper function, we were able to encode the comment in a name. 
 Commenting what the code does is unnecessary since the function name says it all. 
 If you find yourself commenting what code does, that's a good hint that you might want to make a function. 
-We also see how `attendCollegeAfterHS()` does just one thing.
+We also see how `didAttendCollegeAfterHS()` does just one thing: it just determines if a person attended college after high school.
 We also pass by `const` reference since the function only uses accessors of `Person` and doesn't do any mutations.
+When passing by reference, the reference should always be `const` unless you are mutating it.
 
 For another example, we saw in our guessing game how we turned this:
 
@@ -237,17 +267,19 @@ It should not mutate variables or have any other effect other than the value it 
 Earlier you saw me use the `inline` keyword. 
 This keyword *suggests* to the compiler that the function can be inlined. 
 What is an inlined function? 
-Well, we'll cover the details later but basically every time you call a function the state of the current function must be saved, you must jump to the new function,
+Well, we'll cover the details later, but basically every time you call a function the state of the current function must be saved,
+you must jump to the new function,
 then you must restore the state of the old function and jump back. 
 Abstractly, this process can be viewed as having to push an *activation record* onto the stack and then popping it off. 
-An *activation record* basically contains all the data like arguments being passed, where the function is called from (so it can jump back), and the state of the callee.
+An *activation record* basically contains all the data like arguments being passed,
+where the function is called from (so it can jump back), and the state of the callee.
 Sounds like a complex task? Well it sort of is. When a function is inlined, the compiler puts the body of the function right at the call site.
 So all this jumping and state saving doesn't need to occur. Let's look at another example of factoring out some code into an inline function:
 
 ```c++
 constexpr auto expFac = 0.83;
-const auto experience = person.getAge() * person.getGPA() 
-    + expFac * person.getName().size();
+const auto pts = (person.getAge() * person.getGPA() 
+    + expFac * person.getName().size()) * year;
 ```
 VS
 
@@ -258,7 +290,7 @@ inline auto getExperience(const Person & person) {
     + expFac * person.getName().size();
 }
 
-const auto experience = getExperience(person);
+const auto pts = getExperience(person) * year;
 ```
 For most compilers, the generated machine instructions will be pretty much the exact same, but the second option gives us greater readability.
 
@@ -268,7 +300,8 @@ So an inline function cannot have separate declarations and definitions unless t
 ## Constexpr Functions
 
 Like `constexpr` variables have values that are available at compile time, `constexpr` function have computations that *can be* available at compile time.
-If you pass non-constexpr arguments to a `constexpr` function, the function will behave normally, but if you pass literals or `constexpr` variables to a `constexpr` function,
+If you pass non-constexpr arguments to a `constexpr` function, the function will behave normally,
+but if you pass literals or `constexpr` variables to a `constexpr` function,
 the result will be computed at compile time, and the literal value will be inserted in the code.
 
 `constexpr` functions are implicitly inline as well.

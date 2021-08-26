@@ -67,3 +67,7 @@ Sometimes you might find that what you're implementing is so simple, it doesn't 
 The "unit" in unit testing is often times a module, and although OOP languages realize modules as classes, this does not mean every class is a module. 
 A module satisfies an abstraction, and can be composed of multiple classes. But even so, a module may not be a "unit". 
 Kent Beck highlights that the "unit" in a unit test is the test itself. In this sense he means that tests must be independent of each other.
+
+> "I'm not a great programmer; I'm just a good programmer with great habits."
+>
+> \- Kent Beck

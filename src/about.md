@@ -18,3 +18,7 @@ Please feel free to reach out with comments, criticisms, or questions, and let m
 mistake, or other error.
 
 \- 08/19/2021
+
+> "C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do it blows your whole leg off."
+>
+> \- Bjarne Stroustrup

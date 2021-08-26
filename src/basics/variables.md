@@ -28,7 +28,7 @@ What really happens is it will just keep whatever bytes in memory happen to be w
 Therefore, **you should always initialize your variables**.
 
 Now you might be asking: "now hold on, you're saying to manually give each of my variables a default value?
-So then what's the point of the compiler not doing it?" Well, if you **introduce the variable immediately before you need it (and no earlier)**, 
+So then what's the point of the compiler not doing it?" Well, if you *introduce the variable immediately before you need it (and no earlier)*, 
 chances are the initial value you set it to has some bearing on your computation. 
 So you don't necessarily initialize a variable to some default value every time,
 you initialize it with something that should be based on the logic of your program.

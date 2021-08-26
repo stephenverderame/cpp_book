@@ -105,3 +105,9 @@ auto smartPtr = std::make_unique<int>(100);
 auto shared = std::make_shared<MyStruct>(20, 30, -10);
 shared->c; // -10
 ```
+
+---
+
+> "If debugging is the process of removing software bugs, then programming must be the process of putting them in."
+>
+> \- Edsger Dijkstra
