@@ -1,6 +1,7 @@
 # Coding the Guessing Game
 
-Don't worry about understanding everything right now, all these features will be explained in more detail later. I just want you to get a feel for C++ right now.
+Don't worry about understanding everything right now, all these features will be explained in more detail later.
+I just want you to get a feel for C++ right now.
 
 ## Generating a Random Number
 
@@ -17,19 +18,21 @@ auto getRandNumBetween(int min, int max) {
 ```
 
 `std::random_device` is in it of itself, a random number generator of sorts. 
-It overloads `operator()` to allow the parenthesis syntax `rd()` which is the same for calling a function. 
+It overloads the function `operator()` to allow the parenthesis syntax `rd()`, which is the same for calling a function. 
 `random_device` is known as a callable object because it overloads `operator()`. 
-We use this generated number to seed a Mersenne Twister random number generator by passing the computed seed from `rd` to the constructor of `generator`. 
+We use the number returned from `operator()` of the random device to seed a Mersenne Twister random number generator
+by passing the computed seed from `rd` to the constructor of `generator`. 
 A constructor is a function used to initialize an object. 
 `generator` is then used as an argument to `operator()` of the uniform integer distribution between `min` and `max`. 
-Once again the uniform distribution is a callable object, something we'll talk more about later, but unlike `rd`, its `operator()` takes an argument. 
+Once again the uniform distribution is a callable object, something we'll talk more about later, but unlike `rd`, its `operator()` takes an argument;
+namely the random number generator to use. 
 `min` and `max` are passed as arguments to the constructor of `uniform_int_distribution`. 
 
 Unlike `main`, this function has a "return type" of `auto`. 
 `auto` is not an actual type, instead it's indicating that the compiler should figure out what the return type is. In this case it's `int`.
 
-I'll admit, that for something simple like this, I would normally use C's `rand()` function. 
-This function always returns an integer between `0` and `RAND_MAX` and is seeded with the function `srand(seed)`. 
+I'll admit, that for something simple like this, I might use C's `rand()` function. 
+This function always returns an integer between `0` and `RAND_MAX` and is seeded by calling the function `srand(seed)`. 
 So an alternative implementation would be:
 
 ```c++
@@ -39,7 +42,12 @@ auto getRandNumBetween(int min, int max) {
 }
 ```
 
-I'll stick to the previous implementation for the game. I should also note that you should not use `rand()` for something that relies on randomness. [^1]
+I'll stick to the previous implementation for the game.
+I should also note that you should not use `rand()` for something that relies on randomness. [^1]
+
+> "The <random> library is what a random library wants to be when it grows up. As a result, beginners use rand()"
+>
+> \- Bjarne Stroustrup
 
 ## Getting User Input
 
@@ -55,10 +63,11 @@ auto getUserGuess() {
 
 We first initialize a new variable called `guess`. Once again, let's use type deduction and declare this variable with `auto`. 
 We'll cover this more later, but you should generally always use `auto`. 
-It might seem like an extra letter to type now (as opposed to `int` which is the type the compiler will infer `guess` to be), but it will save a bunch of headaches later. 
+It might seem like an extra letter to type now (as opposed to `int` which is the type the compiler will infer `guess` to be),
+but it will save a bunch of headaches later. 
 Next, we parse whatever the user types in standard input as an integer, and store the result into `guess`. Finally, we return `guess`.
 
-Now what if a user doesn't type a number? Well, the way we are parsing number right now, any non numeric input will just be converted to `0`. 
+Now what if a user doesn't type a number? Well, the way we are parsing the input right now, any non numeric input will just be converted to `0`. 
 This is not ideal. So instead, let's implement the function another way. We'll now need the `<string>` header for this:
 
 ```c++
@@ -68,7 +77,8 @@ auto getUserGuess() {
     return std::stoi(guessStr);
 }
 ```
-Here, we use `std::getline` to get a line from `std::cin` and store the result in `guessStr`. `guessStr` is an output parameter, something you really should strive to avoid when creating your own functions.
+Here, we use `std::getline` to get a line from `std::cin` and store the result in `guessStr`.
+`guessStr` is an output parameter, something you really should strive to avoid when creating your own functions.
 Now what do we get when we type something that's not a number? Well we get:
 
 > terminate called after throwing an instance of 'std::invalid_argument'

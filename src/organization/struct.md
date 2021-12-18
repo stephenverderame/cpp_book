@@ -6,7 +6,7 @@ Generally speaking, when you want to organize pieces of information together, bu
 
 A lot of times structs will be PODs (plain old data) which means their members are laid out contiguously in memory as they are written. 
 PODs are composed of primitive types, enumerations, and classes or structs with a trivial default constructor and trivial copy constructors (pretty much the compiler-generated ones). 
-This makes it possible to read and write and entire struct as binary to a stream such as a socket or file provided you take things such as padding and endianness into account. 
+This makes it possible to read and write an entire struct as binary to a stream such as a socket or file provided you take things such as padding and endianness into account. 
 This might not have made much sense, but don't worry about it right now.
 
 If no constructor is user-defined, you can use braces to initialize the struct passing in values for each member, in the order that they are declared.

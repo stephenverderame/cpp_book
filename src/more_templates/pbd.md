@@ -10,7 +10,7 @@ We've seen this with allocators, smart pointer deleters, `std::char_traits`, com
 
 ## Template-template Parameters
 
-A common technique used with PBD are *template-template parameters*; template type parameters that are themselves template types. This is especially useful
+A common technique used with PBD are *template-template parameters*: template type parameters that are themselves template types. This is especially useful
 when a type passed directly to the policy-holder would also be passed to its policies as well.
 ```C++
 // Template Arguments:

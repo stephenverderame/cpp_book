@@ -159,5 +159,6 @@ doFoo(Int2Type<sizeof(int)>{});
 // correct overload is called and inlined into the compiled code by the compiler.
 ```
 
-We've seen how we can do something similar with `constexpr if` and template specialization, *tag dispatch* is just another tool in the toolbox that you may find optimal for some problem.
+We've seen how we can do something similar with `constexpr if` and template specialization.
+*Tag dispatch* is just another tool in the toolbox that you may find optimal for some problems.
 

@@ -27,3 +27,9 @@ Part of that could be *when* I read them, but I still would highly encourage you
 ### Specifics
 * Concurrency - C++ Concurrency in Action by Anthony Williams
 * Generic Programming - Modern C++ Design by Andrei Alexandrescu
+
+---
+
+> "Our passion for learning ... is our tool for survival."
+>
+> \- Carl Sagan

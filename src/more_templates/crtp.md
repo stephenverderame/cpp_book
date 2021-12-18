@@ -107,7 +107,7 @@ doFoo(s);
 ```
 
 A benefit of this over template non-member functions is that this makes it very clear which classes support which helper functions. 
-Consider that we also had a `Circle` class. As written the functions in `Geometry` won't support our `Circle`, so if `Geometry` was a set of non-member functions,
+Consider that we also had a `Circle` class. As written, the functions in `Geometry` won't support our `Circle`, so if `Geometry` was a set of non-member functions,
 we'd have to document that they didn't support `Circle` and we could also use SFINAE to ensure the user doesn't accidentally pass a `Circle`.
 And look, I'm basically a crazy masochist and even I get tired of writing out all the structs to emulate C++20 concepts when I can't use them.
 Furthermore, it's an added burden on the user to have to remember what helper functions use which classes. CRTP also makes these non-member functions clearly part of the interface of Square and Rectangle.

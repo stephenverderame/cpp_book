@@ -24,7 +24,7 @@ We do this with `add_subdirectory()`, so add the following line to the top-level
 `add_subdirectory(guessing_game)`
 
 Variables have scope in CMake like a programming language (CMake is Turing Complete).
-Thus, in the guessing game CMakeLists we don't need to set the C++ version again. All we need to have is the following:
+Thus, in the guessing game CMakeLists, we don't need to set the C++ version again. All we need to have is the following:
 
 ```cmake
 add_executable(guessing_game game.cpp)

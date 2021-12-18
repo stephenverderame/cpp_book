@@ -70,12 +70,12 @@ Notice also the move is at the last place we reference port.
 
 ## RTTI
 
-Ok this admittedly has little to do with move semantics but I didn't know where to put it. 
+Ok this admittedly has little to do with move semantics, but I didn't know where to put it. 
 It better belongs in the casting section, but I didn't want to give half an explanation since it helps to know about prvalues and glvalues.
 
 RTTI stands for runtime type information, and it's how `dyanmic_cast` is able to check the dynamic type during a cast. 
 RTTI information is encapsulated within an `std::type_info` object which is part of the `<typeinfo>` header. 
-This object is hashable with the `hash_code()` member function, comparable with `operator==` and `operator!=`, can be ordered with the `before()` member function, 
+This object is hashable with the `hash_code()` member function, comparable with `operator==` and `operator!=`, can be ordered with the `before()` member function,
 and can also print out an implementation defined name representing the type with the `name()` member function. `std::type_info` is neither constructable nor copyable. 
 If you want to use it as a key or put it in a container, you can wrap it in an `std::type_index` which provides value semantics for an `std::type_info`. 
 Internally, `std::type_index` holds a pointer to a `std::type_info` object and is therefore copy constructable and assignable. 
@@ -85,9 +85,10 @@ The `name()` member function should be used for debugging purposes only.
 This name is implementation defined, and it may return a different string for the same type between different compilations or even different executions of the program. 
 `name()` also does not distinguish between reference and non reference types.
 
-A `std::type_info&` is returned by the `typeid()` operator. This operator takes an expression or a type. Top level qualifiers (`const` or `volatile`) and reference-ness is ignored; 
-so `typeid(int) == typeid(const int) == typeid(int&)`. If passed an expression that is a *glvalue*, the expression is executed and the dynamic (behaves polymorphically) resultant type's `std::type_info` is returned. 
-If the expression is a *prvalue*, it's not executed and the static type's `std::type_info` is returned because prvalues are not polymorphic. 
+A `std::type_info&` is returned by the `typeid()` operator. This operator takes an expression or a type. Top level qualifiers (`const` or `volatile`) and referenceness is ignored;
+so `typeid(int) == typeid(const int) == typeid(int&)`. If passed an expression that is a *glvalue*, the expression is executed,
+and the resultant dynamic type's (behaves polymorphically) `std::type_info` is returned. 
+If the expression is a *prvalue*, it's not executed, and the static type's `std::type_info` is returned because prvalues are not polymorphic. 
 Dereferencing a `nullptr` within `typeid()` will throw `std::bad_typeid` if the pointer being dereferences is polymorphic. 
 If it is not (and therefore dereferencing it can only result in one type), no exception is thrown.
 

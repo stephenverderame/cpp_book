@@ -51,3 +51,9 @@ auto greeting = greet(std::move(myName));
     // move ctor for name in the greet() function
     // move ctor for greeting
 ```
+
+---
+
+> "Premature optimization is the root of all evil."
+>
+> \- Donald Knuth

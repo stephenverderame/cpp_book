@@ -170,6 +170,34 @@ TEST(SuiteName, testName3) {
         Which is: 44277606
 ```
 
+## Printing
+
+Suppose we wanted to assert the equality of a user defined type. What would the error message be if the instances
+aren't equal? Well, by default GTest will simply print a hex dump of each object. For some things, this might actually be
+useful, but for most objects this is basically just gibberish. One way that we can tell GTest how to display custom objects by overloading `operator<<`. This is all well and good, but for some classes you might already have defined an `operator<<`, or you might not want to add something to a class's interface that only exists for testing purposes. Well in those cases, we can define a `PrintTo` function which returns `void` and takes two arguments: a `const` reference to our class and a pointer to an `std::ostream`.
+
+```C++
+/// Overrides Gtest's print behavior
+void PrintTo(const TestConfig& test, std::ostream* os) {
+  *os << test.testName << "\n";
+  *os << "\tStart: (lat=y= " << test.gpsRoverStart.y << ", lon=x= " << test.gpsRoverStart.x << ")\n";
+  *os << "\tTarget: ('" << test.targetLocation.header.frame_id << "', x= "
+    << test.targetLocation.point.x << ", y= " << test.targetLocation.point.y << ")\n";
+  for (auto& tag : test.arTagsUtm) {
+    *os << "\tTag: (x= " << tag.x << ", y= " << tag.y << ")\n";
+  }
+  *os << "\tSuccess: " << test.expectSuccess << "\n";
+}
+```
+
+Now when printing our custom type, we'll be able to get data formatted however we'd like instead of just a hex dump. 
+
+Moreover, the gtest test macros actually return a stream. So we can use them to print extra information if the assertion fails.
+
+```C++
+ASSERT_EQ(5, 4) << "Dummy test, this should fail!";
+```
+
 ## Test Fixtures
 
 A lot of times tests will need to share data or logic. In that case we can use a test fixture. 

@@ -64,12 +64,13 @@ Constructors on the other hand, cannot be virtual. This is because construction 
 Furthermore, the class doesn't exist as an object at runtime yet, so you can't call a virtual method on it.
 
 As an addendum, you should not call virtual functions in constructors or destructors. 
-This is because the actual type of the object changes during these two operations and the actual type is always the type being created/destroyed and never a subclass. 
+This is because the actual type of the object changes during these two operations, and the actual type is always the type being created/destroyed. 
 During construction of a derived class, we first start by constructing the base class and running the base class constructor. 
 In this constructor, the actual type of the object is the base class type and not yet the derived class type. 
-Then we build off the base and construct the derived class and call the derived class constructor. 
+Then we build off the base and construct the derived class by calling the derived class constructor. 
 During this second constructor call, the actual type changes to be that of the derived type. 
-For destruction, the process is similar but in reverse, destroying the derived object before destroying the base. 
+For destruction, the process is similar but in reverse, destroying the derived object before destroying the base.
+Therefore, if you call a virtual function in the base class constructor, it will dispatch to the implementation in the base class and not the derived class. This is because, when the base class constructor is being run, the dynamic type is still the base type.
 So calling virtual functions in constructors/destructors is technically safe so long as the virtual function is not pure virtual and you don't expect it to dispatch to a derived type, but it's not a good idea.
 
 ```C++
@@ -138,23 +139,50 @@ This is paramount to avoid *object slicing*. In memory, a concrete derived class
 |Car Data|
 |`int horsePower`|
 
-Thus, passing the superclass by value will only copy the data that the subclass shares with the superclass. 
-Hence the name object slicing, because the data specific to the subclass is sliced off. 
-One such piece of data is the subclass's vtable. Therefore, object slicing prevents dynamic dispatch from operating as expected. 
-In this case, if `Vehicle` was passed by value, the compiler would complain since that would require it to construct a new instance of `Vehicle`, and `Vehicle` is abstract and cannot be constructed.
+Passing the derived class by value as a superclass instance will only copy the data that the subclass shares with the superclass. If the derived class adds additional data members, then these data members won't be copied because the compiler thinks its just dealing with an instance of the superclass. Hence the name object slicing, because the data specific to the subclass is sliced off. Another piece of information which is sliced off the the virtual table pointer of the base class. Consider the following:
 
-However, even with references we can run into a bit of a conundrum:
+```C++
+class Base {
+public:
+	virtual ~Base() = default;
+
+	virtual void speak() {
+		printf("Hello\n");
+	}
+};
+
+class Derived : public Base {
+public:
+	void speak() override {
+		printf("Derived\n");
+	}
+};
+
+void slice(Base b) {
+	b.speak();
+}
+
+Derived d;
+slice(d);
+```
+
+What we'll end up with is `Hello` being printed to the console. When we copy an object like this, behind the scenes the compiler invokes the copy constructor, which is not virtual. Moreover, copies don't copy the virtual table pointer. Why? Well, suppose that it did. Then invoking virtual methods like `speak()` would dispatch to the derived type. But the derived type implementation might use data members that are not shared between the base and derived class. Since we already discussed that these members could not be copied over, then such a function invocation would give us undefined behavior by accessing invalid memory.
+Therefore, object slicing prevents dynamic dispatch from operating as expected. 
+
+In the `Vehicle` example, if `Vehicle` was passed by value, the compiler would complain since that would require it to construct a new instance of `Vehicle`, and `Vehicle` is abstract and cannot be constructed.
+
+Now even with references we can run into a bit of a conundrum:
 
 ```C++
 Car c1(300), c2("car 2", 500);
-Vehicle& v = c1; //constructor, good
-v = c2; //operator=
+Vehicle& v = c1; //reference v being bound to c1, good
+v = c2; //operator=, uh oh
 v.move(); // ?
 ```
 
 As we saw in the last chapter, `operator=` is not normally virtual. We can make it virtual and overload it ourselves, but by default it's not. 
 Therefore, the above example causes object slicing as well! This is because `operator=` gets called on the static (declared) type which is `Vehicle` and not the dynamic (actual) type which is `Car`. 
-So here, `operator=` will copy only the members it knows about (the ones part of the static type) and leave the rest unchanged. Thus, the output of `v.move()` is "car 2 went 30 mph".
+So here, `operator=` will copy only the members it knows about (the ones that are part of the static type) and leave the rest unchanged. So the output of `v.move()` is "car 2 went 30 mph". And since `v` is basically an alias for `c1`, that's the same output for `c1.move()`. So we see here that we "half-copied" `c2` to `c1`!
 
 ## Covariance and Contravariance
 

@@ -92,5 +92,8 @@
 - [Project](project.md)
     - [SWE Tips](swe_tips.md)
     - [Design Patterns](design_patterns.md)
+---
+# Appendix
+- [Macros and the Compiler](macros.md)
 
 [Further Resources](resources.md)

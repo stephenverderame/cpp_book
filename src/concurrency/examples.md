@@ -270,10 +270,11 @@ public:
 
     }
 
-    std::optional<T> pop_front() {
+    std::optional<std::unique_ptr<T>> pop_front() {
         std::scoped_lock lk(headMu);
         if (head.get() != getTail()) {
-            const std::optional<T> out = { std::move(*head->data.release()) };
+            const std::optional<std::unique_ptr<T>> out 
+                = { std::move(head->data) };
             head = std::move(head->next);
             // new head is not nullptr because we know head != tail
             return out;
@@ -282,13 +283,13 @@ public:
         return {};
     }
 
-    T wait_pop() {
+    std::unique_ptr<T> wait_pop() {
         std::unique_lock head_lk(headMu);
         dataCond.wait(head_lk, [this]() { return head.get() != getTail(); });
         // will not wait if head.get() != tail
 
         // head != tail here
-        auto data = head->data.release();
+        auto data = std::move(head->data);
         head = std::move(head->next);
         return *data;
     }

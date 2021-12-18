@@ -7,7 +7,7 @@ For simplicity, we'll make the `chain` iterator random access, however it won't 
 are random access as well. This is because technically, random access iterators require `O(1)` random access; however, for iterators that don't support
 that, the random access iterator methods of `chain` (such as `operator[]`) will have `O(n)` lookup time.
 
-We actually already designed a `min_iter_tag` template which can be used to prevent the user from having to keep track of what the chain is a chain of
+We actually already designed a `min_iter_tag` template which can be used to prevent the user from having to keep track of what iterators are part of the chain
 before using certain iterator features.
 
 Let's see some example usage:
@@ -371,7 +371,7 @@ public:
     class iterator;
 
     iterator begin() {
-        return iterator(&containers);
+        return iterator(containers);
     }
 
     iterator end() {
@@ -379,7 +379,7 @@ public:
     }
 
     const iterator begin() const {
-        return iterator(&containers);
+        return iterator(containers);
     }
 
     const iterator end() const {

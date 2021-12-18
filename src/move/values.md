@@ -53,7 +53,8 @@ of an object.
 
 In order to move, we need a non-const rvalue reference (otherwise we couldn't modify the old value to invalidate it, and we'd effectively perform a copy). 
 Thus, since rvalue references are primarily used for moving, we don't often use `const` rvalue references. 
-This is because, if we tried to move construct from a `const` rvalue reference, the compiler would silently perform a copy since a `const &&` cannot bind to `&&` but it can bind to `const &` (copy constructor!).
+This is because, if we tried to move construct from a `const` rvalue reference, the compiler would silently perform a copy since a `const &&`
+cannot bind to `&&` but it can bind to `const &` (copy constructor!).
 
 ```C++
 

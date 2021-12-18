@@ -4,7 +4,3 @@ The C part of C++ is conducive towards structural programming, the traditional O
 I'm not sure if I would classify the STL under a single paradigm, but it is definitely like its own language which does have many features that come from functional programming languages.
 
 I've used a few of these here and there but let's take a deeper look at these facilities.
-
-> "Thus, the standard library will serve as both a tool and as a teacher."
->
-> \- Bjarne Stroustrup

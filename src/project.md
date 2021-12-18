@@ -183,3 +183,9 @@ If you use a port other than `80` for HTTP and `443` for HTTPS, then the port mu
 Ex: `localhost:3000`
 
 Other devices on the same network as you can connect via your LAN address which is listed when you run the command `ipconfig` on Windows or `ifconfig` on Unix.
+
+---
+
+> "Most good programmers do programming not because they expect to get paid or get adulation by the public, but because it is fun to program."
+>
+> \- Linus Torvalds

@@ -131,3 +131,9 @@ assert(myVec.size() == 2 && "Expected a point");
 // thus it is considered 'true'
 // since true is the null element for AND, it does not affect the test
 ```
+
+---
+
+> "Programs are meant to be read by humans and only incidentally for computers to execute."
+>
+> \- Donald Knuth
