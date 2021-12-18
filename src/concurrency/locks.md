@@ -62,7 +62,12 @@ Of course things aren't always as peachy as being able to avoid shared state.
 When those times come, you must enforce a modification order between objects.
 If you don't, you have a *race condition* where one thread is racing another to access the state. 
 
-One tool to avoid that are mutexes which stand for MUTually EXclusive.
+One tool to avoid that are mutexes which stand for MUTually EXclusive. Mutexes basically enforce
+serial access to pieces of data. Threads lock a mutex before executing instructions that cannot be completed by multiple threads
+at once. Once a thread has obtained the lock, other threads that try to lock the mutex must wait until the
+thread that has the mutex releases it. When a thread is done with a mutex, it must release it so other threads
+can acquire it and execute the code the mutex protects.
+
 In C++, we have `std::mutex`. I'm not even going to enumerate the member functions of a mutex because you should basically never use it directly.
 Instead, you want to wrap it in a class such as `std::lock_guard<>` or `std::scoped_lock<>`.
 A lock guard is the simplest RAII object for a mutex.
@@ -296,14 +301,23 @@ std::call_once(once, []() {
 
 ### Deadlock
 
-I mentioned deadlock before, it's basically where no progress is made because one thread is waiting for another, but that thread is waiting for the first thread. 
-Here are some guidelines to avoid it
-* Use `std::lock()` or `std::scoped_lock<>` to acquire multiple locks together
+I mentioned deadlock before, it's basically where no progress is made because one thread is waiting for another, but that thread is waiting for the first thread. More formally, deadlock occurs when all of the following conditions are met:
+* Bounded Resources - we have a limited number of resources that many threads may try to access.
+* No preemptions - a thread must wait for another thread to finish before taking the resource. Basically, threads are not stopped or interrupted during the time that is has the resource.
+* Hold and Wait - a thread holding a resource waits for another resource.
+* Circular Waiting - there exists a cycle in a resource acquisition graph. For example, thread `A` waits for `B`, who waits for `C`, who waits for `A`.
+
+Typically Bounded Resources and No Preemptions are not conditions we can do much about, so most strategies at avoiding deadlock aim to prevent Hold and Wait and Circular Waiting from occuring at the same time.
+
+Here are some guidelines to avoid deadlock:
+* Use `std::lock()` or `std::scoped_lock<>` if you need to acquire multiple locks together
 * Avoid nested locks
 * Avoid calling user supplied code when holding a lock. This could possible lead to nested locks, since we don't know what that code does
 * Always acquire and release locks in the same order
 * Use a lock Hierarchy
-    A Hierarchical lock is one which enforces an ordering. You can only lock locks going up (or down) the hierarchy. You can google for a simple implementation of one.
+
+    A Hierarchical lock is one which enforces an ordering. You can only lock locks going up (or down) the hierarchy.
+    You can google for a simple implementation of one.
 
 Deadlock and proper locking granularity are very simple concepts to describe,
 but takes practice in order to identify and write code that considers both issues.

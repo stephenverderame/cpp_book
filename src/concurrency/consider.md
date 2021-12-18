@@ -13,10 +13,10 @@ They're right at the heart of the action so to speak. Below that we have cache. 
 Cache is also on the processor but slower to access and farther away but much bigger than registers (L3 will typically be a few MB, L1 a few KB).
 After that we have main memory or RAM. Following that we have non-volatile storage (will retain state after power loss) such as disk space, SSD, nVMEs etc.
 When a processor looks for a value, it first looks at the highest level in the hierarchy and moves down.
-If it's not there, that's called a miss and typically because this occurs in the cache, a cache miss \index{cache miss}. (Finding the data would be a cache hit\).
+If it's not there, that's called a miss and finding the data would be a hit.
 So as its looking for data the processor goes lower and lower in the hierarchy until it finds what it's looking for.
 When it does, it doesn't just load the minimum amount of data it needs. Instead, we apply the principle of spatial locality which states that data stored
-together are likely accessed together. There's also the principle of temporal locality which states that data defined together (near in time) is typically used together.
+together is likely accessed together. There's also the principle of temporal locality which states that data defined together (near in time) is typically used together.
 Thus, when the cpu needs to swap out data in its cache for data in main memory, it does so chunks at a time.
 Furthermore, typical architectures implement a *write-back* policy. This means that an updated block in a higher level of the hierarchy is only stored back in the lower levels of the hierarchy
 when that block is replaced.
@@ -38,11 +38,10 @@ The atomic operations used at the ISA level are essentially the same.
 
 If you are considering relaxing memory orderings: first get it right with sequentially consistent ordering, then see if changing the ordering will reap a reward.
 Remember to use profiling tools to see where bottlenecks are.
-Remember to use profiling tools to see where bottlenecks are.
 
 
 ### Cache Ping Pong
-Now as for how this affects you in your day to day programming: consider what would happen if you are constantly mutating shared state.
+Consider what would happen if you are constantly mutating shared state.
 When using sequentially consistent memory ordering (or even relaxed memory ordering if these are RMW operations), and a thread updates some data,
 a global modification order must be enforced. Thus, the data must be written back to main memory and loaded by the other threads.
 This is a slow process and if it's happening constantly this can really slow down your program.
@@ -174,14 +173,12 @@ int main() {
 }
 ```
 
-Extending the cubicle example:
-imagine that when we tell the man a value, we also give him a batch number that value is part of and let him know if that update is the last number in the batch.
+Acquire/release memory ordering can be thought of like so:
+Imagine that when we tell the man a value, we also give him a batch number that value is part of and let him know if that update is the last number in the batch.
 Now when we load values, the man will tell us if the value he gave us was the last number in a batch, and if it is he'll inform us who gave him that batch along with the batch number.
 Now let's call up a woman in another cubicle playing the same game. This time, we'll ask her for a number and inform her we know about batch number `X` from caller `Z`.
 This time, not only does the woman have to give us a number more recent than the last number we loaded or stored from her, but she also has to give us a number at least as recent
 as any value in batch `X` from caller `Z`.
-
-Change "caller" to thread, and "person in a cubicle" to atomic variable, and that pretty much sums up the memory orderings.
 
 Last thing to mention is something called a *release sequence*. If you have a release store, acquire load, and a sequence of RMW operations that happen in between the load and store,
 this forms a release sequence. The RMW operations in between can have *any* memory ordering and the acquire will still synchronize with the final load.

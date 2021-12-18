@@ -1,6 +1,6 @@
 # Atomics
 
-Here we are, home stretch of the threading library! Do you remember how I said we can have a situation where an integer is half-updated?
+Do you remember how I said we can have a situation where an integer is half-updated?
 Well that's because normal read and writes are not atomic.
 When something is atomic, it is basically an indivisible operation. An atomic operation is either fully completed, or not started.
 Which means it forces some kind of modification order between threads. For most primitive types, atomic data types are lock free,
@@ -82,7 +82,7 @@ void producer() {
     }
 }
 ```
-Because atomic variables, are, well atomic. No locking or synchronization mechanism is needed to access them from multiple threads.
+Because atomic variables, are, well atomic, no locking or synchronization mechanism is needed to access them from multiple threads.
 ```C++
 std::atomic<int> count = 0;
 void processor(){
@@ -157,7 +157,7 @@ Moreover, when we return by smart pointer (whose copy cannot throw), we could no
 `std::atomic<shared_ptr<T>>` does not make accesses of the underlying data thread safe, but it makes changing the actual pointer value thread safe. 
 
 Lock free data structures are generally hard to design and even harder to get right, so only go for it if it is **necessary**.
-They're even harder when we relax the memory ordering and start using relaxes, or acquire-release memory ordering instead of sequentially consistent.
+They're even harder when we relax the memory ordering and start using relaxed or acquire-release memory ordering instead of sequentially consistent.
 As far as I know however, x86 only supports sequentially consistent memory ordering.
 
 Here's a common issue with lock-free data structures known as the *ABA* problem. Consider:

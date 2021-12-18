@@ -9,7 +9,7 @@ That isn't the case for futures. Futures are essentially a handle to a concurren
     These functions return a `std::future_status` which indicates if the future is ready (can call `get()` without blocking) or not
 
 Futures are returned from `std::async` which may run a task in parallel.
-When using `std::async`, the library controls if the code is run on a new thread or sequentially to avoid over-subscription and excessive task switching.
+When using `std::async`, the library controls if the code is run on a new thread or sequentially. The library implementation chooses the best option to avoid over-subscription and excessive task switching.
 If you must force it to run in parallel, pass `std::launch::async` as the first parameter.
 The next parameter to `std::asycnc` would be the callable object to run, and any remaining parameters would be arguments passed to that callable object.
 This works similarly to `std::bind`. `std::async` will then return a `std::future`, which is like a handle for a value that isn't available yet, but is expected

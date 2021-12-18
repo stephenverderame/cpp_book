@@ -126,7 +126,7 @@ Why is this ok? Well, I'm not going to talk much about memory ordering, but I wi
 An instruction that is *sequenced-before* another on the same thread of execution (so, comes first top-to-bottom) *happens-before* the second instruction.
 The barrier provides a mechanism to *synchronize-with* another thread. So if `A` happens-before `B`, and `B` synchronizes-with `C`,
 and `C` happens-before `D`, then `A` *inter-thread-happens-before* `D`. 
-Thus, utilizing data from `A` in `D`, is safe. There's more to this story but that's good start.
+Thus, utilizing data from `A` in `D`, is safe. There's more to this story but that's a good start.
 So when a thread arrives at the barrier, all the updates that happened on that thread before the barrier are synchronized to all other threads ater the barrier.
 Let's say thread `A` assigns its result to `result[0]`. Then `A` reaches the barrier and waits. When thread `B` and `C` arrive at the barrier,
 the wait count will reach `3` and all the threads will be released and continue execution.
