@@ -98,7 +98,12 @@ More information can pretty easily be found online. Also check out the [GDB chea
 
 # GProf
 
-GProf is the GNU profiler. To use the profiler we must compile with the "-pg" compiler flag. See above for how to do that in CMake. 
+GProf is the GNU profiler. To use the profiler we must compile **and link** with the "-pg" compiler flag. See above for how to do that in CMake. 
+In CMake, setting link flags are very much like setting compile flags, for example:
+
+```
+target_link_options(TargetName PRIVATE "-pg")
+```
 From there we can simply run the program like normal. When execution is finished, a file called `gmon.out` will be generated in the build directory. 
 Next, we can simply run the `gprof` tool on this executable which will display a lot of information. So you probably want to redirect the output to a log file.
 
@@ -166,4 +171,6 @@ index % time    self  children    called     name
 
 The primary line is the line for the function that the entry is analyzing. 
 This line has the name of the function not on an indent. The direct caller of the function being analyzed is also included in the same entry.
+
+To display the call graph more nicely, we can use the python script `gprof2dot`.
 

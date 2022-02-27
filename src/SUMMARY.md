@@ -86,6 +86,7 @@
         - [GTest](./testing/gtest.md)
         - [GMock](./testing/gmock.md)
         - [GDB and GProf](./testing/gdb.md)
+        - [More Profiling and Analysis](./testing/valgrind.md)
     - [Doxygen](./testing/doxygen.md)
     - [CMake](./testing/cmake.md)
     - [Static Analysis](./testing/analysis.md)
