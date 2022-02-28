@@ -172,5 +172,5 @@ index % time    self  children    called     name
 The primary line is the line for the function that the entry is analyzing. 
 This line has the name of the function not on an indent. The direct caller of the function being analyzed is also included in the same entry.
 
-To display the call graph more nicely, we can use the python script `gprof2dot`.
+To display the call graph more nicely, we can use the python script `gprof2dot`. This can be installed via `pip`.
 
