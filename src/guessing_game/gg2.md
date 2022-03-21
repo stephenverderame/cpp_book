@@ -243,7 +243,8 @@ int main() {
 }
 ```
 
-One thing to note is that we define all of our functions before they are used. This is necessary in C++ while not something done in Java. 
+One thing to note is that we define all of our functions before they are used. This is necessary in C++ because the compiler
+essentially compiles the code line by line, and it needs to know the definition of things before it sees it in use.
 It's a good idea to put the function definitions close to where they are going to be called. It's also good to keep functions within about 80 characters wide and 20 lines long. 
 Is this a hard and fast rule? No, far from it but I think it's a nice guideline that can help keep functions short, which is generally accepted as easier to reason about and thus
 less error prone. Most of a developer's time is spent reading code, so it's worthwhile to put in the effort to make that part of the job easier.

@@ -152,6 +152,31 @@ Here's a funny story: the first time I needed an unconditional jump, I actually 
 pointless it was to write something so simple in assembly. And that's the day I discovered C++ did indeed have a `goto`. 
 The only good usage I can think of off the top of my head is to break out of nested loops like so. We first create a label by typing a name followed by a colon, then we put that name after `goto` to jump to it.
 
+### Comma Operator
+
+The comma operator will execute the operations in order, from left to right but will only return the result of the last expression.
+
+```C++
+const auto y = 10, 20;
+// y = 20;
+
+const auto x = y++, ++y, y++;
+// y = 23
+// x = 22
+```
+
+### Ternary Operator
+
+This operator looks like `<condition> ? <true_branch> : <false_branch>`.
+If the condition is true, it will evaluate the expression on the left side of the colon,
+otherwise it will evaluate the expression on the right side.
+
+```C++
+const auto age = 10;
+
+const auto free_time = age < 16 ? 8 : 1;
+// free_time is 8
+```
 
 #### Further Reading
 [C++ Primer 5th Ed](https://github.com/yanshengjia/cpp-playground/blob/master/cpp-primer/resource/C%2B%2B%20Primer%20(5th%20Edition).pdf) 1.4 - 1.4.4 and 5.3 - 5.5.3

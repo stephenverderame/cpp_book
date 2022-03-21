@@ -1,7 +1,7 @@
 # Classes
 
 C++ provides the access modifiers `private`, `public`, and `protected`. 
-Unlike Java, these modifiers define sections of definitions that belong to that modifier instead of having to specify it for each member. 
+These modifiers define sections of definitions that belong to that modifier instead of having to specify it for each member. 
 Public members are part of the class's public interface and accessible to everyone, `private` is accessible to itself and friends only and `protected` is accessible to itself, friends, and subclasses. 
 A class's members are `private` by default.
 

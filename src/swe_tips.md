@@ -2,7 +2,6 @@
 
 I'm going to talk about a few things that I thought helped me become a better software engineer.
 I'll hit a few points briefly, but most of this comes from *The Pragmatic Programmer* and *Clean Architecture*.
-The former is a course textbook for CS 3110.
 
 First let's discuss what I mean when I say module and component.
 A module is often realized by a class in OOP languages.

@@ -1,10 +1,10 @@
 # Arrays
 
 Let's start with the modern array. A C++ array is a fixed-sized container of elements of a fixed type stored contiguously is memory. 
-Unlike Java, the size of the array must be known at compile time and cannot change. This because the memory for an array is allocated on the stack statically.
+The size of the array must be known at compile time and cannot change. This because the memory for an array is allocated on the stack statically, so the compiler needs to know how much space to make.
 While this means that arrays aren't as flexibly as a dynamically sized container, it also means that the memory allocations are much more efficient.
 `std::vector` would be your go-to dynamically sized container in C++. Arrays are a class, and part of the STL (standard template library). 
-For now, think of a template like a Java Generic or simply as a type parameter that can be supplied to classes or functions. 
+We'll discuss templates a lot more later, but for now simply think of them as a parameter that can be supplied to classes or functions at compile time. Unlike normal function parameters, template parameters can be, and often are, types.
 This allows us to create one class for the concept of an array, and *instantiate* that class on any type we want such as `int` or `std::string` or a custom user-defined type. 
 Templates are a big topic we'll discuss later. The interface for the array is declared in the `array` header and therefore must be included via `#include <array>`.
 
@@ -26,7 +26,7 @@ int main() {
 }
 ```
 
-We could not declare `num` to be `auto` because by default a list of elements surrounded by braces will be deduced as something else called an `std::initializer_list`. 
+We could not declare `nums` to be `auto` because by default a list of elements surrounded by braces will be deduced as something else called an `std::initializer_list`. 
 After `nums` has been created, we cannot change the size of `nums`, or the type of elements `nums` store.
 
 In fact, the full definition of `nums` in reality looks like this: `std::array<int, 5> nums = //...`. 
@@ -66,7 +66,7 @@ twoDArray.back(); // {3, 2, 3}
 twoDArray.empty(); // false
 ```
 
-Why are arrays so limiting? Well the compiler does not dynamically allocate arrays like Java. The memory is allocated on the stack like other variables with automatic lifetimes, which is much more efficient then dynamic allocations. 
+Why are arrays so limiting? Well the compiler does not dynamically allocate arrays. The memory is allocated on the stack like other variables with automatic lifetimes, which is much more efficient then dynamic allocations. 
 Obviously, there are times when dynamic allocation is necessary and for those times we have the `std::vector`.
 
 ## C Array

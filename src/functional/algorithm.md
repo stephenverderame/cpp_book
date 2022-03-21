@@ -1,6 +1,8 @@
 # Algorithms
 
-STL algorithms are in the `<algorithms>` header. These are generic algorithms which operate on pairs of iterators. 
+STL algorithms are in the `<algorithms>` header. These are generic algorithms which operate on pairs of iterators (a start and end iterator). 
+C++20 includes versions of these algorithms that operate on ranges and views. This is discussed more in the C++20 section
+of the book, but ranges and views are basically like an abstraction over a pair of iterators.
 Often times they will take a callable object to perform some computation. 
 Whenever you write a for loop, the first though should be "is there an algorithm which does this for me?". 
 Generally, we want to use algorithms as much as possible because they help us avoid making simple indexing or iterator mistakes and are well tested. 
@@ -10,6 +12,9 @@ I'll briefly discuss a few common ones, but more information can be found on the
 
 A predicate is a function that takes in an element and returns true if that element matches the criteria. 
 A comparator is a function that takes in two arguments and returns true if the first argument should be ordered before the second.
+
+If you are familiar with functional programming, some of the algorithms are very much like common operations in functional
+languages such as `map` or `fold`. I indicate that in the following list with the phrase "analogous to ..." or "similar to ..."
 
 * `std::for_each(It begin, It end, Func f)` - analogous to `iterate`
     * Calls `f`, passing in the dereferenced iterator for all elements between `begin` and `end`

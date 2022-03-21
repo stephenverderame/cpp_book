@@ -13,10 +13,9 @@ You're more than welcome to use an IDE, but I will be giving instructions for op
 The GUIs and IDEs should be rather self-explanatory though. Due to the nature of working on embedded systems, I would suggest getting used to using the command line one way or another. 
 You never know when the team laptop's UI dies...
 
-Now unlike other languages, C++ has a Standards Committee which agrees upon the specifications of the language. 
+C++ has a Standards Committee which agrees upon the specifications of the language. 
 From there different vendors such as GNU and Microsoft implement their own compilers which adhere to the language specification. 
 Furthermore, since 2011 the Standards Committee has agreed to release a new specification every 3 years. 
 For this book we will be using C++17, and I will talk about a few points in C++20, but I will explicitly note when topics only apply to C++20. 
-As of now, ROS officially supports C++14 but C++17 rarely causes a problem (and it will work as long as its ABI compatible).
 
 So, enough introduction! Let's get started!

@@ -14,11 +14,6 @@ and point you in the right direction towards more information.
 I also hope I'm able to start good software engineering habits in those newer to the field.
 See the [other resources page](resources.md) for books that I think helped me a ton.
 
-We'll discuss some aspects of cross-platform and systems development, but mostly focus on C++.
-I'll make allusions to ROS (Robot Operating System), Java, and Cornell CS classes (such as CS 3110) sparsely throughout this guide.
-If you are unfamiliar with any of these, just ignore my comments regarding them.
-They should have no bearing on the guide and hopefully these references don't affect the ineligibility of the content.
-
 Please feel free to reach out with comments, criticisms, or questions, and let me know if you spot a typo,
 mistake, or other error.
 

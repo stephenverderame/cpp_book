@@ -2,15 +2,24 @@
 
 What we saw last chapter was a *concrete* class. Concrete types have their representation part of their definition. 
 Unlike concrete types, abstract types cannot be instantiated, but instead provide an interface for other concrete classes to implement. 
+
+An interface is the contract between clients (users of the interface), and implementors. A client doesn't know or 
+care how an interface is implemented. The client just assumes that the implementation does what the interface says it does.
+An analogy for an interface might be a menu. A menu gives you a general gist of the dishes available and lists the costs and 
+maybe some key ingredients. But each chef is free to make the dish however they want. If the head chef calls in sick,
+someone else might be able to take over. Multiple people might work on different parts of the dish and things like 
+spice combinations, oven temperatures, how long the pan is preheated, and the ordering of some steps might differ. 
+All of these details are abstracted from the client, which allows the implementors (the kitchen in this analogy)
+to be free to change things up.
+
 Abstract types must be used via pointers or references, while concrete types can be used directly. Concrete types can be placed on the stack, and be members of other classes much more simply than abstract types.
 
-In Java and other languages, all functions of a superclass may be overridden. This isn't the case in C++. A function that you want a derived class to be able to override must be declared `virtual`. 
+A function that you want a derived class to be able to override must be declared `virtual`. 
 The reason is that the presence of a `virtual` function requires something known as a virtual table or vtable. This is an area in memory that each instance has access to that allows the 
 compiler to perform dynamic dispatch by looking up the specific function to call at runtime. More accurately, each instance has a pointer to its respective virtual table. 
 Since C++ is "pay for what you use", this vtable isn't created unless a class declares a function `virtual` which enables dynamic dispatch for that function and allows subclasses to override it.
 
 An abstract type contains at least one *pure virtual* functions, which is a function that subclasses **must** override because the superclass does not implement it. 
-The C++, the equivalent of a Java `interface` would be a class containing only pure virtual functions.
 
 ```C++
 class Person {

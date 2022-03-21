@@ -20,12 +20,14 @@ mutNum += 10; //good
 
 ### Initialization
 
-In Java, when you declare a variable, it is set to a default value. 
+In many languages, when you declare a variable, it is set to a default value. 
 This isn't the case in C++ since there's no reason for the extra instruction to set a default if the programmer is going to set it to something else anyway. 
 It's part of the "pay for only what you use" mentality of C++.
 Thus, if you don't initialize a primitive variable to a value, it essentially holds a garbage value. 
 What really happens is it will just keep whatever bytes in memory happen to be where the variable now occupies. 
-Therefore, **you should always initialize your variables**.
+Therefore, **you should always initialize your variables**. This is one of the reasons why it's good practice to 
+declare variables to have type `auto`: the compiler needs an initial value to figure out what type the variable is,
+so using `auto` will prevent you from forgetting to initialize your variables.
 
 Now you might be asking: "now hold on, you're saying to manually give each of my variables a default value?
 So then what's the point of the compiler not doing it?" Well, if you *introduce the variable immediately before you need it (and no earlier)*, 
@@ -48,11 +50,9 @@ int powi(int base, unsigned exp) {
 ``` 
 
 Notice how `res` is introduced right when we need it, and therefore has an initial value which has a meaning for our computation.
-Moreover, defining variables as late as possible makes code easier to read. 
+Moreover, defining variables as late as possible (and in the smallest scope its needed) makes code easier to read. 
 
-Notice that `auto` prevents us from forgetting to initialize a variable.
-This is because without an initial value, the compiler would have no idea what type to deduce for `auto`.
-This is another good reason to always use `auto`.
+Global and static variables, on the other hand, are initialized to their default value. For most basic data types this is `0`.
 
 ### Names
 

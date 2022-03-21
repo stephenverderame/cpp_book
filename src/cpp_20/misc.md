@@ -1,7 +1,6 @@
 ## Rocketship Operator
 
 This is actually called the 3-way-comparison operator, but it's colloquially known as the Rocketship Operator.
-This is basically a type-safe version of Java's `comareTo()` method.
 
 If you've ever implemented a comparable type, you may know the pain of manually defining all `<=, ==, !=, >= <, >` and then defining them again so that they are commutative.
 If so, then the three-way comparison `( <=> )` is what you need! Given the following syntax:

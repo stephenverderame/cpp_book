@@ -22,8 +22,7 @@ As this book is mostly focused on learning C++, I will not delve into the detail
 
 ### The term 'object'
 
-If you're used to Java, to you, 'object' probably means an instance of a class. 
-Therefore, an int would, by Java terms, not really be considered an object. 
+In some languages the term 'object' refers to an instance of a class. 
 But in C++, the standard defines an 'object' as a "region of storage". 
 Objects can consist of sub-objects, and every variable is an object. Objects take up one or more memory locations, except bit fields which are separate objects but share a memory location.
 

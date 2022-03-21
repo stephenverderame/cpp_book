@@ -26,7 +26,6 @@ public:
 ```
 So what's the advantage of RAII you ask? Well now you need not worry about `Socket` being cleaned up. 
 If an exception is thrown or the variable goes out of scope, the resource is automatically released. 
-If you ask me this is quite a lot nicer than try-catch-finally blocks or Java's try-with-resources.
 
 When you have behavior that must run on every single execution path, think RAII! 
 If you have to cleanup a resource or call a resource freeing function (something like `free`, `delete`, `cleanup`, etc.), think RAII.

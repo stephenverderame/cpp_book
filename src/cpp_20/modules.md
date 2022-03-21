@@ -3,7 +3,6 @@
 Modules help with some problems of includes in C++.
 They are compiled independently of the transnational units that import them and unlike headers, are saved in a binary format.
 Thus, once they're compiled, they are quick to load and remain unchanged and independent of the code that depends on them.
-They are similar to Java's .class files but with greater encapsulation.
 You may define a module in separate interface and implementation files, or all in one file.
 In modules, code is not available outside the module unless it's explicitly exported.
 Furthermore, macros and includes used in one module do not affect the code that imports the module. Here's an example:
