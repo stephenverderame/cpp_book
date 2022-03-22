@@ -36,6 +36,7 @@
     - [Shared and Weak Ptr](./pointers/shared.md)
     - [Raw and Function Pointers](./pointers/raw.md)
     - [PIMPL and Polymorphism](./pointers/pimpl.md)
+    - [Reference Wrappers](./pointers/reference_wrapper.md)
 - [Basic Containers](./basic_containers/intro.md)
     - [Arrays](./basic_containers/arrays.md)
     - [Strings](./basic_containers/strings.md)

@@ -30,9 +30,20 @@ This however opens up the door to name collisions once again. An alternative is 
 using namespace a; //bring everything from namespace a into scope
 using std::cout; // bring cout into scope
 
-cout << add(5, 4) << "\n";\
+cout << add(5, 4) << "\n";
 // calls a::add
 // no need to qualify cout with std::
+
+{
+    using b::add;
+    // brings b::add into this smaller scope, shadowing a::add
+    cout << add(9, 9) << "\n";
+    // calls b::add
+}
+
+cout << add(5, 5) << "\n";
+// we left the scope b::add we used in
+// so this calls a::add
 
 ```
 
