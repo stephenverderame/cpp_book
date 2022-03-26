@@ -14,6 +14,7 @@
     - [Variables](./basics/variables.md)
     - [References](./basics/references.md)
     - [Functions](./basics/functions.md)
+    - [Operators](./basics/operators.md)
     - [Comments and Headers](./basics/comments.md)
 - [Getting Organized](./organization/org.md)
     - [Classes](./organization/classes.md)
