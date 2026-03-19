@@ -73,7 +73,7 @@ Notice also the move is at the last place we reference port.
 Ok this admittedly has little to do with move semantics, but I didn't know where to put it. 
 It better belongs in the casting section, but I didn't want to give half an explanation since it helps to know about prvalues and glvalues.
 
-RTTI stands for runtime type information, and it's how `dyanmic_cast` is able to check the dynamic type during a cast. 
+RTTI stands for runtime type information, and it's how `dynamic_cast` is able to check the dynamic type during a cast. 
 RTTI information is encapsulated within an `std::type_info` object which is part of the `<typeinfo>` header. 
 This object is hashable with the `hash_code()` member function, comparable with `operator==` and `operator!=`, can be ordered with the `before()` member function,
 and can also print out an implementation defined name representing the type with the `name()` member function. `std::type_info` is neither constructable nor copyable. 
